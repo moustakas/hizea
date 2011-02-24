@@ -5,7 +5,10 @@ function irac_phot, image, nocntrd=nocntrd
 ;              goal is to measure 3.6 and 4.5 micron photometry for
 ;              100 post-starburst galaxies.
 ;
-;-
+; amd110224 -- added this comment to see if i can commit via the google 
+;              svn repository
+;-            
+
 
 
 im = readfits(image, header, /silent)
