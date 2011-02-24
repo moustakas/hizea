@@ -1,2 +1,5 @@
+amd110224 -- added this line to test out commiting code to new google
+             svn repository
+
 http://ssc.spitzer.caltech.edu/irac/iracinstrumenthandbook/100/
 http://www.ifa.hawaii.edu/~rgal/science/sextractor_notes.html
