@@ -1,0 +1,2 @@
+http://ssc.spitzer.caltech.edu/irac/iracinstrumenthandbook/100/
+http://www.ifa.hawaii.edu/~rgal/science/sextractor_notes.html
