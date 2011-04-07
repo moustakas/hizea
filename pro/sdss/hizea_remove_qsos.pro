@@ -1,6 +1,8 @@
 pro hizea_remove_qsos, clobber=clobber
 ; jm10dec22ucsd - remove QSOs from the parent HIZEA sample
 
+OBSOLETE!!!    
+    
     sdsspath = getenv('HIZEA_DATA')+'/sdss/'
     phot = mrdfits(sdsspath+'hizea_photo_dr7.fit',1)
     fit = mrdfits(sdsspath+'hizea_simplefit_dr7.fit',1)
