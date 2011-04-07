@@ -1,0 +1,5 @@
+* Build the Monte Carlo grids:
+build_hizea_sfhgrid
+
+* Fit everything
+* hizea_isedfit
