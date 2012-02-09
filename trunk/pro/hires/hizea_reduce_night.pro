@@ -90,16 +90,16 @@ pro hizea_reduce_night, datapath, setup, chip=chip, clobber=clobber, $
        endif
        if keyword_set(dotrace) then begin
           for kk = 0L, nstd-1L do hires_fntobj, hires, setup, $
-            std[kk], chip, chk=chk, /std
+            std[kk], chip, chk=chk, clobber=clobber, /std
        endif
        if keyword_set(skysub) then begin
           for kk = 0L, nstd-1L do hires_skysub, hires, setup, $
-            stdindx[kk], chip, chk=chk, /std ; note STDINDX!
+            stdindx[kk], chip, chk=chk, clobber=clobber, /std ; note STDINDX!
        endif
        if keyword_set(extract) then begin
           for kk = 0L, nstd-1L do hires_box, hires, setup, $
             std[kk], chip, chk=chk, ochk=ochk, reschk=reschk, /std, $
-            /skipskysub, nohelio=0, novac=0
+            /skipskysub, nohelio=0, novac=0, clobber=clobber
        endif
     endif
 
@@ -134,7 +134,7 @@ pro hizea_reduce_night, datapath, setup, chip=chip, clobber=clobber, $
        for jj = 0L, nobj-1L do begin
           for kk = 0, n_elements(chip)-1 do begin
              hires_fntobj, hires, setup, obj[jj], chip[kk], $
-               objaper=objaper, fwidth=fwidth, chk=chk
+               objaper=objaper, fwidth=fwidth, chk=chk, clobber=clobber
           endfor
        endfor  
     endif
@@ -145,7 +145,7 @@ pro hizea_reduce_night, datapath, setup, chip=chip, clobber=clobber, $
       (nobj ne 0) then begin
        for jj = 0L, nobj-1L do begin
           for kk = 0, n_elements(chip)-1 do begin
-             hires_skysub, hires, setup, obj[jj], chip[kk], chk=chk
+             hires_skysub, hires, setup, obj[jj], chip[kk], chk=chk, clobber=clobber
           endfor
        endfor
     endif
@@ -156,7 +156,9 @@ pro hizea_reduce_night, datapath, setup, chip=chip, clobber=clobber, $
       (nobj ne 0) then begin
        for jj = 0L, nobj-1L do begin
           for kk = 0, n_elements(chip)-1 do begin
-             hires_extract, hires, setup, obj[jj], chip[kk], reschk=reschk, /novac
+;            reschk = 1 & chk = 1
+             hires_extract, hires, setup, obj[jj], chip[kk], $
+               reschk=reschk, chk=chk, /novac, /modelout, clobber=clobber
           endfor
        endfor
     endif
@@ -181,15 +183,15 @@ pro hizea_reduce_night, datapath, setup, chip=chip, clobber=clobber, $
 ; combine multiple exposures of the same object, which must be run on
 ; even a single object
    if keyword_set(combine) then begin
-      message, 'Not recommended!!'
-;     for jj = 0L, nobj-1L do begin
-;        for kk = 0, n_elements(chip)-1 do begin
-;           hires_combspec, hires, setup, obj[jj], chip[kk], /noflux;, /mchk, /chk, /achk
-;        endfor
-;     endfor
+;     message, 'Not recommended!!'
+      for jj = 0L, nobj-1L do begin
+         for kk = 0, n_elements(chip)-1 do begin
+            hires_combspec, hires, setup, obj[jj], chip[kk], /noflux;, /mchk, /chk, /achk, /noflux
+         endfor
+      endfor
    endif
-    
-    popd
+   
+   popd
 
 return
 end

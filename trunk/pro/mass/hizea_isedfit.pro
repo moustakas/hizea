@@ -1,6 +1,6 @@
 pro hizea_isedfit, models=models, write_paramfile=write_paramfile, $
   isedfit=isedfit, qaplot=qaplot, clobber=clobber, debug=debug, $
-  noirac=noirac
+  noirac=noirac, j0905=j0905
 ; jm10dec20ucsd - derive stellar masses for the HIZEA sample
 ; jm11apr06ucsd - major updates
 
@@ -20,7 +20,9 @@ pro hizea_isedfit, models=models, write_paramfile=write_paramfile, $
        printf, lun, 'sfhgrid              1'
        printf, lun, 'redcurve             charlot'
        printf, lun, 'prefix               hizea'
-       printf, lun, 'redshift             0.35,0.91,30'
+       if keyword_set(j0905) then $
+         printf, lun, 'redshift             0.41,0.72,10' else $
+           printf, lun, 'redshift             0.35,0.91,30'
        printf, lun, 'igm                  1'
        printf, lun, 'maxold               0 # [0=no, 1=yes]'
        printf, lun, 'filterlist           '+strjoin(hizea_filterlist(),',')
@@ -35,7 +37,13 @@ pro hizea_isedfit, models=models, write_paramfile=write_paramfile, $
 ; --------------------------------------------------
 ; do the fitting!  
     if keyword_set(isedfit) then begin
-       phot = mrdfits(hizea_path(/sdss)+'hizea_galex_sdss_spitzer.fits.gz',1)
+       if keyword_set(j0905) then begin
+          phot = mrdfits(hizea_path(/sdss)+'J0905_photometry.fits.gz',1)
+          outprefix = 'J0905'
+       endif else begin
+          phot = mrdfits(hizea_path(/sdss)+'hizea_galex_sdss_spitzer.fits.gz',1)
+       endelse
+       
        maggies = phot.maggies
        ivarmaggies = phot.ivarmaggies
        zobj = phot.z
@@ -55,20 +63,24 @@ pro hizea_isedfit, models=models, write_paramfile=write_paramfile, $
 ; --------------------------------------------------
 ; make a QAplot
     if keyword_set(qaplot) then begin
+       if keyword_set(j0905) then begin
+          outprefix = 'J0905'
+          phot = mrdfits(hizea_path(/sdss)+'J0905_photometry.fits.gz',1)
+          galaxy = phot.galaxy
+       endif
        if keyword_set(noirac) then outprefix = 'hizea_noirac'
 
-       sample = mrdfits(hizea_path(/sdss)+'hizea_galex_sdss_spitzer.fits.gz',1)
+;      sample = mrdfits(hizea_path(/sdss)+'hizea_galex_sdss_spitzer.fits.gz',1)
 ;      index = where(sample.maggies[8] gt 0) ; has ch1 flux
 ;      galaxy = sample[index].galaxy
-
-       keck = rsex(hizea_path(/sdss)+'keckao_sample.sex')
-
-       ra = 15D*im_hms2dec(keck.ra) 
-       dec = im_hms2dec(keck.dec)
-       spherematch, sample.ra, sample.dec, ra, dec, 3.0/3600.0, m1, m2
-       srt = sort(m2) & m1 = m1[srt] & m2 = m2[srt]
-       index = m1
-       galaxy = sample[index].galaxy
+;      keck = rsex(hizea_path(/sdss)+'keckao_sample.sex')
+;
+;      ra = 15D*im_hms2dec(keck.ra) 
+;      dec = im_hms2dec(keck.dec)
+;      spherematch, sample.ra, sample.dec, ra, dec, 3.0/3600.0, m1, m2
+;      srt = sort(m2) & m1 = m1[srt] & m2 = m2[srt]
+;      index = m1
+;      galaxy = sample[index].galaxy
        
        isedfit_qaplot, paramfile, isedfit, iopath=iopath, galaxy=galaxy, $
          index=index, sfhgrid_basedir=sfhgrid_basedir, clobber=clobber, $
