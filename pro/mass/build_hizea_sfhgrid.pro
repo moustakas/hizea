@@ -3,7 +3,7 @@ pro build_hizea_sfhgrid, sfhgrid=sfhgrid, make_montegrid=make_montegrid, $
 ; jm10jan28ucsd - build all the SFH grids we are going to need
 
     sfhgrid_basedir = hizea_path(/monte)
-    sfhgrid_paramfile = hizea_path(/mass)+'hizea_sfhgrid.par'
+    sfhgrid_paramfile = getenv('HIZEA_DIR')+'/pro/mass/hizea_sfhgrid.par'
 
 ; defaults    
     if (n_elements(imf) eq 0) then imf = 'chab'
