@@ -1,6 +1,6 @@
 pro hizea_reduce_all, night, setup, chip=chip, init=init, clobber=clobber, $
   flat=flat, arc=arc, slitflat=slitflat, proc=proc, dotrace=dotrace, $
-  skysub=skysub, extract=extract, coadd=coadd, combine=combine, calibrate=calibrate, $
+  skysub=skysub, extract=extract, combine=combine, calibrate=calibrate, $
   dostandards=dostandards, makesens=makesens, final_spec1d=final_spec1d, $
   tarballs=tarballs
 ; jm09sepucsd - uber-wrapper to reduce *all* the hizea/hires data 
@@ -20,8 +20,10 @@ pro hizea_reduce_all, night, setup, chip=chip, init=init, clobber=clobber, $
     
 ; ##################################################
 ; data reduction stuff    
-    for inight = 0L, nnight-1L do begin
+    for inight = 0, nnight-1 do begin
        datapath = hizeapath+allnight[inight]+'/'
+       print & splog, '##################################################'
+       splog, datapath
 ; define the various setups, which correspond to various
 ; cross-disperser angles (see hires_summ.txt)
        case allnight[inight] of
@@ -65,7 +67,7 @@ pro hizea_reduce_all, night, setup, chip=chip, init=init, clobber=clobber, $
 ; ##################################################
 ; now reduce each night, for each setup
        if (keyword_set(final_spec1d) eq 0) and (keyword_set(tarballs) eq 0) then begin
-          for jj = 0L, nsetup-1L do begin
+          for jj = 0, nsetup-1 do begin
              hizea_reduce_night, datapath, allsetup[jj], chip=chip, clobber=clobber, $
                flat=flat, arc=arc, slitflat=slitflat, proc=proc, dotrace=dotrace, $
                skysub=skysub, extract=extract, combine=combine, calibrate=calibrate, $
@@ -81,7 +83,7 @@ pro hizea_reduce_all, night, setup, chip=chip, init=init, clobber=clobber, $
           objinfo = struct_trimtags(hires[objindx],select=['obj_id',$
             'obj','frame','chip','xdangl','ra','dec','exp','am','img_root'])
           info = struct_addtags(replicate({galaxy: '', z: 0.0, spec1dfile: ''},nobj),objinfo)
-          
+
           for iobj = 0, nobj-1 do begin
 ; August 2009
              if strmatch(info[iobj].obj,'*1558*') then begin
@@ -129,7 +131,7 @@ pro hizea_reduce_all, night, setup, chip=chip, init=init, clobber=clobber, $
             datapath=datapath, qafile=qafile
           qaplot_hizea_spec1d, datapath=datapath, qafile=qafile
        endif 
-    endfor
+    endfor 
 
 ; ##################################################
 ; build the final 1D spectra
