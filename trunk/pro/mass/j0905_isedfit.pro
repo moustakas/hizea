@@ -8,7 +8,7 @@ pro j0905_write_paramfile, paramfile, sfhgrid=sfhgrid, prefix=prefix, $
     synthmodels = 'bc03'
     imf = 'chab'
     zlog = '0'
-    redcurvestring = redcurve2string(1)
+    redcurvestring = redcurve2string(0)
     sfhgridstring = strtrim(sfhgrid,2)
     
     splog, 'Writing '+paramfile
@@ -32,9 +32,8 @@ pro j0905_write_paramfile, paramfile, sfhgrid=sfhgrid, prefix=prefix, $
 return
 end
 
-pro j0905_isedfit, models=models, write_paramfile=write_paramfile, $
-  isedfit=isedfit, qaplot=qaplot, clobber=clobber, debug=debug, $
-  noirac=noirac, j0905=j0905
+pro j0905_isedfit, models=models, isedfit=isedfit, qaplot=qaplot, $
+  clobber=clobber, debug=debug, noirac=noirac, j0905=j0905
 ; jm12feb08ucsd - derive stellar masses for J0905
 
     j0905path = j0905_path()
@@ -49,6 +48,16 @@ pro j0905_isedfit, models=models, write_paramfile=write_paramfile, $
     nzz = 3
     igm = 1
     sfhgrid = 1
+    
+    model = isedfit_restore(paramfile,ised,iopath=isedpath,$
+      isedfit_sfhgrid_dir=isedfit_sfhgrid_dir)
+    
+
+    mstar = isedfit_reconstruct_posterior(paramfile,post=post,$
+      isedfit_sfhgrid_dir=isedfit_sfhgrid_dir,iopath=isedpath,$
+      age=age,Z=Z,tau=tau,av=av);,sfr0=sfr0,b100=b100,av=av,sfrage=sfrage)
+
+    
     
     j0905_write_paramfile, paramfile, prefix=prefix, sfhgrid=sfhgrid, $
       zminmax=zminmax, nzz=nzz, filters=filters, igm=igm
