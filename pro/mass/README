@@ -1,5 +1,6 @@
 * Build the Monte Carlo grids:
-build_hizea_sfhgrid
+build_j0905_sfhgrid
 
-* Fit everything
-* hizea_isedfit
+j0905_isedfit, /models, /clobber  # convolve the models with the filters
+j0905_isedfit, /isedfit, /clobber # do the fitting
+j0905_isedfit, /qaplot, /clobber  # make a QAplot

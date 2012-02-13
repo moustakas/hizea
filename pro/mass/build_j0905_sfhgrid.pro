@@ -6,7 +6,7 @@ pro build_j0905_sfhgrid, sfhgrid=sfhgrid, make_montegrid=make_montegrid, clobber
 
 ; default grid
     build_isedfit_sfhgrid, '1', synthmodels='bc03', imf='chab', $
-      redcurve=1, make_montegrid=make_montegrid, clobber=clobber, $
+      redcurve=0, make_montegrid=make_montegrid, clobber=clobber, $
       isedfit_sfhgrid_dir=isedfit_sfhgrid_dir, sfhgrid_paramfile=sfhgrid_paramfile
        
 return
