@@ -5,7 +5,8 @@ pro j0905_write_paramfile, paramfile, sfhgrid=sfhgrid, prefix=prefix, $
     omega0 = 0.3
     omegal = 0.7
 
-    synthmodels = 'bc03'
+    synthmodels = 'fsps'
+;   synthmodels = 'bc03'
     imf = 'chab'
     zlog = '0'
     redcurvestring = redcurve2string(0)
@@ -39,7 +40,7 @@ pro j0905_isedfit, models=models, isedfit=isedfit, qaplot=qaplot, $
     j0905path = j0905_path()
     isedpath = j0905_path(/isedfit)
     isedfit_sfhgrid_dir = j0905_path(/monte)
-    sfhgrid_paramfile = getenv('HIZEA_DIR')+'/pro/mass/j0905_sfhgrid.par'
+    sfhgrid_paramfile = getenv('HIZEA_DIR')+'/pro/j0905/j0905_sfhgrid.par'
 
     prefix = 'j0905_sfhgrid01'
     paramfile = isedpath+prefix+'_isedfit.par'
@@ -49,15 +50,13 @@ pro j0905_isedfit, models=models, isedfit=isedfit, qaplot=qaplot, $
     igm = 1
     sfhgrid = 1
     
-    model = isedfit_restore(paramfile,ised,iopath=isedpath,$
-      isedfit_sfhgrid_dir=isedfit_sfhgrid_dir)
-    
+    cat = mrdfits(j0905path+'j0905+5759_isedfit_input_v2.fits.gz',1)
 
-    mstar = isedfit_reconstruct_posterior(paramfile,post=post,$
-      isedfit_sfhgrid_dir=isedfit_sfhgrid_dir,iopath=isedpath,$
-      age=age,Z=Z,tau=tau,av=av);,sfr0=sfr0,b100=b100,av=av,sfrage=sfrage)
-
-    
+;   model = isedfit_restore(paramfile,ised,iopath=isedpath,$
+;     isedfit_sfhgrid_dir=isedfit_sfhgrid_dir)
+;   mstar = isedfit_reconstruct_posterior(paramfile,post=post,$
+;     isedfit_sfhgrid_dir=isedfit_sfhgrid_dir,iopath=isedpath,$
+;     age=age,Z=Z,tau=tau,av=av);,sfr0=sfr0,b100=b100,av=av,sfrage=sfrage)
     
     j0905_write_paramfile, paramfile, prefix=prefix, sfhgrid=sfhgrid, $
       zminmax=zminmax, nzz=nzz, filters=filters, igm=igm
@@ -72,8 +71,7 @@ pro j0905_isedfit, models=models, isedfit=isedfit, qaplot=qaplot, $
 ; --------------------------------------------------
 ; do the fitting!  
     if keyword_set(isedfit) then begin
-       cat = mrdfits(j0905path+'j0905+5759_isedfit_input.fits.gz',1)
-
+;      cat.ivarmaggies[9:16] = 0
        isedfit, paramfile, cat.maggies, cat.ivarmaggies, cat.z, iopath=isedpath, $
          clobber=clobber, sfhgrid_paramfile=sfhgrid_paramfile, $
          isedfit_sfhgrid_dir=isedfit_sfhgrid_dir, outprefix=outprefix
@@ -82,10 +80,7 @@ pro j0905_isedfit, models=models, isedfit=isedfit, qaplot=qaplot, $
 ; --------------------------------------------------
 ; make a QAplot
     if keyword_set(qaplot) then begin
-       cat = mrdfits(j0905path+'j0905+5759_isedfit_input.fits.gz',1)
        galaxy = 'J0905+5759'
-;      if keyword_set(noirac) then outprefix = 'hizea_noirac'
-
        yrange = [25,17]
        isedfit_qaplot, paramfile, result, iopath=isedpath, galaxy=galaxy, $
          index=index, clobber=clobber, isedfit_sfhgrid_dir=isedfit_sfhgrid_dir, $
