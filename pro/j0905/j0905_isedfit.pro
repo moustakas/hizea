@@ -50,7 +50,8 @@ pro j0905_isedfit, models=models, isedfit=isedfit, qaplot=qaplot, $
     igm = 1
     sfhgrid = 1
     
-    cat = mrdfits(j0905path+'j0905+5759_isedfit_input_v2.fits.gz',1)
+    cat = mrdfits(j0905path+'j0905_photometry.fits.gz',1)
+;   cat = mrdfits(j0905path+'j0905+5759_isedfit_input_v2.fits.gz',1)
 
 ;   model = isedfit_restore(paramfile,ised,iopath=isedpath,$
 ;     isedfit_sfhgrid_dir=isedfit_sfhgrid_dir)

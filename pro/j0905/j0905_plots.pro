@@ -2,6 +2,8 @@ pro j0905_plots, supergrid, models=models, isedfit=isedfit, $
   qaplot=qaplot, clobber=clobber
 ; jm12feb14ucsd - build plots for the paper
 
+    common j0905_post, dist
+    
     j0905path = j0905_path()
     isedpath = j0905_path(/isedfit)
     isedfit_sfhgrid_dir = j0905_path(/monte)
@@ -16,10 +18,34 @@ pro j0905_plots, supergrid, models=models, isedfit=isedfit, $
 ; gather the photometry and restore the results
     cat = mrdfits(j0905path+'j0905+5759_isedfit_input_v2.fits.gz',1)
 
-    mstar = j0905_reconstruct_posterior(paramfile,post=post,$
-      isedfit_sfhgrid_dir=isedfit_sfhgrid_dir,iopath=isedpath,$
-      age=age,Z=Z,tau=tau,sfr0=sfr0,b100=b100,av=av,sfrage=sfrage,$
-      chunkindx=chunkindx,modelindx=modelindx,indxage=ageindx)
+    if (n_elements(dist) eq 0) then begin
+       mstar = j0905_reconstruct_posterior(paramfile,post=post,$
+         isedfit_sfhgrid_dir=isedfit_sfhgrid_dir,iopath=isedpath,$
+         age=age,Z=Z,tau=tau,sfr0=sfr0,av=av,sfrage=sfrage,$
+         chunkindx=chunkindx,modelindx=modelindx,indxage=ageindx,$
+         trunctau=tautrunc,tburst=tburst,fburst=fburst,dtburst=dtburst,$
+         sfrpeak=sfrpeak)
+
+       dist = {mstar: fltarr(ndraw), tau: fltarr(ndraw), age: fltarr(ndraw), $
+         av: fltarr(ndraw), Z: fltarr(ndraw), tautrunc: fltarr(ndraw), $
+         tburst: fltarr(ndraw), fburst: fltarr(ndraw), dtburst: fltarr(ndraw), $
+         sfrage: fltarr(ndraw), sfr0: fltarr(ndraw), sfrpeak: fltarr(ndraw), $
+         timesinceburst: fltarr(ndraw)}
+
+       dist.mstar = mstar
+       dist.tau = tau
+       dist.age = age
+       dist.av = av
+       dist.Z = Z
+       dist.tautrunc = tautrunc
+       dist.tburst = tburst
+       dist.fburst = fburst
+       dist.dtburst = dtburst
+       dist.sfrage = sfrage
+       dist.timesinceburst = age-sfrage
+       dist.sfr0 = sfr0
+       dist.sfrpeak = sfrpeak
+    endif
 
 stop    
     
@@ -35,6 +61,22 @@ stop
 ;;      plot, postmodel[0].wave, postmodel[0].flux, /xlog, xr=[1E4,4E4], yr=[30,20], ps=3
 ;;      for ii = 1, ndraw-1 do djs_oplot, postmodel[ii].wave, postmodel[ii].flux, ps=3
 ;    endif
+
+; ---------------------------------------------------------------------------
+; plot the NxN distributions of parameters as an upper triangle
+    this = 0 ; z=9.56 solution
+    
+    psfile = datapath+'santorini_manyd.eps'
+    splog, 'Writing '+psfile
+    manyd = transpose([[mstar[*,this]],[sfrage[*,this]],[Z[*,this]/0.019],[av[*,this]],[sfr0[*,this]]])
+    label = textoidl(['log (M/M'+sunsymbol()+')','t_{w} (Gyr)','Z/Z'+sunsymbol(),'A_{V} (mag)','log (\psi/M'+sunsymbol()+' yr^{-1})'])
+    
+    im_manyd_scatterplot, fltarr(ndraw)+1, manyd, psfile, label=label, $
+      axis_char_scale=1.4, /internal, outliers=1, $
+      /nogrey, levels=errorf((dindgen(2)+1)/sqrt(2)), /upper
+    spawn, 'ps2pdf '+psfile, /sh
+
+stop    
 
 ; ---------------------------------------------------------------------------
 ; SED plot for the paper
@@ -115,22 +157,6 @@ stop
 
 stop    
     
-; ---------------------------------------------------------------------------
-; plot the NxN distributions of parameters as an upper triangle
-    this = 0 ; z=9.56 solution
-    
-    psfile = datapath+'santorini_manyd.eps'
-    splog, 'Writing '+psfile
-    manyd = transpose([[mstar[*,this]],[sfrage[*,this]],[Z[*,this]/0.019],[av[*,this]],[sfr0[*,this]]])
-    label = textoidl(['log (M/M'+sunsymbol()+')','t_{w} (Gyr)','Z/Z'+sunsymbol(),'A_{V} (mag)','log (\psi/M'+sunsymbol()+' yr^{-1})'])
-    
-    im_manyd_scatterplot, fltarr(ndraw)+1, manyd, psfile, label=label, $
-      axis_char_scale=1.4, /internal, outliers=1, $
-      /nogrey, levels=errorf((dindgen(2)+1)/sqrt(2)), /upper
-    spawn, 'ps2pdf '+psfile, /sh
-
-stop    
-
 ; ---------------------------------------------------------------------------
 ; posterior distributions: mass, sfrage, sfr100, av, Z, sSFR
     psfile = datapath+'santorini_posteriors.eps'

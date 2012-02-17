@@ -57,7 +57,8 @@ function j0905_reconstruct_posterior, paramfile, post=post, params=params, $
   iopath=iopath, index=index, isedfit_sfhgrid_dir=isedfit_sfhgrid_dir, $
   outprefix=outprefix, age=age, sfrage=sfrage, tau=tau, Z=Z, av=av, nburst=nburst, $
   sfr0=sfr0, sfr100=sfr100, b100=b100, mgal=mgal, chunkindx=chunkindx, $
-  modelindx=modelindx, indxage=ageindx
+  modelindx=modelindx, indxage=ageindx, trunctau=trunctau, tburst=tburst, $
+  fburst=fburst, dtburst=dtburst, sfrpeak=sfrpeak
   
     if (n_elements(paramfile) eq 0) and (n_elements(params) eq 0) then begin
        doc_library, 'isedfit_reconstruct_posterior'
@@ -104,7 +105,11 @@ function j0905_reconstruct_posterior, paramfile, post=post, params=params, $
     bigtau = reform(rebin(reform(modelgrid.tau,1,nmodel),nage,nmodel),nallmodel)
     bigZ = reform(rebin(reform(modelgrid.Z,1,nmodel),nage,nmodel),nallmodel)
     bigav = reform(rebin(reform(modelgrid.mu*modelgrid.av,1,nmodel),nage,nmodel),nallmodel)
-    bignburst = reform(rebin(reform(modelgrid.nburst,1,nmodel),nage,nmodel),nallmodel)
+
+    bigtrunctau = reform(rebin(reform(modelgrid.tautrunc,1,nmodel),nage,nmodel),nallmodel)
+    bigtburst = reform(rebin(reform(modelgrid.tburst,1,nmodel),nage,nmodel),nallmodel)
+    bigfburst = reform(rebin(reform(modelgrid.fburst,1,nmodel),nage,nmodel),nallmodel)
+    bigdtburst = reform(rebin(reform(modelgrid.dtburst,1,nmodel),nage,nmodel),nallmodel)
 
 ; for restoring the posterior on the models    
     bigchunkindx = reform(rebin(reform(modelgrid.chunkindx,1,nmodel),nage,nmodel),nallmodel)
@@ -119,20 +124,23 @@ function j0905_reconstruct_posterior, paramfile, post=post, params=params, $
        bigb100 = bigage*0D      ; birthrate parameter
        bigmgal = bigage*0D      ; galaxy mass ignoring mass loss 
        bigsfrage = bigage*0D    ; SFR-weighted age
+       bigsfrpeak = bigage*0D   ; peak SFR
        for imod = 0L, nmodel-1 do begin
           tindx = lindgen(nage)+imod*nage
           modelsfr = isedfit_reconstruct_sfh(modelgrid[imod],outage=bigage[tindx],$
             sfr100=modelsfr100,b100=modelb100,mgalaxy=modelmgal,sfrage=modelsfrage,$
-            debug=0);,/ylog)
+            aburst=aburst);,debug=1,yr=[0,2D-8]);,/ylog)
 ;         cc = get_kbrd(1)
 
 ;         if imod eq 0 then djs_plot, bigage[tindx], modelsfr/max(modelsfr), ps=3, xsty=3, ysty=3 else $
 ;           djs_oplot, bigage[tindx], modelsfr/max(modelsfr), ps=3
-          
+
           bigsfr[tindx] = modelsfr       ; alog10(sfr)
           bigsfr100[tindx] = modelsfr100 ; alog10(sfr100) 
           bigb100[tindx] = modelb100
           bigmgal[tindx] = modelmgal
+          if (modelgrid[0].bursttype eq 1) then bigsfrpeak[tindx] = aburst[0]/sqrt(2*!pi) else $
+            bigsfrpeak[tindx] = aburst[0]
           bigsfrage[tindx] = modelsfrage
        endfor
 ; apply the scale factor
@@ -140,6 +148,7 @@ function j0905_reconstruct_posterior, paramfile, post=post, params=params, $
        sfr0 = fltarr(ndraw,ngal)
        sfr100 = fltarr(ndraw,ngal)
        sfrage = fltarr(ndraw,ngal)
+       sfrpeak = fltarr(ndraw,ngal)
 ;      mgal = fltarr(ndraw,ngal)
        for gg = 0L, ngal-1 do begin
           logscale_err = post[gg].scale_err/post[gg].scale/alog(10)
@@ -147,6 +156,7 @@ function j0905_reconstruct_posterior, paramfile, post=post, params=params, $
           b100[*,gg] = alog10(bigb100[post[gg].draws])
           sfr0[*,gg] = alog10(bigsfr[post[gg].draws])+logscale
           sfr100[*,gg] = alog10(bigsfr100[post[gg].draws])+logscale
+          sfrpeak[*,gg] = alog10(bigsfrpeak[post[gg].draws])+logscale
           sfrage[*,gg] = bigsfrage[post[gg].draws]
 ;         mgal[*,gg] = bigmgal[post[gg].draws]
        endfor    
@@ -164,6 +174,11 @@ function j0905_reconstruct_posterior, paramfile, post=post, params=params, $
     if arg_present(tau) then tau = bigtau[post.draws]
     if arg_present(Z) then Z = bigZ[post.draws]
     if arg_present(av) then av = bigav[post.draws]
+    if arg_present(trunctau) then trunctau = bigtrunctau[post.draws]
+    if arg_present(tburst) then tburst = bigtburst[post.draws]
+    if arg_present(fburst) then fburst = bigfburst[post.draws]
+    if arg_present(dtburst) then dtburst = bigdtburst[post.draws]
+
     if arg_present(chunkindx) then chunkindx = bigchunkindx[post.draws]
     if arg_present(modelindx) then modelindx = bigmodelindx[post.draws]
     if arg_present(ageindx) then ageindx = bigageindx[post.draws]
