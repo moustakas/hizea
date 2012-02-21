@@ -58,7 +58,7 @@ function j0905_reconstruct_posterior, paramfile, post=post, params=params, $
   outprefix=outprefix, age=age, sfrage=sfrage, tau=tau, Z=Z, av=av, nburst=nburst, $
   sfr0=sfr0, sfr100=sfr100, b100=b100, mgal=mgal, chunkindx=chunkindx, $
   modelindx=modelindx, indxage=ageindx, trunctau=trunctau, tburst=tburst, $
-  fburst=fburst, dtburst=dtburst, sfrpeak=sfrpeak
+  fburst=fburst, dtburst=dtburst, sfrpeak=sfrpeak, timesinceburst=timesinceburst
   
     if (n_elements(paramfile) eq 0) and (n_elements(params) eq 0) then begin
        doc_library, 'isedfit_reconstruct_posterior'
@@ -116,6 +116,8 @@ function j0905_reconstruct_posterior, paramfile, post=post, params=params, $
     bigmodelindx = reform(rebin(reform(modelgrid.modelindx,1,nmodel),nage,nmodel),nallmodel)
     bigageindx = reform(rebin(reform(lindgen(nage),nage,1),nage,nmodel),nallmodel)
 
+    bigtimesinceburst = bigage-reform(rebin(reform(modelgrid.tburst,1,nmodel),nage,nmodel),nallmodel)
+
     if arg_present(sfr0) or arg_present(sfr100) or arg_present(b100) or $
       arg_present(mgal) or arg_present(sfrage) then dosfr = 1 else dosfr = 0
     if dosfr then begin
@@ -171,6 +173,8 @@ function j0905_reconstruct_posterior, paramfile, post=post, params=params, $
     endfor
 
     if arg_present(age) then age = bigage[post.draws]
+    if arg_present(timesinceburst) then timesinceburst = bigtimesinceburst[post.draws]
+    
     if arg_present(tau) then tau = bigtau[post.draws]
     if arg_present(Z) then Z = bigZ[post.draws]
     if arg_present(av) then av = bigav[post.draws]

@@ -97,8 +97,16 @@ pro reflux_j0905
 ;     method=2,/tell,medwidth=201,smoothwidth=201)
 ;   keckc = im_fitcontinuum(keck.wavelength,keck.flux,keck.error,$
 ;     method=2,/tell,medwidth=201,smoothwidth=201)
-    
-    im_mwrfits, newkeck, path+'j0905+5759_lris_flux_v120216.fits', /clobber, /nogzip
+
+; clip the wavelength range    
+    keep = where(newkeck.wavelength gt 3950.0,nkeep)
+    outkeck = im_empty_structure(newkeck,ncopies=nkeep)
+    outkeck.wavelength = newkeck[keep].wavelength
+    outkeck.flux = newkeck[keep].flux
+    outkeck.error = newkeck[keep].error
+
+    im_mwrfits, outkeck, path+'j0905+5759_lris_flux_v120216.fits', /clobber, /nogzip
+;   im_mwrfits, newkeck, path+'j0905+5759_lris_flux_v120216.fits', /clobber, /nogzip
     
 ; make a QAplot
     psfile = path+'qa_reflux_j0905.ps'
@@ -109,11 +117,11 @@ pro reflux_j0905
     djs_oplot, keck.wavelength, medsmooth(keck.flux*1D17,10), psym=10, color='green'
     djs_oplot, newkeck.wavelength, medsmooth(newkeck.flux*1D17,10), psym=10, color='red'
 
-;   djs_oplot, sdss1.wave, medsmooth(sdss1.flux*1D17,14), psym=10, color='red'
-;   djs_oplot, sdss2.wave, medsmooth(sdss2.flux*1D17,14), psym=10, color='blue'
-;   djs_oplot, sdss3.wave, medsmooth(sdss3.flux*1D17,14), psym=10, color='purple'
-;   djs_oplot, mmt_a.wave, medsmooth(mmt_a.spec*1D17,10), psym=10, color='orange'
-;   djs_oplot, mmt_b.wave, medsmooth(mmt_b.spec*1D17,10), psym=10, color='cyan'
+;   djs_oplot, sdss1.wave, medsmooth(sdss1.flux*1D17,20), psym=10, color='red'
+;   djs_oplot, sdss2.wave, medsmooth(sdss2.flux*1D17,20), psym=10, color='blue'
+    djs_oplot, sdss3.wave, medsmooth(sdss3.flux*1D17,20), psym=10, color='purple'
+    djs_oplot, mmt_a.wave, medsmooth(mmt_a.spec*1D17,20), psym=10, color='orange'
+;   djs_oplot, mmt_b.wave, medsmooth(mmt_b.spec*1D17,20), psym=10, color='cyan'
 
 ;   djs_oplot, weff, 1D17*mmt_ugriz_flam, psym=7, symsize=4, color='blue'
 
@@ -134,7 +142,7 @@ pro reflux_j0905
        djs_oplot, info[ii].filtw[0:info[ii].filtn-1], ff/max(ff)*!y.crange[1]*0.2
     endfor
     im_plotconfig, psfile=psfile, /psclose, /pdf
-    
+
 return
 end
     

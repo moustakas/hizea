@@ -31,6 +31,7 @@ pro get_j0905_photometry
     phot.ivarmaggies[2:6] = ii
 
 ; irac
+;   minerr = [0.1,0.1]
     minerr = [0.05,0.05]
     maggies = [144.0,113.3]*10^(-0.4*23.9)
     ivarmaggies = 1D/([1.7,1.2]*10^(-0.4*23.9))^2
@@ -39,16 +40,27 @@ pro get_j0905_photometry
     phot.maggies[7:8] = maggies
     phot.ivarmaggies[7:8] = ivarmaggies
 
+; wise
+    wise = mrdfits(hizea_path(/sdss)+'hizea_wise_dr1.fits.gz',1)
+    spherematch, wise.ra, wise.dec, phot.ra, phot.dec, 5D/3600, m1, m2
+    wise_to_maggies, wise[m1], mm, ii, /mpro
+
+    phot.maggies[9:12] = mm
+    phot.ivarmaggies[9:12] = ii
+
 ; synthesize photometry from the ground-based spectra
     lris = mrdfits(path+'spectra/j0905+5759_lris_flux_v120216.fits',1)
     amd = where(strmatch(filt,'*amd*'),namd,comp=other)
-    maggies = k_project_filters(k_lambda_to_edges(lris.wavelength),$
-      lris.flux,filterlist=filt[amd])
-    maggieserr = k_project_filters(k_lambda_to_edges(lris.wavelength),$
-      lris.error,filterlist=filt[amd])
+    maggies = reform(k_project_filters(k_lambda_to_edges(lris.wavelength),$
+      lris.flux,filterlist=filt[amd]))
+    maggieserr = reform(k_project_filters(k_lambda_to_edges(lris.wavelength),$
+      lris.error,filterlist=filt[amd]))
     ivarmaggies = 1D/maggieserr^2
-    phot.maggies[9:nfilt-1] = maggies
-    phot.ivarmaggies[9:nfilt-1] = ivarmaggies
+
+;   minerr = replicate(0.05,namd)
+;   k_minerror, maggies, ivarmaggies, minerr
+    phot.maggies[13:nfilt-1] = maggies
+    phot.ivarmaggies[13:nfilt-1] = ivarmaggies
     
     djs_plot, lris.wavelength, 1D17*lris.flux, xsty=3, ysty=3
     djs_oplot, weff[amd], 1D17*phot.maggies[amd]*10^(-0.4*48.6)*im_light(/ang)/weff[amd]^2, $
@@ -57,9 +69,12 @@ pro get_j0905_photometry
       psym=6, symsize=4, color='orange'
     
 ; write out
-    minerr = replicate(0.05,nfilt)
-    k_minerror, phot.maggies, phot.ivarmaggies, minerr
-    
+;   minerr = replicate(0.05,nfilt)
+;   maggies = phot.maggies
+;   ivarmaggies = phot.ivarmaggies
+;   k_minerror, maggies, ivarmaggies, minerr
+;   phot.maggies = maggies
+;   phot.ivarmaggies = ivarmaggies
     im_mwrfits, phot, path+'j0905_photometry.fits', /clob
     
 return
