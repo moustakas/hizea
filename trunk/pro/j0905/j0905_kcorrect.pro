@@ -7,24 +7,25 @@ pro j0905_kcorrect, noirac=noirac, clobber=clobber
     
     j0905path = j0905_path()
     h100 = 0.7
-    vname = 'default.nolines'
+    vname = 'default'
+;   vname = 'default.nolines'
 
     if keyword_set(noirac) then suffix = '_noirac' else suffix = ''
     kcorrfile = j0905path+'j0905_kcorrect'+suffix+'.fits'
     if im_file_test(kcorrfile+'.gz',clobber=clobber) then return
 
-    cat = mrdfits(j0905path+'j0905+5759_isedfit_input.fits.gz',1)
+    filters = j0905_filterlist()
+    nfilt = n_elements(filters)
+
+    cat = mrdfits(j0905path+'j0905_photometry.fits.gz',1)
+;   cat = mrdfits(j0905path+'j0905+5759_isedfit_input.fits.gz',1)
+    ngal = n_elements(cat)
+
+    zobj = cat.z
     maggies = cat.maggies
     ivarmaggies = cat.ivarmaggies
-    zobj = cat.z
-    filterlist = j0905_filterlist()
-    if keyword_set(noirac) then begin
-       toss = where(strmatch(filterlist,'*irac*'))
-       ivarmaggies[toss,*] = 0.0
-       outprefix = 'j0905_noirac'
-    endif
-    ngal = n_elements(zobj)
-    nfilt = n_elements(filterlist)
+    wise34 = where(strtrim(filters,2) eq 'wise_w3.par' or strtrim(filters,2) eq 'wise_w4.par')
+    ivarmaggies[wise34] = 0
 
     kcorr = {$
       k_zobj:                          -999.0,$
@@ -47,11 +48,11 @@ pro j0905_kcorrect, noirac=noirac, clobber=clobber
     kcorr.k_ivarmaggies = ivarmaggies
     
 ; compute k-corrections
-    out_filterlist = [galex_filterlist(),sdss_filterlist(),twomass_filterlist()]
+    out_filters = [galex_filterlist(),sdss_filterlist(),twomass_filterlist()]
     
     splog, 'Computing [FN]UV-ugriz-JHK K-corrections'
     kcorrect_01 = im_kcorrect(zobj,maggies,ivarmaggies,$
-      filterlist,out_filterlist,band_shift=0.1,chi2=chi2,mass=mass,$
+      filters,out_filters,band_shift=0.1,chi2=chi2,mass=mass,$
       coeffs=coeffs,bestmaggies=bestmaggies,absmag=absmag_01,$
       ivarabsmag=absmag_ivar_01,uvflux=uvflux,$;clineflux=cflux,uvflux=uvflux,$
       /silent,vname=vname,h100=h100) ; AB, band_shift=0.1
@@ -59,7 +60,7 @@ pro j0905_kcorrect, noirac=noirac, clobber=clobber
 ; get the apparent magnitudes in ugrizJHKs
     k_load_vmatrix, vmatrix, lambda, vname=vname
     k_reconstruct_maggies, coeffs, zobj, appmaggies, vmatrix=vmatrix, $
-      lambda=lambda, filterlist=out_filterlist
+      lambda=lambda, filterlist=out_filters
     kcorr.k_mobs_fnuvugrizjhk = reform(-2.5*alog10(appmaggies))
     
     kcorr.k_bestmaggies = bestmaggies
