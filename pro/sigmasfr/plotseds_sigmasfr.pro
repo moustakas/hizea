@@ -38,9 +38,9 @@ pro plotseds_sigmasfr
   ; put galaxy name on plot
     xyouts, 1500., 14.5, phot[jj].galaxy, size=1.5
   ; put galfit results on plot
-    xyouts, 2000., 16.0, 'data', size=1.5
-    xyouts, 6000., 16.0, 'model', size=1.5
-    xyouts, 18000., 16.0, 'residual', size=1.5
+    xyouts, 0.225, 0.82, 'data', size=1.5, align=0.5, /normal
+    xyouts, 0.375, 0.82, 'model', size=1.5, align=0.5, /normal
+    xyouts, 0.525, 0.82, 'residual', size=1.5, align=0.5, /normal
   ; put spectrum on plot
     if phot[jj].galaxy eq 'J0905+5759' then begin
       j0905path = j0905_path()
@@ -57,10 +57,21 @@ pro plotseds_sigmasfr
     axis, /xaxis, xsty=1, xtitle=xtitle2, xrange=xrange2
     
     djs_oplot, lris.wavelength, smooth(scale*lris.flux,1), color='grey'       
+    
+    plot_sigmasfr_galfit, path+'imgblock_j0905+5759_sersic_neq4.fits', $
+      npix=50.
+    
     endif else begin
       xyouts, 6000., 21., 'blue end', size=1.5
       xyouts, 120000., 21., 'red end', size=1.5
     endelse
+
+    if phot[jj].galaxy eq 'J1506+5402' then begin
+      plot_sigmasfr_galfit, path+'imgblock_j1506+5402_sersic_neq4.fits', $
+        99., 103.
+      
+  
+    endif
 
   endfor
 
