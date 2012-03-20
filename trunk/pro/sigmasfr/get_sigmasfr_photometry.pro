@@ -1,6 +1,9 @@
 pro get_sigmasfr_photometry, phot
 ; jm12mar19ucsd - gather all the photometry for SIGMASFR and write out a
 ; FITS table
+;
+; ad12mar19ucsd - added in pre-schiminovich galex photometry
+;
 
     common sigmasfr, vagc
     
@@ -25,6 +28,47 @@ pro get_sigmasfr_photometry, phot
 ;    phot.ivarmaggies[0] = reform(ii[0,3])
 ;    phot.maggies[1] = nuv
 ;    phot.ivarmaggies[1] = 1D/nuverr^2
+
+; galex (pre-schiminovich)
+galex = im_read_tbl(path+'galexview_output.tbl',/silent)
+im_galex_to_maggies, galex, mm, ii, /psf
+; loop through the GALEX table
+for jj=0L, n_elements(phot)-1L do begin
+  match=where(galex.UPLOADSEARCHID eq jj+1L, nmatch)
+; find useful FUV data
+  fuvgood=where(mm[0,match] gt 0., nfuvgood)
+  if nfuvgood lt 1L then begin
+    phot[jj].maggies[0] = 0.
+    phot[jj].ivarmaggies[0] = 0.
+  endif else begin
+    if nfuvgood eq 1L then begin
+      phot[jj].maggies[0] = mm[0,match[fuvgood]]
+      phot[jj].ivarmaggies[0] = ii[0,match[fuvgood]]      
+    endif else begin
+      fuv = im_weighted_mean(mm[0,match[fuvgood]],$
+        error=1D/sqrt(ii[0,match[fuvgood]]),wsigma=fuverr)
+      phot[jj].maggies[0] = fuv
+      phot[jj].ivarmaggies[0] = 1D/fuverr^2
+    endelse
+  endelse
+; find useful NUV data
+  nuvgood=where(mm[1,match] gt 0., nnuvgood)
+  if nnuvgood lt 1L then begin
+    phot[jj].maggies[1] = 0.
+    phot[jj].ivarmaggies[1] = 0.
+  endif else begin
+    if nnuvgood eq 1L then begin
+      phot[jj].maggies[1] = mm[1,match[nuvgood]]
+      phot[jj].ivarmaggies[1] = ii[1,match[nuvgood]]      
+    endif else begin
+      nuv = im_weighted_mean(mm[1,match[nuvgood]],$
+        error=1D/sqrt(ii[1,match[nuvgood]]),wsigma=nuverr)
+      phot[jj].maggies[1] = nuv
+      phot[jj].ivarmaggies[1] = 1D/nuverr^2
+    endelse
+  endelse  
+endfor
+
 
 ; sdss
     if (n_elements(vagc) eq 0L) then vagc = $
