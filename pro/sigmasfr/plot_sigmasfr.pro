@@ -1,6 +1,5 @@
 pro plot_sigmasfr
 ; jm12mar19ucsd - make the sigma-sfr vs mass plot
-
     path = getenv('HIZEA_DATA')+'/sigmasfr/'
 
     hst = rsex(path+'hst_sample.dat')
