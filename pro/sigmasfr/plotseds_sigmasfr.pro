@@ -34,7 +34,33 @@ pro plotseds_sigmasfr
       symsize=1.5, color=im_color('firebrick'), $
       errcolor=im_color('firebrick'), errthick=8     
 
+
+  ; put galaxy name on plot
     xyouts, 1500., 14.5, phot[jj].galaxy, size=1.5
+  ; put galfit results on plot
+    xyouts, 2000., 16.0, 'data', size=1.5
+    xyouts, 6000., 16.0, 'model', size=1.5
+    xyouts, 18000., 16.0, 'residual', size=1.5
+  ; put spectrum on plot
+    if phot[jj].galaxy eq 'J0905+5759' then begin
+      j0905path = j0905_path()
+      lris = mrdfits(j0905path+'spectra/j0905+5759_lris_flux_v120216.fits',1)
+    scale = 1D17
+    yrange = [0.05,12]
+    xrange1 = [4000,8700]
+    specpos = [0.25, 0.15, 0.95, 0.37]
+
+    xrange2 = xrange1/(1.0+phot[jj].z)
+    plot, [0], [0], /nodata, xrange=xrange1, yrange=yrange, $
+      xsty=9, ysty=1, xtitle=xtitle1, ytitle=ytitle1, position=specpos, $
+      /noerase, color=djs_icolor('black')
+    axis, /xaxis, xsty=1, xtitle=xtitle2, xrange=xrange2
+    
+    djs_oplot, lris.wavelength, smooth(scale*lris.flux,1), color='grey'       
+    endif else begin
+      xyouts, 6000., 21., 'blue end', size=1.5
+      xyouts, 120000., 21., 'red end', size=1.5
+    endelse
 
   endfor
 
