@@ -7,9 +7,30 @@ pro plot_sigmasfr_galfit, file, xcen, ycen, posa=posa, posb=posb, posc=posc, npi
 if n_elements(xcen) lt 1L then xcen = 79.
 if n_elements(ycen) lt 1L then ycen = 73.
 
-if n_elements(posa) lt 4L then posa = [0.15, 0.6, 0.3, 0.8]
-if n_elements(posb) lt 4L then posb = [0.3, 0.6, 0.45, 0.8]
-if n_elements(posc) lt 4L then posc = [0.45, 0.6, 0.6, 0.8]
+; fiducial spacing on the top left
+;if n_elements(posa) lt 4L then posa = [0.15, 0.65, 0.35, 0.9]
+;if n_elements(posb) lt 4L then posb = [0.35, 0.65, 0.55, 0.9]
+;if n_elements(posc) lt 4L then posc = [0.55, 0.65, 0.75, 0.9]
+
+; squeeze things horizontally on the top left
+;if n_elements(posa) lt 4L then posa = [0.1, 0.7, 0.3, 0.95]
+;if n_elements(posb) lt 4L then posb = [0.3, 0.7, 0.5, 0.95]
+;if n_elements(posc) lt 4L then posc = [0.5, 0.7, 0.7, 0.95]
+
+; squeeze and compress horizontally on the top left
+;if n_elements(posa) lt 4L then posa = [0.1, 0.75, 0.25, 0.95]
+;if n_elements(posb) lt 4L then posb = [0.25, 0.75, 0.4, 0.95]
+;if n_elements(posc) lt 4L then posc = [0.4, 0.75, 0.55, 0.95]
+
+; vertical spacing on bottom right
+;if n_elements(posa) lt 4L then posa = [0.8, 0.5, 0.95, 0.7]
+;if n_elements(posb) lt 4L then posb = [0.8, 0.3, 0.95, 0.5]
+;if n_elements(posc) lt 4L then posc = [0.8, 0.1, 0.95, 0.3]
+
+; horizontal spacing on the bottom right
+if n_elements(posa) lt 4L then posa = [0.26, 0.13, 0.49, 0.39]
+if n_elements(posb) lt 4L then posb = [0.49, 0.13, 0.72, 0.39]
+if n_elements(posc) lt 4L then posc = [0.72, 0.13, 0.95, 0.39]
 
 if n_elements(npix) lt 1L then npix = 50
 
@@ -44,7 +65,7 @@ resid = readfits(file, header, ext=3)
 
   djs_iterstat, stamp_data, median=md, sigma=sig, sigrej=5.0
   min = md-1.*sig
-  max = md+6.*sig
+  max = md+4.*sig
  
   imdisp, imgscl(stamp_data,max = max, min=min), $
     /usepos, /negative, bottom=40., pos=posa
