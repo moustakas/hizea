@@ -1,4 +1,4 @@
-pro plot_sigmasfr_galfit, file, xcen, ycen, posa=posa, posb=posb, posc=posc, npix=npix
+pro plot_sigmasfr_galfit, file, xcen, ycen, posa=posa, posb=posb, posc=posc, npix=npix, onlydata=onlydata
 ;+
 ;  amd120320 -- written to plot GALFIT data, model, and residuals
 ;
@@ -39,6 +39,19 @@ data = readfits(file, header, ext=1)
 model = readfits(file, header, ext=2)
 resid = readfits(file, header, ext=3)
 
+gain = 1
+rd = findgen(npix-10L)+1L
+badpix = [-32767., 80000.d]
+skyrad = [npix-10L, npix]
+aper, data, xcen, ycen, fluxdata, error, sky, skyerr, gain, rd, $
+  skyrad, badpix, /flux, /silent
+aper, model, xcen, ycen, fluxmodel, error, sky, skyerr, gain, rd, $
+  skyrad, badpix, /flux, /silent
+aper, resid, xcen, ycen, fluxresid, error, sky, skyerr, gain, rd, $
+  skyrad, badpix, /flux, /silent
+splog, max(fluxmodel) / max(fluxdata), max(fluxresid) / max(fluxdata)
+splog, fluxmodel[9] / fluxdata[9], fluxresid[9] / fluxdata[9]
+
   stamp_data = dindgen(npix*2+1L,npix*2+1L)
   stamp_model = dindgen(npix*2+1L,npix*2+1L)
   stamp_resid = dindgen(npix*2+1L,npix*2+1L)
@@ -65,14 +78,25 @@ resid = readfits(file, header, ext=3)
 
   djs_iterstat, stamp_data, median=md, sigma=sig, sigrej=5.0
   min = md-1.*sig
-  max = md+4.*sig
- 
+  max = md+3*sig
   imdisp, imgscl(stamp_data,max = max, min=min), $
     /usepos, /negative, bottom=40., pos=posa
+
+if not keyword_set(onlydata) then begin
+
+  ;djs_iterstat, stamp_model, median=md, sigma=sig, sigrej=5.0
+  ;min = md-1.*sig
+  ;max = md+4.*sig
   imdisp, imgscl(stamp_model,max = max, min=min), $
     /usepos, /negative, bottom=40., pos=posb
+
+  djs_iterstat, stamp_resid, median=md, sigma=sig, sigrej=5.0
+  min = md-1.*sig
+  max = md+4.*sig
   imdisp, imgscl(stamp_resid,max = max, min=min), $
     /usepos, /negative, bottom=40., pos=posc
+
+endif
 
   ;dfpsclose
 
