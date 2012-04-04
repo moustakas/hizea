@@ -1,4 +1,4 @@
-pro plot_sigmasfr_galfit, file, xcen, ycen, posa=posa, posb=posb, posc=posc, npix=npix, onlydata=onlydata
+pro plot_sigmasfr_galfit, file, xcen, ycen, posa=posa, posb=posb, posc=posc, npix=npix, onlydata=onlydata, ext0=ext0
 ;+
 ;  amd120320 -- written to plot GALFIT data, model, and residuals
 ;
@@ -34,10 +34,15 @@ if n_elements(posc) lt 4L then posc = [0.72, 0.13, 0.95, 0.39]
 
 if n_elements(npix) lt 1L then npix = 50
 
-
-data = readfits(file, header, ext=1)
-model = readfits(file, header, ext=2)
-resid = readfits(file, header, ext=3)
+if not keyword_set(ext0) then begin
+  data = readfits(file, header, ext=1) 
+  model = readfits(file, header, ext=2)
+  resid = readfits(file, header, ext=3)
+endif else begin
+  data = readfits(file, header, ext=0)
+  model = data
+  resid = data
+endelse
 
 gain = 1
 rd = findgen(npix-10L)+1L
@@ -79,7 +84,9 @@ splog, fluxmodel[9] / fluxdata[9], fluxresid[9] / fluxdata[9]
   djs_iterstat, stamp_data, median=md, sigma=sig, sigrej=5.0
   min = md-1.*sig
   max = md+3*sig
-  imdisp, imgscl(stamp_data,max = max, min=min), $
+  ;imdisp, imgscl(stamp_data,max = max, min=min), $
+  ;  /usepos, /negative, bottom=40., pos=posa
+  imdisp, asinhscl(stamp_data, beta=20., max=md+30*sig, min=md-1.*sig), $
     /usepos, /negative, bottom=40., pos=posa
 
 if not keyword_set(onlydata) then begin
