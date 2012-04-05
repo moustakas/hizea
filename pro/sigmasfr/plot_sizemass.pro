@@ -30,32 +30,32 @@ pro plot_sizemass
     mtest = (4.83-(absmag_h))/2.5
     ml = 10.^(kcorr.k_mass) / 10.^(mtest)
     masstolight = median(ml)
-; point size based on sigmasfr
-    maxsig = max(sigmasfr)
-    minsig = min(sigmasfr)
-    sigarr = findgen(101) / (100/(maxsig-minsig)) + minsig
-    maxsize = 2.0
-    minsize = 1.0
-    sizearr = findgen(101) / (100/(maxsize-minsize)) + minsize
-    for i=0L, n_elements(good)-1L do begin      
-      psize = spline(sigarr, sizearr, sigmasfr[i])
-      djs_oplot, [0., kcorr[good[i]].k_mass], [0., alog10(hst[good[i]].r_e)], psym=symcat(16), symsize=psize    
-    endfor
-    djs_oplot, kcorr.k_mass, alog10(hst.r_e), psym=symcat(16), symsize=1.0
-;; point size based on velocity
-;    outflow = where(abs(hst.vout) gt 0., noutflow)
-;    maxout = alog10(max(abs(hst[outflow].vout)))
-;    minout = alog10(min(abs(hst[outflow].vout)))
-;    outarr = findgen(101) / (100./(maxout-minout)) + minout
+;; point size based on sigmasfr
+;    maxsig = max(sigmasfr)
+;    minsig = min(sigmasfr)
+;    sigarr = findgen(101) / (100/(maxsig-minsig)) + minsig
 ;    maxsize = 2.0
-;    minsize = 1.4
+;    minsize = 1.0
 ;    sizearr = findgen(101) / (100/(maxsize-minsize)) + minsize
-;    for i=0L, n_elements(hst)-1L do begin     
-;      if abs(hst[i].vout) gt 0. then $ 
-;        psize = spline(outarr, sizearr, alog10(abs(hst[i].vout))) else $
-;        psize = 1.0
-;      djs_oplot, [0., kcorr[i].k_mass], [0., alog10(hst[i].r_e)], psym=symcat(16), symsize=psize    
+;    for i=0L, n_elements(good)-1L do begin      
+;      psize = spline(sigarr, sizearr, sigmasfr[i])
+;      djs_oplot, [0., kcorr[good[i]].k_mass], [0., alog10(hst[good[i]].r_e)], psym=symcat(16), symsize=psize    
 ;    endfor
+;    djs_oplot, kcorr.k_mass, alog10(hst.r_e), psym=symcat(16), symsize=1.0
+; point size based on velocity
+    outflow = where(abs(hst.vout) gt 0., noutflow)
+    maxout = alog10(max(abs(hst[outflow].vout)))
+    minout = alog10(min(abs(hst[outflow].vout)))
+    outarr = findgen(101) / (100./(maxout-minout)) + minout
+    maxsize = 2.0
+    minsize = 1.4
+    sizearr = findgen(101) / (100/(maxsize-minsize)) + minsize
+    for i=0L, n_elements(hst)-1L do begin     
+      if abs(hst[i].vout) gt 0. then $ 
+        psize = spline(outarr, sizearr, alog10(abs(hst[i].vout))) else $
+        psize = 1.0
+      djs_oplot, [0., kcorr[i].k_mass], [0., alog10(hst[i].r_e)], psym=symcat(16), symsize=psize    
+    endfor
 
 
   
@@ -134,7 +134,7 @@ pro plot_sizemass
 
   lpos = [xrange[0]+0.05, yrange[1]-0.05]
 
-  im_legend, [textoidl('HST-WISE Sample (z\sim0.6, symsize\propto\Sigma_{SFR})'), $
+  im_legend, [textoidl('HST-WISE Sample (z\sim0.6)'), $
 ; symsize\propto\Sigma_{SFR}, symsize\propto|v_{out}|
       textoidl('compact quiescent galaxies (z\sim2.3)'), $
       textoidl('gas-rich mergers (z<0.3)')], $
