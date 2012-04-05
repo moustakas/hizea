@@ -14,6 +14,12 @@ pro plot_sigmasfr
     ;sigmasfr_edd = alog10(5000)
     sigmasfr_edd = alog10(2000)    
     sigmasfr_meurer = alog10(45.)    
+    sigmasfr_heckman = alog10(0.1)    
+
+  ;!p.thick=3
+  ;!x.thick=3
+  ;!y.thick=3
+  ;!p.charthick=3
 
     psfile = path+'sigmasfr.ps'
     im_plotconfig, 0, pos, psfile=psfile, charsize=2, $
@@ -26,6 +32,8 @@ pro plot_sigmasfr
     ;  /data, color=im_color('grey90'), noclip=0, /line_fill, orientation=45, spacing=0.15
     djs_oplot, !x.crange, sigmasfr_edd*[1,1], line=0, color=im_color('grey90')
     djs_oplot, !x.crange, sigmasfr_meurer*[1,1], line=2, color=im_color('grey90')
+    djs_oplot, !x.crange, sigmasfr_heckman*[1,1], line=1, color=im_color('grey90')
+
     djs_plot, [0], [0], /noerase, position=pos, xsty=1, ysty=1, $
       xrange=xrange, yrange=yrange, $
       xtickinterval=1, xtitle='log (M_{*} / M'+sunsymbol()+')', $;xtitle='Absolute H Magnitude', $
@@ -37,12 +45,15 @@ pro plot_sigmasfr
       charsize=1.2, pos=[11.15, sigmasfr_edd+0.33]
     im_legend, 'Meurer+97 limit', box=0, $
       charsize=1.2, pos=[11.15, sigmasfr_meurer+0.33]
+    im_legend, 'threshold for winds', box=0, $
+      charsize=1.2, pos=[11.0, sigmasfr_heckman+0.33]
 
     ;im_legend, ['HST-WISE Sample','Veilleux+06','Law+12','Overzier+09'], $
-    im_legend, [textoidl('HST-WISE Sample (z\sim0.6, symsize\propto|v_{out}|)'), $
-    ;symsize\propto\r_{e}), symsize\propto|v_{out}|
+    im_legend, [textoidl('HST-WISE Sample (z\sim0.6, symbol size\propto|v_{out}|)'), $
+    ;symsize\propr_{e}), symsize\propto|v_{out}|
       textoidl('gas-rich mergers (z<0.3)'), $
-      textoidl('Lyman break galaxies (z=1.5-3.6)'), $
+      ;textoidl('Lyman break galaxies (z=1.5-3.6)'), $
+      textoidl('star-forming galaxies (z=1.5-3.6)'), $
       textoidl('Lyman break analogs (z<0.3)')], $
       pos=[xrange[0]+0.1, yrange[1]-0.1], box=0, $
       charsize=1.5, psym=[16,15,14,46], color=['black','orange','blue','dark green']
@@ -98,9 +109,15 @@ pro plot_sigmasfr
      oplot, alog10(law.mstar), alog10(law.sigma_sfr / 2.), psym=symcat(14), color=djs_icolor('blue')     
 
 ; Overzier+09
-     over = rsex(path+'09overzier.dat')
-     oplot, over.mgal, alog10(over.sfr / (2.*!pi*over.re^2)), $
+     over = rsex(path+'09overzier.dat') ; mgal v. mclump
+     oplot, over.mclump, alog10(over.sfr / (2.*!pi*over.re^2)), $
        psym=symcat(46), color=djs_icolor('dark green'), symsize=2.0    
+
+; Arp 220, Sigma_SFR from Ken98 (2.98) 
+; stellar mass from Rodriguez-Zaurin+08 is 3.d10
+; stellar mass from Scoville+97 is 2.5d9 (just for the nucleus)
+    oplot, [0., alog10(2.5d9)], [0., 2.98], psym=symcat(17), color=djs_icolor('magenta'), symsize=psize
+    xyouts, alog10(2.5d9)+0.06, 2.98-0.06, 'Arp 220', charsize=1.2
 
     im_plotconfig, psfile=psfile, /psclose, /pdf, /pskeep
 
