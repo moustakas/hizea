@@ -33,6 +33,13 @@ pro sigmasfr_lir, clobber=clobber
 
     im_mwrfits, out, path+'sigmasfr_lir.fits', clobber=clobber
 
+    for i=0L, n_elements(good)-1L do begin
+      SFR = wr11_lir_to_sfr(wr11_f24_to_lir($
+        flux=cat[good[i]].maggies[10]*3631.d3, $
+        zobj=cat[good[i]].z))
+      splog, sfr, out[good[i]].sfr_chary
+    endfor
+
 return
 end
     
