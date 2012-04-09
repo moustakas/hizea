@@ -119,6 +119,28 @@ pro plot_sigmasfr
     oplot, [0., alog10(2.5d9)], [0., 2.98], psym=symcat(17), color=djs_icolor('magenta'), symsize=psize
     xyouts, alog10(2.5d9)+0.06, 2.98-0.06, 'Arp 220', charsize=1.2
 
+; Wuyts+11
+    z0 = rsex(path+'wuyts/logM_logSFRsurfdens_0.02z0.20.cat')
+    z1 =  rsex(path+'wuyts/logM_logSFRsurfdens_0.5z1.5.cat')
+    z2 =  rsex(path+'wuyts/logM_logSFRsurfdens_1.5z2.5.cat')
+
+  oplot, z0.mstar, z0.sigmasfr, psym=3
+  oplot, z1.mstar, z1.sigmasfr, psym=3, color=djs_icolor('blue')
+  oplot, z2.mstar, z2.sigmasfr, psym=3, color=djs_icolor('red')
+
+  ;hogg_scatterplot, alog10(kcor.k_kcorrect_mass)-alog10(0.7^2), $
+  ;  kcor.k_absmag_bessell_05[1]-kcor.k_absmag_bessell_05[3], $
+  ;  xrange=[9.0,11.5], xsty=1, $
+  ;  xtitle=textoidl('log(M_{*}/M_{'+sunsymbol()+'})'), $
+  ;  yrange=[0.,3.0], ysty=1, $
+  ;  /internal_weight, outcolor=djs_icolor('gray'), $;/outliers, $
+  ;  ytitle=textoidl('^{0.5}(B - R)'), $
+  ;  ;levels=[0.5,0.75,0.9,0.95], $
+  ;  levels=[0.6,0.75,0.9,0.95], $
+  ;  xnpix=30., ynpix=30., charsize=2.5;, /nogreyscale;, $
+  ;  ;clip=[0.,0.5,0.5,1.0], /norm, noclip=0
+
+
     im_plotconfig, psfile=psfile, /psclose, /pdf, /pskeep
 
 
