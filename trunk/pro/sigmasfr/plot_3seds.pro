@@ -6,21 +6,31 @@ pro plot_3seds
 ;-
 
     path = getenv('HIZEA_DATA')+'/sigmasfr/'
+    hstpath = sigmasfr_path(/multidrizzle)
+
     phot = mrdfits(path+'sigmasfr_photometry.fits.gz', 1)
     hst = rsex(path+'hst_sample.dat')
 
-
   readcol, path+'/swire/M82_template_norm.sed', m82wave, m82flambda
-  readcol, path+'/swire/ARP220_template_norm.sed', arp220wave, arp220flambda
-  readcol, path+'/swire/torus_template_norm.sed', toruswave, torusflambda
+  readcol, path+'/swire/Arp220_template_norm.sed', arp220wave, arp220flambda
+; readcol, path+'/swire/torus_template_norm.sed', toruswave, torusflambda
 
+; restore the iSEDfit SEDs
+  isedpath = sigmasfr_path(/ised)
+  isedfit_sfhgrid_dir = sigmasfr_path(/monte)
+  sfhgrid_paramfile = getenv('HIZEA_DIR')+'/pro/sigmasfr/sigmasfr_sfhgrid.par'
+  paramfile = isedpath+'sigmasfr_supergrid01_isedfit.par'
+  model = isedfit_restore(paramfile,isedfit,iopath=isedpath,$
+    isedfit_sfhgrid_dir=isedfit_sfhgrid_dir,index=[0,1,2]) ; grab the first three
 
+; make the plot  
     psfile = path+'3seds.ps'
     im_plotconfig, 0, pos, psfile=psfile, charsize=2, $
       xmargin=[1.5,0.4], width=6.6, height=5.3
 
-   filters = sigmasfr_filterlist()
+    filters = sigmasfr_filterlist()
     weff = k_lambda_eff(filterlist=filters) / 10000.
+    isw2 = (where(strtrim(filters,2) eq 'wise_w2.par'))[0]
 
     xtitle = textoidl('Rest Wavelength (\mum)')
     ytitle = textoidl('Apparent AB Magnitude + offset')
@@ -47,6 +57,10 @@ pro plot_3seds
 ; plot seds
   for jj=0L, 2L do begin
 
+; isedfit model
+     djs_oplot, model[jj].wave/1D4/(1.+phot[jj].z), $
+       model[jj].flux-offset[jj], color=im_color('grey40')
+     
     ;xyouts, 50., 19.-offset[jj], phot[jj].galaxy, charsize=1.5
     ;xyouts, 0.4, 20.4-offset[jj], phot[jj].galaxy, charsize=1.8
     ;xyouts, 0.15, 22.0-offset[jj], textoidl('\Sigma_{SFR}=')+$
@@ -66,8 +80,9 @@ pro plot_3seds
 
 ; plot M82 SED scaled to WISE ch2
   m82mag = -2.5*alog10(m82flambda * (m82wave)^2)
-  sort = sort(abs(m82wave/10000. - weff[8]/(1.+phot[jj].z)))
-  loc = where(weff[used] eq weff[8])
+  sort = sort(abs(m82wave/10000. - weff[isw2]/(1.+phot[jj].z)))
+
+  loc = where(weff[used] eq weff[isw2])
   norm = mab[loc]-offset[jj] - m82mag[sort[0]]
   good = where(m82wave gt 25000., mgood)
   oplot, m82wave[good]/10000., m82mag[good]+norm[0], $
@@ -76,21 +91,21 @@ pro plot_3seds
 
 ; plot ARP220 SED scaled to WISE ch2
   arp220mag = -2.5*alog10(arp220flambda * (arp220wave)^2)
-  sort = sort(abs(arp220wave/10000. - weff[8]/(1.+phot[jj].z)))
-  loc = where(weff[used] eq weff[8])
+  sort = sort(abs(arp220wave/10000. - weff[isw2]/(1.+phot[jj].z)))
+  loc = where(weff[used] eq weff[isw2])
   norm = mab[loc] - arp220mag[sort[0]]
   good = where(arp220wave gt 25000., mgood)
   oplot, arp220wave[good]/10000., arp220mag[good]+norm[0]-offset[jj], $
     color=djs_icolor('dark green'), linestyle=2, thick=6
 
-; plot QSO2 SED scaled to WISE ch2
-  torusmag = -2.5*alog10(torusflambda * (toruswave)^2)
-  sort = sort(abs(toruswave/10000. - weff[8]/(1.+phot[jj].z)))
-  loc = where(weff[used] eq weff[8])
-  norm = mab[loc] - torusmag[sort[0]]
-  good = where(toruswave gt 25000., mgood)
-  oplot, toruswave[good]/10000., torusmag[good]+norm[0]-offset[jj], $
-    color=djs_icolor('red'), linestyle=1, thick=6
+;; plot QSO2 SED scaled to WISE ch2
+;  torusmag = -2.5*alog10(torusflambda * (toruswave)^2)
+;  sort = sort(abs(toruswave/10000. - weff[isw2]/(1.+phot[jj].z)))
+;  loc = where(weff[used] eq weff[isw2])
+;  norm = mab[loc] - torusmag[sort[0]]
+;  good = where(toruswave gt 25000., mgood)
+;  oplot, toruswave[good]/10000., torusmag[good]+norm[0]-offset[jj], $
+;    color=djs_icolor('red'), linestyle=1, thick=6
 
   endfor
 
@@ -104,19 +119,22 @@ pro plot_3seds
 
     if phot[jj].galaxy eq 'J0905+5759' then begin
       hpos = [0.77, 0.15, 0.98, 0.40]
-      plot_sigmasfr_galfit, path+'j0905+5759_drz_sci.fits', 5955., 5880., $
+      file = file_search(hstpath+'cycle1?/j0905+5759/j0905+5759_drz_sci.fits')
+      plot_sigmasfr_galfit, file, 5955., 5880., $
         npix=120., posa=hpos, /onlydata, /ext0
     endif
 
     if phot[jj].galaxy eq 'J1341-0321' then begin
       hpos = [0.77, 0.40, 0.98, 0.65]
-      plot_sigmasfr_galfit, path+'j1341-0321_drz_sci.fits', 5258., 5457., $
+      file = file_search(hstpath+'cycle1?/j1341-0321/j1341-0321_drz_sci.fits')
+      plot_sigmasfr_galfit, file, 5258., 5457., $
         npix=120., posa=hpos, /onlydata, /ext0
     endif
 
     if phot[jj].galaxy eq 'J1506+5402' then begin
       hpos = [0.77, 0.65, 0.98, 0.90]
-      plot_sigmasfr_galfit, path+'j1506+5402_drz_sci.fits', 5684., 5524., $
+      file = file_search(hstpath+'cycle1?/j1506+5402/j1506+5402_drz_sci.fits')
+      plot_sigmasfr_galfit, file, 5684., 5524., $
         npix=120., posa=hpos, /onlydata, /ext0 
     endif
 
