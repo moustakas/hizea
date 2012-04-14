@@ -1,5 +1,6 @@
 pro sigmasfr_write_paramfile, paramfile, prefix=prefix, super=super
-
+; write out the parameter file
+    
     zminmax = [0.4,0.79]
     nzz = 25
     igm = 1
