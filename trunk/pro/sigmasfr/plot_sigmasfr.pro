@@ -5,6 +5,7 @@ pro plot_sigmasfr
     hst = rsex(path+'hst_sample.dat')
     kcorr = mrdfits(path+'sigmasfr_kcorrect.fits.gz',1)
     lir = mrdfits(path+'sigmasfr_lir.fits.gz',1)
+    isedfit = mrdfits(path+'isedfit/sigmasfr_fsps_chab_smc_sfhgrid01.fits.gz', 1)
 
     veilleux = rsex(path+'06veilleux.dat')
 
@@ -52,9 +53,9 @@ pro plot_sigmasfr
     im_legend, 'Eddington limit', box=0, $
       charsize=1.2, pos=[11.08, sigmasfr_edd+yoff]
     im_legend, 'Meurer+97 limit', box=0, $
-      charsize=1.2, pos=[11.05, sigmasfr_meurer+yoff]
+      charsize=1.2, pos=[11.03, sigmasfr_meurer+yoff]
     im_legend, 'threshold for winds', box=0, $
-      charsize=1.2, pos=[10.9, sigmasfr_heckman+yoff]
+      charsize=1.2, pos=[10.94, sigmasfr_heckman+yoff]
 
     ;lpos = [xrange[0]+0.1, yrange[1]-0.1]
     ;lpos = [xrange[0]+0.5, yrange[1]-0.2]
@@ -81,7 +82,8 @@ pro plot_sigmasfr
     mpos = [9.0, 4.45]
     im_legend, textoidl('gas-rich mergers (z<0.3)'), $
       pos=mpos, box=0, charsize=1.4, psym=15, color='orange'
-    arrow, 10.0, 3.9, 10.3, 2.9, /data, thick=5, hsize=-0.2
+    ;arrow, 10.0, 3.9, 10.3, 2.9, /data, thick=5, hsize=-0.2
+    arrow, 10.1, 3.9, 10.3, 3.1, /data, thick=5, hsize=-0.28
 
     
     ;xyouts, xrange[0]+0.3, yrange[0]+0.5, 'star-forming galaxies, 50% contours: ', charsize=1.5
@@ -89,20 +91,33 @@ pro plot_sigmasfr
     ;xyouts, xrange[0]+0.3, yrange[1]-1.3, 'star-forming galaxies, 68% contours: ', charsize=1.4
     ;xyouts, xrange[0]+0.1, yrange[1]-2.1, 'star-forming galaxies', charsize=1.4
     ;xyouts, xrange[0]+0.1, yrange[1]-2.3, '68% contours:', charsize=1.4
-    im_legend, 'star-forming galaxies', pos=[8.3, 3.7], box=0, charsize=1.4 
-    arrow, 9.1, 3.1, 9.4, 2.1, /data, thick=5, hsize=-0.2
+
+    spos = [8.3, 3.4]
+    ;spos = [8.3, -0.5]
+    im_legend, textoidl('star-forming galaxies (z\sim1)'), $
+      pos=spos, box=0, charsize=1.4 
+    ;arrow, 9.1, 3.1, 9.4, 2.1, /data, thick=5, hsize=-0.2
+    arrow, 9.2, 2.8, 9.2, 2.0, /data, thick=5, hsize=-0.3
 
 
     ;zpos = [xrange[1]-1.1, yrange[0]+1.7]
     zpos = [xrange[0], yrange[1]-2.2]
     
-    im_legend, [textoidl('z\sim3'), textoidl('z\sim2'), $
-      textoidl('z\sim1'), $
-      textoidl('z\sim0.1')], linestyle=[3, 1, 2, 0], $
-      color=[djs_icolor('blue'), djs_icolor('purple'), djs_icolor('red'), djs_icolor('black')], $
-      ;/bottom, /right, $
-      pos=zpos, $
-      charsize=1.5, box=0, thick=[10., 10., 10., 5.]
+
+    im_legend, '68%', pos=[9., 0.], box=0, charsize=1.4, color=djs_icolor('red')
+    im_legend, '95%', pos=[9., 0.8], box=0, charsize=1.4, color=djs_icolor('red')
+    im_legend, '99.7%', pos=[9., 1.9], box=0, charsize=1.4, color=djs_icolor('red')
+
+    ;im_legend, ['68%', '95%', '99.7%'], pos=zpos, charsize=1.5, box=0, $
+    ;  linestyle=[0,2,1], color=[djs_icolor('red'), djs_icolor('red'), djs_icolor('red')]
+
+   ; im_legend, [textoidl('z\sim3'), textoidl('z\sim2'), $
+   ;   textoidl('z\sim1'), $
+   ;   textoidl('z\sim0.1')], linestyle=[3, 1, 2, 0], $
+   ;   color=[djs_icolor('blue'), djs_icolor('purple'), djs_icolor('red'), djs_icolor('black')], $
+   ;   ;/bottom, /right, $
+   ;   pos=zpos, $
+   ;   charsize=1.5, box=0, thick=[10., 10., 10., 5.]
 
 ; HST sample
     good = where(lir.sfr_chary gt -900)    
@@ -113,6 +128,8 @@ pro plot_sigmasfr
     masstolight = median(ml)
 ;   niceprint, absmag_h, sigmasfr
     ;djs_oplot, absmag_h, sigmasfr, psym=symcat(16), symsize=1.5
+    ;djs_oploterr, [0., 11.5], [0., 2.5], yerr=[0., 0.301], /cap
+    oploterror, [0., 11.5], [0., 4.2], [0., 0.2], [0., 0.3], psym=3
 
 ; point size based on velocity
     outflow = where(abs(hst.vout) gt 0., noutflow)
@@ -152,7 +169,11 @@ pro plot_sigmasfr
       if abs(hst[good[i]].vout) gt 0. then $ 
         psize = spline(outarr, sizearr, alog10(abs(hst[good[i]].vout))) else $
         psize = 1.0
-      djs_oplot, [0., kcorr[good[i]].k_mass], [0., sigmasfr[i]], psym=symcat(16), symsize=psize    
+      ;djs_oplot, [0., kcorr[good[i]].k_mass], [0., sigmasfr[i]], $
+      ;  psym=symcat(16), symsize=psize    
+      djs_oplot, [0., isedfit[good[i]].mass], [0., sigmasfr[i]], $
+        psym=symcat(16), symsize=psize    
+
     endfor
 
 ;; Law+12
@@ -206,33 +227,41 @@ pro plot_sigmasfr
   levels = 0.68
 
 
-  im_hogg_scatterplot, alog10(law[highz].mstar), alog10(law[highz].sigma_sfr / 2.), $
-    /noerase, xsty=5, xrange=xrange, $
-    yrange=yrange, ysty=5, pos=pos, /nogrey, /internal, $
-    xnpix=5, ynpix=5, levels=levels, $
-    contour_color=djs_icolor('blue'), $;('magenta blue'), $
-    c_linestyle=3, cthick=10
+  ;im_hogg_scatterplot, alog10(law[highz].mstar), alog10(law[highz].sigma_sfr / 2.), $
+  ;  /noerase, xsty=5, xrange=xrange, $
+  ;  yrange=yrange, ysty=5, pos=pos, /nogrey, /internal, $
+  ;  xnpix=5, ynpix=5, levels=levels, $
+  ;  contour_color=djs_icolor('blue'), $;('magenta blue'), $
+  ;  c_linestyle=3, cthick=10
 
-  im_hogg_scatterplot, z0[goodz0].mstar, z0[goodz0].sigmasfr, $
-    /noerase, xsty=5, xrange=xrange, $
-    yrange=yrange, ysty=5, pos=pos, /nogrey, /internal, $
-    xnpix=25., ynpix=25, levels=levels; cthick=2.
-    ;levels = [0.68, 0.95]
-    ;levels=[0.6,0.75,0.9,0.95]
-    ;levels=[0.25, 0.75]
+  ;im_hogg_scatterplot, z0[goodz0].mstar, z0[goodz0].sigmasfr, $
+  ;  /noerase, xsty=5, xrange=xrange, $
+  ;  yrange=yrange, ysty=5, pos=pos, /nogrey, /internal, $
+  ;  xnpix=25., ynpix=25, $
+  ;  ;levels=levels; cthick=2.
+  ;  ;levels = [0.68, 0.95]
+  ;  ;levels=[0.6,0.75,0.9,0.95]
+  ;  ;levels=[0.25, 0.75]
+  ;  levels=[0.68, 0.95, 0.997], /outliers
 
   im_hogg_scatterplot, z1[goodz1].mstar, z1[goodz1].sigmasfr, $
     /noerase, xsty=5, xrange=xrange, $
     yrange=yrange, ysty=5, pos=pos, /nogrey, /internal, $
-    xnpix=25., ynpix=25, levels=levels, $
+    ;xnpix=25., ynpix=25, $
+    xnpix=15, ynpix=15, $
+    ;levels=levels, $
+    levels=[0.68, 0.95, 0.997], $
     contour_color=djs_icolor('red'), $;('magenta blue'), $
-    c_linestyle=2, cthick=10
+    c_linestyle=[0,2,1], cthick=5;, /outliers
 
-  im_hogg_scatterplot, z2[goodz2].mstar, z2[goodz2].sigmasfr, $
-    /noerase, xsty=5, xrange=xrange, $
-    yrange=yrange, ysty=5, pos=pos, /nogrey, /internal, $
-    xnpix=21., ynpix=21, levels=levels, contour_color=djs_icolor('purple'), $
-    c_linestyle=1, cthick=10
+  ;im_hogg_scatterplot, z2[goodz2].mstar, z2[goodz2].sigmasfr, $
+  ;  /noerase, xsty=5, xrange=xrange, $
+  ;  yrange=yrange, ysty=5, pos=pos, /nogrey, /internal, $
+  ;  xnpix=21., ynpix=21, $
+  ;  ;levels=levels, $
+  ;  levels=[0.68, 0.95, 0.997], $
+  ;  contour_color=djs_icolor('purple'), $
+  ;  c_linestyle=1, cthick=10, /outliers
 
     im_plotconfig, psfile=psfile, /psclose, /pdf, /pskeep
 
