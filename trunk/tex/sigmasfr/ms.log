@@ -1,4 +1,4 @@
-This is pdfeTeX, Version 3.141592-1.21a-2.2 (Web2C 7.5.4) (format=latex 2010.11.15)  17 APR 2012 18:15
+This is pdfeTeX, Version 3.141592-1.21a-2.2 (Web2C 7.5.4) (format=latex 2010.11.15)  18 APR 2012 12:30
 entering extended mode
 **ms.tex
 (./ms.tex
@@ -299,33 +299,33 @@ Underfull \hbox (badness 1043) in paragraph at lines 356--370
  []
 
 
-Underfull \hbox (badness 3977) in paragraph at lines 526--533
+Underfull \hbox (badness 3977) in paragraph at lines 536--543
 []\OT1/cmr/m/n/10 Meurer et al. (1997) ar-gued for a limit near
  []
 
 [3]
-Overfull \hbox (39.6003pt too wide) detected at line 573
+Overfull \hbox (39.6003pt too wide) detected at line 583
 \OML/cmm/m/it/10 v[] \OT1/cmr/m/n/10 = [] = 2074 [][][][]  [][] [][][]
  []
 
 [4]
-Underfull \hbox (badness 10000) in paragraph at lines 758--760
+Underfull \hbox (badness 10000) in paragraph at lines 772--774
  []\OT1/cmr/m/n/8 Moustakas, J., Zarit-sky, D., Brown, M., et al. 2011,
  []
 
 
-Underfull \hbox (badness 1371) in paragraph at lines 812--814
+Underfull \hbox (badness 1371) in paragraph at lines 826--828
  []\OT1/cmr/m/n/8 Rujopakarn, W., Rieke, G. H., Weiner, B. J., et al. 2011,
  []
 
 [5] (./ms.aux) ) 
 Here is how much of TeX's memory you used:
- 2887 strings out of 94501
- 34338 string characters out of 1175810
- 116126 words of memory out of 1500000
- 6041 multiletter control sequences out of 10000+50000
+ 2890 strings out of 94501
+ 34363 string characters out of 1175810
+ 117965 words of memory out of 1500000
+ 6044 multiletter control sequences out of 10000+50000
  12540 words of font info for 52 fonts, out of 1200000 for 2000
  580 hyphenation exceptions out of 8191
  35i,8n,29p,1391b,364s stack positions out of 5000i,500n,6000p,200000b,5000s
 
-Output written on ms.dvi (5 pages, 36764 bytes).
+Output written on ms.dvi (5 pages, 37552 bytes).
