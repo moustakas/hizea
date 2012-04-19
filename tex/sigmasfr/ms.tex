@@ -201,7 +201,7 @@ For the most compact galaxy (J0905+5759, $r_e=0.013\arcsec$ or
 100~pc), we also show the observed one-dimensional surface brightness
 profile in the bottom-right panel of Figure~\ref{fig:profile}.  We
 compare to the profiles of six stars in the same image, the best-fit
-de Vaucouleurs model, and a de Vaucoulerus model with a larger
+de Vaucouleurs model, and a de Vaucouleurs model with a larger
 effective radius ($r_e=0.04\arcsec$, the native WFC3/UVIS pixel size,
 which corresponds to a physical scale of 290~pc).  This comparison
 illustrates that this galaxy, while only marginally resolved with an
@@ -511,10 +511,11 @@ suggesting absorption by a factor of $\sim10$ in the X-rays.  However,
 even if the X-ray attenuation were a factor of 100, which is the
 typical value for local Compton-thick AGNs \citep{dia09}, the expected
 mid-IR AGN contribution would only be relevant at the $\lesssim$30\%
-level.  Similar to local ULIRGs \citep[e.g.,][]{far07}, the bolometric
-output of the galaxies in our sample is dominated by star formation,
-and our conclusions regarding large $\sigmasfr$ values are not
-affected by AGN contamination.
+level.  Thus, similar to local ULIRGs \citep[e.g.,][]{far07}, the
+bolometric output of the galaxies in our sample is dominated by star
+formation, and we conclude that our results regarding large
+$\sigmasfr$ values are not affected by AGN contamination.
+
 
 
 % ased on its \oiii\ luminosity $L(\oiii)=10^{42.1}$~erg~s$^{-1}$, the
@@ -531,56 +532,107 @@ affected by AGN contamination.
 
 \subsection{The Outflow Launching Mechanism}
 
-\subsection{Momentum Flux from Supernovae and Stellar Winds}
+It is worth considering whether the high-velocity outflows we observe
+were produced by the compact starburst.  \citet{mur11} argued that
+massive star clusters with large gas surface densities are the ideal
+launching point for galactic-scale outflows driven by radiation
+pressure, and that the outflow velocity should scale with escape
+velocity of the most massive star clusters in a galaxy.  The
+$\gtrsim1000$~\kms\ outflow velocities we observe correspond
+approximately to the escape velocities for a compact stellar
+population with the sizes and masses that we've measured.
+\begin{eqnarray}\nonumber
+v_{esc}&=&\sqrt{2GM_{*}/r} \\
+&=& 2100
+\left({M_{*}\over10^{11} M_{\odot}}\right)^{1/2} 
+\left({r\over200~\textnormal{pc}}\right)^{-1/2}
+\textnormal{km~s}^{-1} 
+\label{eq:vesc}
+\end{eqnarray}
+This argument, combined with the fact that we observe galaxies with
+significant dust-obscured star formation and $\sigmasfr$ values near
+the Eddington limit, indicates that momentum input from massive stars
+in the form of radiation pressure is a viable mechanism for launching
+these outflows.
 
-\citet{meu97} argued for a limit near 45~\units (somewhat smaller for
-a Chabrier IMF) based on the surface brightness of starbursts measured
-using rest-frame UV, H$\alpha$, far-IR, and radio continuum emission,
-such that only 10\% of starbursts exceeded this limit.  They argued
-that the momentum flux from supernovae and stellar winds expected at
-this threshold matches the mean central pressure measured by
-\citet{hec90} for starburst-driven winds.
+In addition to radiation pressure, we also expect significant momentum
+flux from stellar winds and supernovae.  For example, a starburst with
+$\textnormal{SFR}\approx200$~\msun~yr$^{-1}$ would be associated with
+radiation pressure $L_{bol}/c\approx2\times10^{35}$~dyne and ram
+pressure $\dot{p}\approx5$--$10\times10^{35}$~dyne from stellar winds
+and supernovae \citep[e.g.,][]{lei92,hec93,lei99,vei05}.  Furthermore,
+\citet{hec11} noted that such a large momentum injection
+($\dot{p}\approx10^{35}$~dyne) from a small initial radius
+$r_{0}\approx100$~pc could accelerate a cloud with column density
+$N_{H}\approx10^{21}$~cm$^{-2}$ to a terminal velocity
+$v_{\infty}\approx1800$~\kms.  Thus, the energetics of compact
+starbursts are sufficient to produce the high-velocity outflows we
+observe, and it is plausible that both radiation pressure on dust
+grains and supernova ram pressure contribute to driving the winds.
 
-There are also relevant arguments about ram pressure driving of
-high-velocity winds from \citet{hec11}.
+% Following \citet{hec93} and
+% \citet{hec11}, the expected terminal velocity for a cloud with column
+% density $\approx10^{21}$~cm$^{-2}$ launched from a radius
+% $\approx200$~pc and driven by momentum flux
+% $\approx2\times10^{35}$~dynes is:
+% \begin{eqnarray}\nonumber
+% v_{\infty}&=&1800~\textnormal{km~s}^{-1}
+% \left(\dot{p}\over2\times10^{35}~\textnormal{dyne}\right)^{1/2} \\
+% &&
+% \left({r\over200~\textnormal{pc}}\right)^{-1/2}
+% \left({N\over10^{21}~\textnormal{cm}^{-2}}\right)^{-1/2}
+% \label{eq:vterm}
+% \end{eqnarray}
+% The expected momentum flux from stellar winds and supernovae for a
+% starburst with $\textnormal{SFR}\approx200$~\msun~yr$^{-1}$ is
+% $\approx5$--$10\times10^{35}$~dynes \citep{lei92,hec93,lei99,vei05}
+% while the $L_{bol}/c$ radiation pressure is
+% $\approx2\times10^{35}$~dynes.  Thus, there is more than enough
+% momentum available from stellar winds and supernovae or from radiation
+% pressure to produce the outflow velocities we observe.
 
 
-\subsection{The Eddington Limit from Radiation Pressure on Dust Grains}
 
-In models where gaseous outflows are driven by radiation pressure from
-massive stars, estimates of the maximum $\sigmasfr$ where the outward
-force from radiation exceeds the inward force of gravity are in the
-$\sigmasfr\sim10^3$~\units\ range \citep[e.g.,][]{tho05,hop10}.
+
+
+%AGN have been invoked to launch high-velocity winds.  
+
+% \subsection{Momentum Flux from Supernovae and Stellar Winds}
+% 
+% \citet{meu97} argued for a limit near 45~\units (somewhat smaller for
+% a Chabrier IMF) based on the surface brightness of starbursts measured
+% using rest-frame UV, H$\alpha$, far-IR, and radio continuum emission,
+% such that only 10\% of starbursts exceeded this limit.  They argued
+% that the momentum flux from supernovae and stellar winds expected at
+% this threshold matches the mean central pressure measured by
+% \citet{hec90} for starburst-driven winds.
+% 
+% There are also relevant arguments about ram pressure driving of
+% high-velocity winds from \citet{hec11}.
+% 
+% 
+% \subsection{The Eddington Limit from Radiation Pressure on Dust Grains}
+
+% In models where gaseous outflows are driven by radiation pressure from
+% massive stars, estimates of the maximum $\sigmasfr$ where the outward
+% force from radiation exceeds the inward force of gravity are in the
+% $\sigmasfr\sim10^3$~\units\ range \citep[e.g.,][]{tho05,hop10}.
 
 % Our galaxies exceed the \citet{meu97} limit but are roughly in line
 % with the limit from radiation pressure.  
 
-The relative importance of momentum injection versus thermal heating
-may vary as a function of galaxy mass \citep[e.g.,][]{hop12}, with
-thermal heating being less efficient in galaxies with larger gas
-densities and shorter cooling times.  Regarding momentum injection,
-\citet{sha11} have argued that radiation pressure becomes more
-important than ram pressure at large SFRs.  Massive star clusters with
-large gas surface densities are the ideal launching point for
-galactic-scale outflows driven by radiation pressure
-\citep[e.g.,][]{mur11}, and the outflow velocities are expected to
-scale with escape velocity of the most massive star clusters in a
-galaxy.
+% The relative importance of momentum injection versus thermal heating
+% may vary as a function of galaxy mass \citep[e.g.,][]{hop12}, with
+% thermal heating being less efficient in galaxies with larger gas
+% densities and shorter cooling times.  Regarding momentum injection,
+% \citet{sha11} have argued that radiation pressure becomes more
+% important than ram pressure at large SFRs. 
 
 
 
-\subsection{Outflows at the Escape Velocity}
+%\subsection{Outflows at the Escape Velocity}
 
-The observed $\gtrsim1000$~\kms\ outflow velocities we observe correspond
-approximately to the escape velocities for compact regions (i.e.,
-massive star clusters) with the sizes and masses that we've measured.
 
-\begin{equation}
-v_{esc} = \sqrt{2GM_{cl}/r_{cl}} = 2074~\textnormal{km~s}^{-1} \\%\left({v_c\over200}\right)^{5/2} 
-\left({M_{cl}\over10^{11} M_{\odot}}\right)^{1/2} 
-\left({r_{cl}\over200~\textnormal{pc}}\right)^{-1/2}
-\label{eq:vesc}
-\end{equation}
 
 % This is in agreement with the predicitons from radiation pressure
 % launching winds from the most massive star clusters in a galaxy.
@@ -623,6 +675,13 @@ Conceivable that they could grown in size sufficiently by $z=0$?
 
 Connection to models.  How such large SFRs given the powerful wind?  
 
+High-velocity outflows do not imply AGN feedback.
+
+Theoretical arguments about ram v. radiation pressure.  Point that we
+are observing 10$^4$~K gas.
+
+Sample as a whole. Interesting that high-$\sigmasfr$ galaxies tend to
+have larger outflow velocities.
 
 
 \section{Conclusions}
@@ -698,6 +757,9 @@ University of California Office of Research.
   Silva, L., Bressan, A., \& Danese, L.\ 2004, \apj, 600, 580
 \bibitem[Heckman et al.(1990)]{hec90} Heckman, T.~M., Armus, L., \&
   Miley, G.~K.\ 1990, \apjs, 74, 833
+\bibitem[Heckman et al.(1993)]{hec93} Heckman, T.~M., Lehnert, M.~D.,
+  \& Armus, L.\ 1993, The Environment and Evolution of Galaxies, 188,
+  455
 \bibitem[Heckman et al.(2000)]{hec00} Heckman, T.~M., Lehnert, M.~D.,
   Strickland, D.~K., \& Armus, L.\ 2000, \apjs, 129, 493
 \bibitem[Heckman(2002)]{hec02} Heckman, T.~M.\ 2002, Extragalactic Gas
@@ -757,6 +819,8 @@ University of California Office of Research.
 %   T.~M.\ 1996, \apj, 462, 651
 \bibitem[Leitherer et al.(1992)]{lei92} Leitherer, C., Robert, C., \&
   Drissen, L.\ 1992, \apj, 401, 596
+\bibitem[Leitherer et al.(1999)]{lei99} Leitherer, C., Schaerer, D.,
+  Goldader, J.~D., et al.\ 1999, \apjs, 123, 3
 \bibitem[Martin(2005)]{mar05} Martin, C.~L.\ 2005, \apj, 621, 227
 % \bibitem[Martin(2006)]{mar06} Martin, C.~L.\ 2006, \apj, 647, 222
 % \bibitem[Martin \& Bouch{\'e}(2009)]{mar09} Martin, C.~L., \&
@@ -879,6 +943,8 @@ University of California Office of Research.
 %   al.\ 2010, \apj, 709, 1018
 % \bibitem[Vogt et al.(1994)]{vog94} Vogt, S.~S., et al.\ 1994,
 %   \procspie, 2198, 362
+\bibitem[Veilleux et al.(2005)]{vei05} Veilleux, S., Cecil, G., \&
+  Bland-Hawthorn, J.\ 2005, \araa, 43, 769
 \bibitem[Veilleux et al.(2006)]{vei06} Veilleux, S., Kim, D.-C., Peng,
   C.~Y., et al.\ 2006, \apj, 643, 707
 \bibitem[Weiner et al.(2009)]{wei09} Weiner, B.~J., et al.\ 2009,
