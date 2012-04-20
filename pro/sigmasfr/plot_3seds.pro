@@ -13,7 +13,7 @@ pro plot_3seds
 
   readcol, path+'/swire/M82_template_norm.sed', m82wave, m82flambda
   readcol, path+'/swire/Arp220_template_norm.sed', arp220wave, arp220flambda
-; readcol, path+'/swire/torus_template_norm.sed', toruswave, torusflambda
+  readcol, path+'/swire/torus_template_norm.sed', toruswave, torusflambda
 
 ; restore the iSEDfit SEDs
   isedpath = sigmasfr_path(/ised)
@@ -58,8 +58,9 @@ pro plot_3seds
   for jj=0L, 2L do begin
 
 ; isedfit model
-     djs_oplot, model[jj].wave/1D4/(1.+phot[jj].z), $
-       model[jj].flux-offset[jj], color=im_color('grey40')
+     good = where(model[jj].wave/1D4 lt 4.3, ngood)
+     djs_oplot, model[jj].wave[good]/1D4/(1.+phot[jj].z), $
+       model[jj].flux[good]-offset[jj], color=im_color('grey40')
      
     ;xyouts, 50., 19.-offset[jj], phot[jj].galaxy, charsize=1.5
     ;xyouts, 0.4, 20.4-offset[jj], phot[jj].galaxy, charsize=1.8
@@ -67,16 +68,19 @@ pro plot_3seds
     ;  string(round(hst[jj].wise_sfr / (2.*!pi*hst[jj].r_e^2)/ 10.)*10., format='(i4)')+$
     ;  ' M'+sunsymbol()+textoidl(' yr^{-1} kpc^{-2}'), charsize=1.5
 
+    if phot[jj].galaxy eq 'J0905+5759' then begin
+      phot[jj].maggies[9] = phot[jj].maggies[9] * 0.8
+      phot[jj].maggies[10] = phot[jj].maggies[10] * 0.8
+    endif
+
     used = where((phot[jj].maggies gt 0.0) and $ 
       (phot[jj].ivarmaggies gt 0.0),nused)
 
     mab =  maggies2mag(phot[jj].maggies[used],$
       ivar=phot[jj].ivarmaggies[used],magerr=mab_err)
 
-    oploterror, weff[used]/(1.+phot[jj].z), mab-offset[jj], mab_err, $
-      psym=symcat(16), $
-      symsize=1.5, color=djs_icolor('red'), $
-      errcolor=djs_icolor('red'), errthick=8     
+
+
 
 ; plot M82 SED scaled to WISE ch2
   m82mag = -2.5*alog10(m82flambda * (m82wave)^2)
@@ -84,9 +88,9 @@ pro plot_3seds
 
   loc = where(weff[used] eq weff[isw2])
   norm = mab[loc]-offset[jj] - m82mag[sort[0]]
-  good = where(m82wave gt 25000., mgood)
+  good = where(m82wave gt 43000./(1.+phot[jj].z), mgood)
   oplot, m82wave[good]/10000., m82mag[good]+norm[0], $
-   color=djs_icolor('blue'), thick=2
+   color=djs_icolor('blue'), thick=8, linestyle=1
 
 
 ; plot ARP220 SED scaled to WISE ch2
@@ -94,31 +98,43 @@ pro plot_3seds
   sort = sort(abs(arp220wave/10000. - weff[isw2]/(1.+phot[jj].z)))
   loc = where(weff[used] eq weff[isw2])
   norm = mab[loc] - arp220mag[sort[0]]
-  good = where(arp220wave gt 25000., mgood)
+  ;good = where(arp220wave gt 25000., mgood)
+  good = where(arp220wave gt 43000./(1.+phot[jj].z), mgood)
   oplot, arp220wave[good]/10000., arp220mag[good]+norm[0]-offset[jj], $
-    color=djs_icolor('dark green'), linestyle=2, thick=6
+    color=djs_icolor('dark green'), linestyle=2, thick=8
 
-;; plot QSO2 SED scaled to WISE ch2
+;;; plot QSO2 SED scaled to WISE ch2
 ;  torusmag = -2.5*alog10(torusflambda * (toruswave)^2)
 ;  sort = sort(abs(toruswave/10000. - weff[isw2]/(1.+phot[jj].z)))
 ;  loc = where(weff[used] eq weff[isw2])
 ;  norm = mab[loc] - torusmag[sort[0]]
-;  good = where(toruswave gt 25000., mgood)
+;  good = where(toruswave gt 43000./(1.+phot[jj].z), mgood)
 ;  oplot, toruswave[good]/10000., torusmag[good]+norm[0]-offset[jj], $
-;    color=djs_icolor('red'), linestyle=1, thick=6
+;    color=djs_icolor('red'), linestyle=3, thick=6
+
+    oploterror, weff[used]/(1.+phot[jj].z), mab-offset[jj], mab_err, $
+      psym=symcat(16), $
+      symsize=1.5, color=djs_icolor('red'), $
+      errcolor=djs_icolor('red'), errthick=8  
 
   endfor
 
-  legend, ['M82 starburst', 'Arp 220 starburst', 'obscured quasar'], $
-    linestyle=[0, 2, 1], $
-    color=[djs_icolor('blue'), djs_icolor('dark green'), djs_icolor('red')], $
-    charsize=1.5, box=0, pos=[xrange[0], yrange[1]+0.5], thick=6
+  ;legend, ['Stellar Population Fit', 'M82 starburst', 'Arp 220 starburst', 'obscured quasar'], $
+  legend, ['Stellar Population Fit', 'M82 Starburst', 'Arp 220 Starburst'], $
+    ;linestyle=[0, 2, 1, 3], $
+    linestyle=[0, 1, 2], $
+    ;color=[djs_icolor('black'), djs_icolor('blue'), djs_icolor('dark green'), djs_icolor('red')], $
+    color=[djs_icolor('black'), djs_icolor('blue'), djs_icolor('dark green')], $
+    charsize=1.5, box=0, pos=[xrange[0], yrange[1]+0.5], thick=8
 
+
+   
 
   for jj=0L, 2L do begin
 
     if phot[jj].galaxy eq 'J0905+5759' then begin
       hpos = [0.77, 0.15, 0.98, 0.40]
+      ;file = path+'j0905+5759_drz_sci.fits'
       file = file_search(hstpath+'cycle1?/j0905+5759/j0905+5759_drz_sci.fits')
       plot_sigmasfr_galfit, file, 5955., 5880., $
         npix=120., posa=hpos, /onlydata, /ext0
@@ -126,6 +142,7 @@ pro plot_3seds
 
     if phot[jj].galaxy eq 'J1341-0321' then begin
       hpos = [0.77, 0.40, 0.98, 0.65]
+      ;file = path+'j1341-0321_drz_sci.fits'
       file = file_search(hstpath+'cycle1?/j1341-0321/j1341-0321_drz_sci.fits')
       plot_sigmasfr_galfit, file, 5258., 5457., $
         npix=120., posa=hpos, /onlydata, /ext0
@@ -133,6 +150,7 @@ pro plot_3seds
 
     if phot[jj].galaxy eq 'J1506+5402' then begin
       hpos = [0.77, 0.65, 0.98, 0.90]
+      ;file = path+'j1506+5402_drz_sci.fits'
       file = file_search(hstpath+'cycle1?/j1506+5402/j1506+5402_drz_sci.fits')
       plot_sigmasfr_galfit, file, 5684., 5524., $
         npix=120., posa=hpos, /onlydata, /ext0 
