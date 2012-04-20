@@ -54,11 +54,11 @@ galaxies that exhibit $\gtrsim1000$~\kms\ outflows.  Using optical
 morphologies from the Hubble Space Telescope and infrared photometry
 from the Wide-field Infrared Survey Explorer, we estimate star
 formation rate (SFR) surface densities that approach
-$\sigmasfr\approx5000$~\msun~yr$^{-1}$~kpc$^{-2}$.  This is comparable
+$\sigmasfr\approx5000$~\msun~yr$^{-1}$~kpc$^{-2}$, which is comparable
 to the Eddington limit from radiation pressure on dust grains.  We
 argue that feedback associated with a compact starburst in the form of
 radiation pressure from massive stars and ram pressure from supernovae
-and stellar winds is sufficient to launch the high-velocity outflows
+and stellar winds is sufficient to produce the high-velocity outflows
 we observe, without the need to invoke feedback from an active
 galactic nucleus.
 
@@ -169,6 +169,25 @@ masses estimated from WISE, Spitzer, SDSS, and GALEX photometry.
 % (\mgii~$\lambda2796$ is plotted in blue and \mgii~$\lambda2803$ is plotted in red)
 
 
+\begin{figure}[!t]
+%\includegraphics[angle=90,scale=0.68]{sigmasfr_datafigure.ps}
+\includegraphics[angle=0,scale=0.41]{3seds.ps}
+\caption{Left: Observed UV--IR SEDs ($\lrest=0.1$--15~$\mu$m) for
+  three galaxies with large SFR surface densities
+  ($\sigmasfr>3000$~\units).  We show stellar population fits to the
+  $\lrest=0.1$--3~$\mu$m emission (black solid line) and three
+  templates for dust emission \citep[M82 starburst, Arp 220 starburst,
+    and obscured quasar;][]{pol07}.  The starburst templates provide
+  reasonable fits to the $\lobs=12$ and 22~$\mu$m WISE photometry,
+  while the quasar template does not.  Right: HST/WFC3 F814W images
+  (probing $\lrest\approx5000$~\AA) showing that these galaxies are
+  dominated by a compact nucleus.}
+\label{fig:seds}
+\end{figure}
+% scaled to the WISE $\lobs=4.6~\mu$m flux.
+
+
+
 
 \section{Analysis}
 
@@ -230,23 +249,6 @@ conclude that this galaxy is quite compact and that our $r_e$ estimate
 of 100~pc, while uncertain, is likely accurate within a factor of two.
 
 \begin{figure}[!t]
-%\includegraphics[angle=90,scale=0.68]{sigmasfr_datafigure.ps}
-\includegraphics[angle=0,scale=0.41]{3seds.ps}
-\caption{Left: Observed UV--IR SEDs ($\lrest=0.1$--15~$\mu$m) for
-  three galaxies with large SFR surface densities
-  ($\sigmasfr>3000$~\units).  We show stellar population fits to the
-  $\lrest=0.1$--3~$\mu$m emission (black solid line) and three
-  templates for dust emission \citep[M82 starburst, Arp 220 starburst,
-    and obscured quasar;][]{pol07}.  The starburst templates provide
-  reasonable fits to the $\lobs=12$ and 22~$\mu$m WISE photometry,
-  while the quasar template does not.  Right: HST/WFC3 F814W images
-  (probing $\lrest\approx5000$~\AA) showing that these galaxies are
-  dominated by a compact nucleus.}
-\label{fig:seds}
-\end{figure}
-% scaled to the WISE $\lobs=4.6~\mu$m flux.
-
-\begin{figure}[!t]
 \includegraphics[angle=0,scale=0.41]{profile.ps}
 \label{fig:profile}
 \caption{One-dimensional surface brightness profile for J0905+5759,
@@ -258,7 +260,6 @@ of 100~pc, while uncertain, is likely accurate within a factor of two.
   is shown as the dotted green line.  This galaxy is quite compact,
   but is more extended than a point source.}
 \end{figure}
-
 
 
 %\subsection{Photometry, Star Formation Rates, and Stellar Masses}
@@ -535,7 +536,7 @@ $\sigmasfr$ values are not affected by AGN contamination.
 % general, the AGN does not seem to be relevant energetically.  Point
 % that high-velocity outflows don't mean that an outflow is AGN driven.
 
-\subsection{The Outflow Launching Mechanism}
+\subsection{The Outflow Launching Mechanism}\label{sec:launch}
 
 It is worth considering whether the high-velocity outflows we observe
 were produced by the compact starburst.  \citet{mur11} argued that
@@ -678,10 +679,10 @@ The high-$\sigmasfr$ galaxies in our sample constitute a rare
 population (see Figure~\ref{fig:sigmasfr}), suggesting that they
 represent an unusual or short-lived phase.  Mergers of gas-rich
 galaxies are a viable mechanism for producing compact starbursts
-(e.g., Mihos+94), and such gas-rich major mergers are rare at
+(e.g., Mihos+94), but such gas-rich major mergers are rare at
 $z\sim0.6$ due to the decline in both the merger rate and the gas
-fraction of galaxies since $z\sim1$.  The high-$\sigmasfr$ galaxies in
-particular are in a phase where there is strong feedback but star
+fraction of galaxies since $z\sim1$.  The high-$\sigmasfr$ galaxies
+are also in a particular phase where there is strong feedback but star
 formation has not been quenched.  The length of this phase may be set
 by the gas consumption timescale or the timescale for feedback to
 suppress subsequent star formation.  Based on the Kennicutt--Schmidt
@@ -691,22 +692,26 @@ $\sigmasfr=5000$~\units\ (assuming half of the star formation occurs
 within the effective radius) would have a gas surface density of
 $\Sigma_{gas}\sim2\times10^5$~\msun~pc$^{-2}$, corresponding to
 $M_{gas}\sim5\times10^{9}$~\msun\ inside 100~pc, which would be
-consumed on a timescale $\sim30$~Myr.  It would be worthwhile to
-directly measure the molecular gas masses and kinematics of these
-extreme sources with CO observations to test this scenario.
+consumed on a timescale $\sim30$~Myr.  Such estimates could be tested
+with observations of molecular gas masses and kinematics for these
+extreme galaxies.
 
-The vertical sequence in Figure~\ref{fig:sigmasfr} may be related to
-an evolutionary sequence, with the smaller $\sigmasfr$ galaxies being
-further along in their evolution towards a post-starburst phase.
-However, it is interesting to note that all 12/29 galaxies above the
-$\sigmasfr\approx45$~\units\ \citet{meu97} limit exhibit outflows
-(with median centroid velocity $v=-1500$~\kms), while all 7/29
-galaxies without detected outflows have $\sigmasfr<30$~\units.  If a
-compact starburst is a requirement for the production of high-velocity
-outflows, it may be that these latter sources have not gone through
-such a phase (see A. Robaina, et al, in preparation for a discussion
-of the relationship between outflow velocity, galaxy morphology, and
-stellar population age).
+% which rely on extrapolating the K-S relation beyond the range where it had been calibrated, 
+
+The vertical sequence among the galaxies in our sample in
+Figure~\ref{fig:sigmasfr} could be related to an evolutionary
+sequence, with smaller $\sigmasfr$ galaxies being further along in
+their evolution towards a post-starburst phase.  However, it is
+interesting to note that all 12/29 galaxies above the \citet{meu97}
+limit ($\sigmasfr\approx45$~\units) exhibit outflows (with median
+centroid velocity $v=-1500$~\kms), while all 7/29 galaxies without
+detected outflows have $\sigmasfr<30$~\units.  If a compact starburst
+is a requirement for the production of high-velocity outflows, as
+suggested by previous the discussion in Section~\ref{sec:launch}, it
+may be that the non-outflow sources have not gone through such a phase
+(see A. Robaina, et al., in preparation for a discussion of the
+relationship between outflow velocity, galaxy morphology, and stellar
+population age).
 
 % although simulations rarely produce starbursts that
 % are this compact.
@@ -717,11 +722,27 @@ stellar population age).
 % are sufficient to explain the number density evolution of massive red
 % sequence galaxies since $z\sim1$ \citep[e.g.,][]{fab07,bro07}.
 
-It is also worhwhile to consider the implications of these galaxies
-for models of massive galaxy formation.  Models do not produce
-starbursts this small.  Models that produce ellipticals have to invoke
-AGN feedback.  Models for size evolution would allow these galaxies to
-reach the size--mass relation by $z=0$.  
+Finally, it is worthwhile to consider the implications of these
+galaxies for models of massive galaxy formation.  While simulaitons of
+major galaxy mergers with large gas fractions ($f_{gas}\sim50$\%) can
+produce $\textnormal{\mstar}\sim10^{11}$~\msun\ remnants with
+effective radii $r_{e}\sim1$~kpc \citep[e.g.,][]{wuy10}, similar to
+the observed sizes of compact quiescent galaxies at $z\sim2$
+\citep[e.g.,][]{van08}, our sample includes galaxies of similar mass
+that are smaller by almost an order of magnitude.  If these systems do
+evolve into quiescent elliptical galaxies, it would be quite
+challenging for them to grow in size from $r_e\sim0.1$~kpc to
+$r_e\sim5$~kpc to reach the local size--mass relation in the
+$t\sim6$~Gyr since $z=0.6$.  In this context, it is relevant point to
+note that the half-light radius (ignoring dust attenuation) at
+rest-frame $V$ band (where our HST observations prbe) can be a factor
+of 5--10 smaller than the half-mass radius for a system near the peak
+of the starburst \citep{wuy10}.  It would be worthwhile to test for
+such size discrepancies and to pronbe the radial dependence of the
+mass-to-light ratio by measuring sizes at rest-frame near-IR
+wavelengths.
+
+ 
 
 % A merger of two massive, gas-rich galaxies is a viable mechanism for
 % producing such a compact starburst (e.g., Mihos+94), but the
@@ -730,23 +751,36 @@ reach the size--mass relation by $z=0$.
 % difficult for mergers to produce starbursts that are this compact.
 % Models can quench star formation by invoking AGN feedback,
 
-Few galaxies exhibit such high-velocity outflows because few galaxies
-have such extreme SFR surface densities.
+
 
 % Connection to models.  How such large SFRs given the powerful wind?  
 
-High-velocity outflows do not imply AGN feedback.
+
+
+
+%Sample as a whole. Interesting that high-$\sigmasfr$ galaxies tend to
+%have larger outflow velocities.
+
+
+
+\section{Conclusions}
+
+Their descendants could perhaps be the local galaxies that are
+ significant outliers from the size--mass relation.
+
+Models that produce ellipticals have to invoke AGN feedback to quench
+star formation.
+
+Few galaxies exhibit such high-velocity outflows because few galaxies
+have such extreme SFR surface densities.
 
 Theoretical arguments about ram v. radiation pressure.  Point that we
 are observing 10$^4$~K gas.
 
-Sample as a whole. Interesting that high-$\sigmasfr$ galaxies tend to
-have larger outflow velocities.
-
 Mention high-$\sigmasfr$ galaxies at high z.
 
+High-velocity outflows do not imply AGN feedback.
 
-\section{Conclusions}
 
 \acknowledgments
 
@@ -1024,6 +1058,8 @@ University of California Office of Research.
 %   Dokkum, P.~G.\ 2010, \apj, 722, 1666
 % \bibitem[Wuyts et al.(2011)]{wuy11} Wuyts, S., et al.\ 2011,
 %   arXiv:1107.0317
+\bibitem[Wuyts et al.(2010)]{wuy10} Wuyts, S., Cox, T.~J., Hayward,
+  C.~C., et al.\ 2010, \apj, 722, 1666
 \bibitem[Wuyts et al.(2011)]{wuy11} Wuyts, S., F{\"o}rster Schreiber,
   N.~M., van der Wel, A., et al.\ 2011, \apj, 742, 96
 % \bibitem[Zhang \& Thompson(2010)]{zha10} Zhang, D., \& Thompson,
