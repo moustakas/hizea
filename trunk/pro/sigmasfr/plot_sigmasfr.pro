@@ -202,7 +202,7 @@ pro plot_sigmasfr
    ;xyouts, alog10(3.0d10)-0.45, 2.98-0.08, 'Arp 220', charsize=1.2
 
 ; Rubin+10
-   rubin = rsex('10rubin.dat')
+   rubin = rsex(path+'10rubin.dat')
    ;djs_oplot, rubin.mstar, alog10(10^(rubin.sfr)/(2.*!pi*rubin.re^2)), psym=symcat(46), color='green'
 
 ; Wuyts+11
