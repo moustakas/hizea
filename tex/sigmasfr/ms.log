@@ -1,4 +1,4 @@
-This is pdfeTeX, Version 3.141592-1.21a-2.2 (Web2C 7.5.4) (format=latex 2010.11.15)  19 APR 2012 23:53
+This is pdfeTeX, Version 3.141592-1.21a-2.2 (Web2C 7.5.4) (format=latex 2010.11.15)  20 APR 2012 11:09
 entering extended mode
 **ms.tex
 (./ms.tex
@@ -217,131 +217,113 @@ ript {6}, \& Paul Sell\textsuperscript {3} .
 
 File: 3seds.ps Graphic file (type eps)
 <3seds.ps>
-Overfull \hbox (6.59666pt too wide) in paragraph at lines 111--112
+Overfull \hbox (6.59666pt too wide) in paragraph at lines 113--114
 [][] 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 121--121
+Underfull \hbox (badness 10000) in paragraph at lines 123--123
 $[]$
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 121--121
+Underfull \hbox (badness 10000) in paragraph at lines 123--123
 
  []
 
 [1]
 
-LaTeX Warning: A float is stuck (cannot be placed) on input line 156.
+LaTeX Warning: A float is stuck (cannot be placed) on input line 149.
 
 
-LaTeX Warning: A float is stuck (cannot be placed) on input line 156.
+LaTeX Warning: A float is stuck (cannot be placed) on input line 149.
 
 
 Class revtex4 Warning: Deferred float stuck during \clearpage processing.
 
 File: profile.ps Graphic file (type eps)
 <profile.ps>
-Overfull \hbox (6.59666pt too wide) in paragraph at lines 185--187
+Overfull \hbox (6.59666pt too wide) in paragraph at lines 187--189
 [][]
  []
 
 
-Underfull \hbox (badness 1043) in paragraph at lines 194--194
+Underfull \hbox (badness 1043) in paragraph at lines 196--196
   \OT1/cmr/m/sc/8 Fig. 2.--- \OT1/cmr/m/n/8 One-dimensional sur-face bright-nes
 s pro-file for
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 194--194
+Underfull \hbox (badness 10000) in paragraph at lines 196--196
 $[]$
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 194--194
+Underfull \hbox (badness 10000) in paragraph at lines 196--196
 
  []
 
 
-Overfull \hbox (75.71674pt too wide) in paragraph at lines 209--209
+Overfull \hbox (75.71674pt too wide) in paragraph at lines 213--213
 [][]| [] []\OT1/cmr/m/n/8 http://irsa.ipac.caltech.edu/data/SPITZER/docs/dataan
 alysistools/tools/mopex/| 
  []
 
 [2]
-Underfull \hbox (badness 1097) in paragraph at lines 233--239
+Underfull \hbox (badness 1097) in paragraph at lines 238--244
 []\OT1/cmr/m/n/10 We also es-ti-mate star-formation rates and stel-lar
  []
 
 File: spectra.ps Graphic file (type eps)
 <spectra.ps>
-Overfull \hbox (6.59666pt too wide) in paragraph at lines 241--242
+Overfull \hbox (6.59666pt too wide) in paragraph at lines 246--247
 [][] 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 252--252
+Underfull \hbox (badness 10000) in paragraph at lines 257--257
 $[]$
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 252--252
+Underfull \hbox (badness 10000) in paragraph at lines 257--257
 
  []
 
 File: sigmasfr.ps Graphic file (type eps)
 <sigmasfr.ps>
-Underfull \hbox (badness 10000) in paragraph at lines 273--273
+Underfull \hbox (badness 10000) in paragraph at lines 278--278
 $[]$
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 273--273
+Underfull \hbox (badness 10000) in paragraph at lines 278--278
 
  []
 
 
-Underfull \hbox (badness 1043) in paragraph at lines 280--294
+Underfull \hbox (badness 1043) in paragraph at lines 285--299
 \OT1/cmr/m/n/10 Mag-el-lan/MAGE (J1341-0321), and Keck/LRIS and
  []
 
 [3] [4]
-
-Package natbib Warning: Citation `shen03' on page 5 undefined on input line 448
-.
-
-
-Underfull \hbox (badness 1092) in paragraph at lines 516--519
- []\OT1/cmr/m/n/8 Heckman, T. M., Lehn-ert, M. D., & Ar-mus, L. 1993, The
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 550--552
+Underfull \hbox (badness 10000) in paragraph at lines 559--561
  []\OT1/cmr/m/n/8 Moustakas, J., Zarit-sky, D., Brown, M., et al. 2011,
  []
 
-[5]
-Underfull \hbox (badness 1371) in paragraph at lines 576--578
+
+Underfull \hbox (badness 1371) in paragraph at lines 583--585
  []\OT1/cmr/m/n/8 Rujopakarn, W., Rieke, G. H., Weiner, B. J., et al. 2011,
  []
 
-
-Package natbib Warning: There were undefined citations.
-
-[6] (./ms.aux)
-
-LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right .
-
-
- ) 
+[5] [6] (./ms.aux) ) 
 Here is how much of TeX's memory you used:
- 2896 strings out of 94501
- 34425 string characters out of 1175810
- 111803 words of memory out of 1500000
- 6049 multiletter control sequences out of 10000+50000
- 12848 words of font info for 53 fonts, out of 1200000 for 2000
+ 2876 strings out of 94501
+ 34266 string characters out of 1175810
+ 108148 words of memory out of 1500000
+ 6030 multiletter control sequences out of 10000+50000
+ 12540 words of font info for 52 fonts, out of 1200000 for 2000
  580 hyphenation exceptions out of 8191
  35i,9n,29p,1391b,364s stack positions out of 5000i,500n,6000p,200000b,5000s
 
-Output written on ms.dvi (6 pages, 43996 bytes).
+Output written on ms.dvi (6 pages, 42092 bytes).
