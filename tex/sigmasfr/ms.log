@@ -1,4 +1,4 @@
-This is pdfeTeX, Version 3.141592-1.21a-2.2 (Web2C 7.5.4) (format=latex 2010.11.15)  20 APR 2012 11:09
+This is pdfeTeX, Version 3.141592-1.21a-2.2 (Web2C 7.5.4) (format=latex 2010.11.15)  20 APR 2012 13:31
 entering extended mode
 **ms.tex
 (./ms.tex
@@ -233,10 +233,10 @@ Underfull \hbox (badness 10000) in paragraph at lines 123--123
 
 [1]
 
-LaTeX Warning: A float is stuck (cannot be placed) on input line 149.
+LaTeX Warning: A float is stuck (cannot be placed) on input line 158.
 
 
-LaTeX Warning: A float is stuck (cannot be placed) on input line 149.
+LaTeX Warning: A float is stuck (cannot be placed) on input line 158.
 
 
 Class revtex4 Warning: Deferred float stuck during \clearpage processing.
@@ -263,67 +263,57 @@ Underfull \hbox (badness 10000) in paragraph at lines 196--196
 
  []
 
-
-Overfull \hbox (75.71674pt too wide) in paragraph at lines 213--213
-[][]| [] []\OT1/cmr/m/n/8 http://irsa.ipac.caltech.edu/data/SPITZER/docs/dataan
-alysistools/tools/mopex/| 
- []
-
 [2]
-Underfull \hbox (badness 1097) in paragraph at lines 238--244
-[]\OT1/cmr/m/n/10 We also es-ti-mate star-formation rates and stel-lar
- []
-
 File: spectra.ps Graphic file (type eps)
-<spectra.ps>
-Overfull \hbox (6.59666pt too wide) in paragraph at lines 246--247
+ <spectra.ps>
+Overfull \hbox (6.59666pt too wide) in paragraph at lines 244--245
 [][] 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 257--257
+Underfull \hbox (badness 10000) in paragraph at lines 255--255
 $[]$
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 257--257
+Underfull \hbox (badness 10000) in paragraph at lines 255--255
 
  []
 
 File: sigmasfr.ps Graphic file (type eps)
 <sigmasfr.ps>
-Underfull \hbox (badness 10000) in paragraph at lines 278--278
+Underfull \hbox (badness 10000) in paragraph at lines 276--276
 $[]$
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 278--278
+Underfull \hbox (badness 10000) in paragraph at lines 276--276
 
  []
 
 
-Underfull \hbox (badness 1043) in paragraph at lines 285--299
-\OT1/cmr/m/n/10 Mag-el-lan/MAGE (J1341-0321), and Keck/LRIS and
+Underfull \hbox (badness 2435) in paragraph at lines 283--297
+\OT1/cmr/m/n/10 Mag-el-lan/MagE (J1341-0321), and Keck/LRIS and
  []
 
 [3] [4]
-Underfull \hbox (badness 10000) in paragraph at lines 559--561
+Underfull \hbox (badness 10000) in paragraph at lines 558--560
  []\OT1/cmr/m/n/8 Moustakas, J., Zarit-sky, D., Brown, M., et al. 2011,
  []
 
 
-Underfull \hbox (badness 1371) in paragraph at lines 583--585
+Underfull \hbox (badness 1371) in paragraph at lines 582--584
  []\OT1/cmr/m/n/8 Rujopakarn, W., Rieke, G. H., Weiner, B. J., et al. 2011,
  []
 
 [5] [6] (./ms.aux) ) 
 Here is how much of TeX's memory you used:
- 2876 strings out of 94501
- 34266 string characters out of 1175810
- 108148 words of memory out of 1500000
- 6030 multiletter control sequences out of 10000+50000
+ 2875 strings out of 94501
+ 34256 string characters out of 1175810
+ 107449 words of memory out of 1500000
+ 6029 multiletter control sequences out of 10000+50000
  12540 words of font info for 52 fonts, out of 1200000 for 2000
  580 hyphenation exceptions out of 8191
- 35i,9n,29p,1391b,364s stack positions out of 5000i,500n,6000p,200000b,5000s
+ 35i,9n,29p,1409b,364s stack positions out of 5000i,500n,6000p,200000b,5000s
 
-Output written on ms.dvi (6 pages, 42092 bytes).
+Output written on ms.dvi (6 pages, 41924 bytes).
