@@ -84,7 +84,7 @@ discovery of $|v|>1000$~\kms\ outflows in a sample of massive
 ($\textnormal{\mstar}\approx10^{11}$~\msun) post-starburst galaxies at
 $z\sim0.6$ by \citet{tre07} suggested that a more energetic source,
 such as feedback from an accreting supermassive black hole
-\citep[e.g.,][]{sil98,dim05,deb12}, could have been responsible for
+\citep[e.g.,][]{sil98,dim05}, could have been responsible for
 launching the winds \citep[see][for a recent review]{fab12}.
 
 However, it also plausible that feedback from a compact starburst
@@ -104,7 +104,9 @@ outflows in these galaxies could have been driven by feedback from
 starbursts with very large star-formation rate (SFR) surface densities
 ($\sigmasfr$).  Our analysis combines galaxy sizes obtained with the
 Hubble Space Telescope (HST) with star-formation rates and stellar
-masses estimated from WISE, Spitzer, SDSS, and GALEX photometry.
+masses estimated using photometry from the Wide-field Infrared Survey
+Explorer (WISE), the Spitzer Space Telescope, the Sloan Digital Sky
+Survey (SDSS), and the Galaxy Evolution Explorer (GALEX).
 
 
 \begin{figure}[!t]
@@ -112,13 +114,13 @@ masses estimated from WISE, Spitzer, SDSS, and GALEX photometry.
 \caption{Left: Observed UV--IR SEDs ($\lrest=0.1$--15~$\mu$m) for
   three galaxies with large SFR surface densities
   ($\sigmasfr>3000$~\units).  We show stellar population fits to the
-  $\lrest=0.1$--3~$\mu$m emission (black solid line) and three
-  templates for dust emission \citep[M82 starburst, Arp 220 starburst,
-    and obscured quasar;][]{pol07}.  The starburst templates provide
-  reasonable fits to the $\lobs=12$ and 22~$\mu$m WISE photometry,
-  while the quasar template does not.  Right: HST/WFC3 F814W images
-  (probing $\lrest\approx5000$~\AA) showing that these galaxies are
-  dominated by a compact nucleus.}
+  $\lrest=0.1$--3~$\mu$m emission (black solid line) and two templates
+  for dust emission \citep[M82 starburst, Arp 220 starburst;][]{pol07}
+  scaled to match the $\lobs=4.6~\mu$m band.  The starburst templates
+  provide reasonable fits to the $\lobs=12$ and 22~$\mu$m WISE
+  photometry, while a quasar template does not.  Right: HST/WFC3 F814W
+  images (probing $\lrest\approx5000$~\AA) showing that these galaxies
+  are dominated by a compact nucleus.}
 \label{fig:seds}
 \end{figure}
 
@@ -135,14 +137,14 @@ exposures in a single orbit for each galaxy.  The dithered images were
 processed with
 MultiDrizzle\footnote{http://stsdas.stsci.edu/multidrizzle/} to
 produce science mosaics with $0.02\arcsec$ pixels.  For each galaxy,
-we use GALFIT \citep{pen02,pen10} to model the two-dimensional surface
+we use GALFIT \citep{pen02} to model the two-dimensional surface
 brightness profile with a single Sersic component, using stars in the
 images to construct the model point-spread function (PSF).  The Sersic
 index (n) and effective radius ($r_e$) are free parameters in the
 model.  In cases where the best-fit model returns $n>4$, we also fit
-an $n=4$ de Vaucouleurs model \citep{dev48}, yielding a larger $r_e$
-value (due to the covariance between $n$ and $r_e$), and we use these
-these larger effective radii in our analysis.
+an $n=4$ de Vaucouleurs model, yielding a larger $r_e$ value (due to
+the covariance between $n$ and $r_e$), and we use these these larger
+effective radii in our analysis.
 
 For this paper, we are most interested in the galaxies with the
 largest $\sigmasfr$ values, which also have the smallest effective
@@ -196,22 +198,25 @@ of 100~pc, while uncertain, is likely accurate within a factor of two.
 
 \subsection{Star Formation Rates and Stellar Masses}
 
-We gathered photometry from the All-Sky Release of the Wide-field
-Infrared Survey Explorer \citep[WISE,][]{wri10}, the Seventh Data
-Release of the Sloan Digital Sky Survey \citep[SDSS,][]{aba09}, and
-General Release 6 from the Galaxy Evolution Explorer
-\citep[GALEX,][]{mar05galex}.  We also obtained $5\times30$~sec
-dithered exposures at 3.6~$\mu$m and 4.5~$\mu$m for all sources with
-the Infrared Array Camera \citep{faz04} on the Spitzer Space Telescope
-\citep{wer04} as part of General Observer program 60145 (PI:
-C. Tremonti).  We used the post--basic calibrated data to perform
-aperture photometry on all sources, and we also used the
+% We gathered photometry from the All-Sky Release of the Wide-field
+% Infrared Survey Explorer \citep[WISE,][]{wri10}, the Seventh Data
+% Release of the Sloan Digital Sky Survey \citep[SDSS,][]{aba09}, and
+% General Release 6 from the Galaxy Evolution Explorer
+% \citep[GALEX,][]{mar05galex}.  
+We gathered photometry from the WISE All-Sky Release, the SDSS Seventh
+Data Release, and GALEX General Release 6.  We also obtained
+$5\times30$~sec dithered exposures at 3.6~$\mu$m and 4.5~$\mu$m for
+all sources with the Infrared Array Camera on the Spitzer Space
+Telescope as part of General Observer program 60145 (PI: C. Tremonti).
+We used the post--basic calibrated data to perform aperture photometry
+on all sources, and we also used the
 APEX\footnote{http://irsa.ipac.caltech.edu/data/SPITZER/docs/dataanalysistools/tools/mopex/}
 point-source extraction software for photometry of sources in crowded
-fields.  All the photometry was corrected for Galactic extinction
-based on the \citet{sch98} dust maps.  We show spectral energy
-distributions (SEDs) for the three high-$\sigmasfr$ galaxies in
-Figure~\ref{fig:seds}.
+fields.  We show spectral energy distributions (SEDs) for the three
+high-$\sigmasfr$ galaxies in Figure~\ref{fig:seds}.
+
+% All the photometry was corrected for Galactic extinction
+% based on the \citet{sch98} dust maps.
 
 We estimate IR-based star-formation rates for the 25/29 galaxies with
 WISE 12 or 22~$\mu$m detections by fitting \citet{cha01} templates to
@@ -225,7 +230,7 @@ starbursts having larger total-IR (8--1000~$\mu$m) to mid-IR
 (8--24~$\mu$m) ratios.  The extreme $\sigmasfr$ values of our sample
 imply large total-IR to mid-IR ratios, characteristic of the most
 luminous galaxies in the local universe
-\citep[e.g.,][]{cha01,dal02,rie09}.  If we used the most luminous
+\citep[e.g.,][]{rie09}.  If we used the most luminous
 local templates for the 8/29 sources with SFRs in the ULIRG regime
 ($\sfrir>200$~\msun~yr$^{-1}$), we would obtain SFRs that are larger
 by 0.5~dex than the values we adopt for this paper.
@@ -327,14 +332,14 @@ measurements.  Among the high-$\sigmasfr$ galaxies, the strongest case
 for detectable AGN emission can be made for J1506+5402, which has the
 most luminous \oiii~$\lambda5007$ line among the 29 galaxies observed
 by HST.  This source also has a weak \nev~$\lambda3426$ emission line,
-which is associated with AGN activity \citep[e.g.,][]{abe08,gil10}.
-It was observed with the Chandra X-ray Observatory (proposal ID
-11700896, PI: C. Tremonti) and had four detected counts, corresponding
-to a 0.5--8.0~keV X-ray luminosity of $10^{42.7}$~erg~s$^{-1}$ (see
-P. Sell et al., in preparation for more details on the 12/29 galaxies
-with Chandra observations).  Using the relationship between 2--10~keV
-X-ray and 12.3~$\mu$m mid-IR luminosity for AGNs from \citet{gan09},
-one would expect a source with
+which is associated with AGN activity \citep[e.g.,][]{gil10}.  It was
+observed with the Chandra X-ray Observatory (proposal ID 11700896, PI:
+C. Tremonti) and had four detected counts, corresponding to a
+0.5--8.0~keV X-ray luminosity of $10^{42.7}$~erg~s$^{-1}$ (see P. Sell
+et al., in preparation for more details on the 12/29 galaxies with
+Chandra observations).  Using the relationship between 2--10~keV X-ray
+and 12.3~$\mu$m mid-IR luminosity for AGNs from \citet{gan09}, one
+would expect a source with
 $L_{\textnormal{\scriptsize{X}}}\approx5\times10^{42}$~erg~s$^{-1}$ to
 have
 $L_{\textnormal{\scriptsize{MIR}}}\approx7\times10^{42}$~erg~s$^{-1}$,
@@ -349,10 +354,14 @@ suggesting absorption by a factor of $\sim10$ in the X-rays.  However,
 even if the X-ray attenuation were a factor of 100, which is the
 typical value for local Compton-thick AGNs \citep{dia09}, the expected
 mid-IR AGN contribution would only be relevant at the $\lesssim$30\%
-level.  Thus, similar to local ULIRGs \citep[e.g.,][]{far07}, the
-bolometric output of the galaxies in our sample is dominated by star
-formation, and we conclude that our results regarding large
+level.  We conclude that the bolometric output of the galaxies in our
+sample is dominated by star and we that our results regarding large
 $\sigmasfr$ values are not affected by AGN contamination.
+
+% Thus, similar to local ULIRGs \citep[e.g.,][]{far07}, the
+% bolometric output of the galaxies in our sample is dominated by star
+% formation, and we conclude that our results regarding large
+% $\sigmasfr$ values are not affected by AGN contamination.
 
 
 \subsection{The Outflow Launching Mechanism}\label{sec:launch}
@@ -385,7 +394,7 @@ flux from stellar winds and supernovae.  For example, a starburst with
 $\textnormal{SFR}\approx200$~\msun~yr$^{-1}$ would be associated with
 radiation pressure $L_{bol}/c\approx2\times10^{35}$~dyne and ram
 pressure $\dot{p}\approx5$--$10\times10^{35}$~dyne from stellar winds
-and supernovae \citep[e.g.,][]{lei92,hec93,lei99,vei05}.  Furthermore,
+and supernovae \citep[e.g.,][]{lei92,lei99,vei05}.  Furthermore,
 \citet{hec11} noted that such a large momentum injection
 ($\dot{p}\approx10^{35}$~dyne) from a small initial radius
 $r_{0}\approx100$~pc could accelerate a cloud with column density
@@ -445,7 +454,7 @@ galaxies of similar mass that are smaller by almost an order of
 magnitude.  If these systems do evolve into quiescent elliptical
 galaxies, it would be quite challenging for them to grow in size from
 $r_e\sim0.1$~kpc to $r_e\sim5$~kpc to reach the local size--mass
-relation \citep{shen03} in the $t\sim6$~Gyr since $z=0.6$.  For
+relation \citep{she03} in the $t\sim6$~Gyr since $z=0.6$.  For
 comparison the compact, quiescent galaxies observed at $z\sim2$
 \citep[e.g.,][]{tru07,van08} have $t\sim10$~Gyr to grow by a factor of
 $\sim5$.  In this context, it is worth noting that the half-light
@@ -482,21 +491,21 @@ University of California Office of Research.
 
 
 \begin{thebibliography}{}
-\bibitem[Abazajian et al.(2009)]{aba09} Abazajian, K.~N.,
-  Adelman-McCarthy, J.~K., Ag{\"u}eros, M.~A., et al.\ 2009, \apjs,
-  182, 543
-\bibitem[Abel \& Satyapal(2008)]{abe08} Abel, N.~P., \& Satyapal,
-  S.\ 2008, \apj, 678, 686
+%\bibitem[Abazajian et al.(2009)]{aba09} Abazajian, K.~N.,
+%  Adelman-McCarthy, J.~K., Ag{\"u}eros, M.~A., et al.\ 2009, \apjs,
+%  182, 543
+%\bibitem[Abel \& Satyapal(2008)]{abe08} Abel, N.~P., \& Satyapal,
+%  S.\ 2008, \apj, 678, 686
 \bibitem[Chary \& Elbaz(2001)]{cha01} Chary, R., \& Elbaz, D.\ 2001,
   \apj, 556, 562
 \bibitem[Chevalier \& Clegg(1985)]{che85} Chevalier, R.~A., \& Clegg,
   A.~W.\ 1985, \nat, 317, 44
-\bibitem[Dale \& Helou(2002)]{dal02} Dale, D.~A., \& Helou, G.\ 2002,
-  \apj, 576, 159
-\bibitem[de Vaucouleurs(1948)]{dev48} de Vaucouleurs, G.\ 1948,
-  Annales d'Astrophysique, 11, 247
-\bibitem[Debuhr et al.(2012)]{deb12} Debuhr, J., Quataert, E., \& Ma,
-  C.-P.\ 2012, \mnras, 420, 2221
+%\bibitem[Dale \& Helou(2002)]{dal02} Dale, D.~A., \& Helou, G.\ 2002,
+%  \apj, 576, 159
+%\bibitem[de Vaucouleurs(1948)]{dev48} de Vaucouleurs, G.\ 1948,
+%  Annales d'Astrophysique, 11, 247
+%\bibitem[Debuhr et al.(2012)]{deb12} Debuhr, J., Quataert, E., \& Ma,
+%  C.-P.\ 2012, \mnras, 420, 2221
 \bibitem[Diamond-Stanic et al.(2009)]{dia09} Diamond-Stanic, A.~M.,
   Rieke, G.~H., \& Rigby, J.~R.\ 2009, \apj, 698, 623
 \bibitem[Di Matteo et al.(2005)]{dim05} Di Matteo, T., Springel, V.,
@@ -505,17 +514,17 @@ University of California Office of Research.
   H.~S., et al.\ 2011, \aap, 533, A119
 \bibitem[Fabian(2012)]{fab12} Fabian, A.~C.\ 2012,
   arXiv:1204.4114
-\bibitem[Farrah et al.(2007)]{far07} Farrah, D., Bernard-Salas, J.,
-  Spoon, H.~W.~W., et al.\ 2007, \apj, 667, 149
-\bibitem[Fazio et al.(2004)]{faz04} Fazio, G.~G., Hora, J.~L., Allen,
-  L.~E., et al.\ 2004, \apjs, 154, 10
+%\bibitem[Farrah et al.(2007)]{far07} Farrah, D., Bernard-Salas, J.,
+%  Spoon, H.~W.~W., et al.\ 2007, \apj, 667, 149
+%\bibitem[Fazio et al.(2004)]{faz04} Fazio, G.~G., Hora, J.~L., Allen,
+%x  L.~E., et al.\ 2004, \apjs, 154, 10
 \bibitem[Gandhi et al.(2009)]{gan09} Gandhi, P., Horst, H., Smette,
   A., et al.\ 2009, \aap, 502, 457
 \bibitem[Gilli et al.(2010)]{gil10} Gilli, R., Vignali, C., Mignoli,
   M., et al.\ 2010, \aap, 519, A92
-\bibitem[Heckman et al.(1993)]{hec93} Heckman, T.~M., Lehnert, M.~D.,
-  \& Armus, L.\ 1993, The Environment and Evolution of Galaxies, 188,
-  455
+%\bibitem[Heckman et al.(1993)]{hec93} Heckman, T.~M., Lehnert, M.~D.,
+%  \& Armus, L.\ 1993, The Environment and Evolution of Galaxies, 188,
+%  455
 \bibitem[Heckman et al.(2000)]{hec00} Heckman, T.~M., Lehnert, M.~D.,
   Strickland, D.~K., \& Armus, L.\ 2000, \apjs, 129, 493
 \bibitem[Heckman(2002)]{hec02} Heckman, T.~M.\ 2002, Extragalactic Gas
@@ -541,8 +550,8 @@ University of California Office of Research.
 \bibitem[Lotz et al.(2011)]{lot11} Lotz, J.~M., Jonsson, P., Cox,
   T.~J., et al.\ 2011, \apj, 742, 103
 \bibitem[Martin(2005)]{mar05} Martin, C.~L.\ 2005, \apj, 621, 227
-\bibitem[Martin et al.(2005)]{mar05galex} Martin, D.~C., Fanson, J.,
-  Schiminovich, D., et al.\ 2005, \apjl, 619, L1
+%\bibitem[Martin et al.(2005)]{mar05galex} Martin, D.~C., Fanson, J.,
+%  Schiminovich, D., et al.\ 2005, \apjl, 619, L1
 \bibitem[Meurer et al.(1997)]{meu97} Meurer, G.~R., Heckman, T.~M.,
   Lehnert, M.~D., Leitherer, C., \& Lowenthal, J.\ 1997, \aj, 114, 54
 \bibitem[Mihos \& Hernquist(1996)]{mih96} Mihos, J.~C., \& Hernquist,
@@ -557,12 +566,10 @@ University of California Office of Research.
   T.~M., Tremonti, C., et al.\ 2009, \apj, 706, 203
 \bibitem[Peng et al.(2002)]{pen02} Peng, C.~Y., Ho, L.~C., Impey,
   C.~D., \& Rix, H.-W.\ 2002, \aj, 124, 266
-\bibitem[Peng et al.(2010)]{pen10} Peng, C.~Y., Ho, L.~C., Impey,
-  C.~D., \& Rix, H.-W.\ 2010, \aj, 139, 2097
+%\bibitem[Peng et al.(2010)]{pen10} Peng, C.~Y., Ho, L.~C., Impey,
+%  C.~D., \& Rix, H.-W.\ 2010, \aj, 139, 2097
 \bibitem[Polletta et al.(2007)]{pol07} Polletta, M., Tajer, M.,
   Maraschi, L., et al.\ 2007, \apj, 663, 81
-\bibitem[Robaina et al.(2010)]{rob10} Robaina, A.~R., Bell, E.~F., van
-  der Wel, A., et al.\ 2010, \apj, 719, 844
 \bibitem[Rodr{\'{\i}}guez Zaur{\'{\i}}n et al.(2008)]{rod08}
   Rodr{\'{\i}}guez Zaur{\'{\i}}n, J., Tadhunter, C.~N., \&
   Gonz{\'a}lez Delgado, R.~M.\ 2008, \mnras, 384, 875
@@ -577,8 +584,8 @@ University of California Office of Research.
   Weiner, B.~J., et al.\ 2011, arXiv:1107.2921
 \bibitem[Rupke et al.(2005)]{rup05} Rupke, D.~S., Veilleux, S., \&
   Sanders, D.~B.\ 2005, \apjs, 160, 115 
-\bibitem[Schlegel et al.(1998)]{sch98} Schlegel, D.~J., Finkbeiner,
-  D.~P., \& Davis, M.\ 1998, \apj, 500, 525
+%\bibitem[Schlegel et al.(1998)]{sch98} Schlegel, D.~J., Finkbeiner,
+%  D.~P., \& Davis, M.\ 1998, \apj, 500, 525
 \bibitem[Scoville et al.(1997)]{sco97} Scoville, N.~Z., Yun, M.~S., \&
   Bryant, P.~M.\ 1997, \apj, 484, 702
 \bibitem[Shapley et al.(2003)]{sha03} Shapley, A.~E., Steidel, C.~C.,
@@ -606,10 +613,10 @@ University of California Office of Research.
   C.~Y., et al.\ 2006, \apj, 643, 707
 \bibitem[Weiner et al.(2009)]{wei09} Weiner, B.~J., et al.\ 2009,
   \apj, 692, 187
-\bibitem[Werner et al.(2004)]{wer04} Werner, M.~W., Roellig, T.~L.,
-  Low, F.~J., et al.\ 2004, \apjs, 154, 1
-\bibitem[Wright et al.(2010)]{wri10} Wright, E.~L., Eisenhardt,
-  P.~R.~M., Mainzer, A.~K., et al.\ 2010, \aj, 140, 1868
+%\bibitem[Werner et al.(2004)]{wer04} Werner, M.~W., Roellig, T.~L.,
+%  Low, F.~J., et al.\ 2004, \apjs, 154, 1
+%\bibitem[Wright et al.(2010)]{wri10} Wright, E.~L., Eisenhardt,
+%  P.~R.~M., Mainzer, A.~K., et al.\ 2010, \aj, 140, 1868
 \bibitem[Wuyts et al.(2010)]{wuy10} Wuyts, S., Cox, T.~J., Hayward,
   C.~C., et al.\ 2010, \apj, 722, 1666
 \bibitem[Wuyts et al.(2011)]{wuy11} Wuyts, S., F{\"o}rster Schreiber,
