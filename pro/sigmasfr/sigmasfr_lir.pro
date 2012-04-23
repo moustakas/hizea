@@ -91,7 +91,8 @@ pro sigmasfr_lir, clobber=clobber, rebuild_witt=rebuild_witt
       build_witt, witt, wittfile=wittfile else $
         witt = mrdfits(wittfile+'.gz',1)
 
-    l1500 = kcorr[good].k_uvflux[0]*(4.0*!dpi*dluminosity(out[good].z,/cm)^2)/im_lsun()
+    ;l1500 = kcorr[good].k_uvflux[0]*(4.0*!dpi*dluminosity(out[good].z,/cm)^2)/im_lsun()
+    l1500 = kcorr[good].k_uvflux[0]*(4.0*!dpi*dluminosity(out[good].z,/cm)^2)*1500./im_lsun()
     out[good].irx_rieke = 10.0^out[good].lir_rieke/l1500
     out[good].irx_dale = 10.0^out[good].lir_dale/l1500
     out[good].irx_chary = 10.0^out[good].lir_chary/l1500
