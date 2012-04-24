@@ -34,7 +34,7 @@ pro plot_3seds
 
     xtitle = textoidl('Rest Wavelength (\mum)')
     ytitle = textoidl('Apparent AB Magnitude + offset')
-    yrange = [25.0,2.0]
+    yrange = [25.0,1.0]
     xrange = [0.05,30.]
     ticks = [0.1,0.2,0.4,0.8,1.6,3.0,6.0,12.0,24.0]
     xtickname=['0.1','0.2','0.4','0.8','1.6','3','6','12','24']
@@ -51,16 +51,16 @@ pro plot_3seds
       ;ytickname=replicate(' ',8), $
       ytitle=ytitle
     
-  offset = [10., 0., 5.]
+  offset = [10.d, 0.d, 5.d]
   ;offset = [0., 0., 0.]
 
 ; plot seds
   for jj=0L, 2L do begin
 
 ; isedfit model
-     good = where(model[jj].wave/1D4 lt 4.3, ngood)
-     djs_oplot, model[jj].wave[good]/1D4/(1.+phot[jj].z), $
-       model[jj].flux[good]-offset[jj], color=im_color('grey40')
+     rel = where(model[jj].wave/1D4 lt 4.3, nrel)
+     djs_oplot, model[jj].wave[rel]/1D4/(1.+phot[jj].z), $
+       model[jj].flux[rel]-offset[jj], color=im_color('grey40')
      
     ;xyouts, 50., 19.-offset[jj], phot[jj].galaxy, charsize=1.5
     ;xyouts, 0.4, 20.4-offset[jj], phot[jj].galaxy, charsize=1.8
@@ -80,9 +80,13 @@ pro plot_3seds
       ivar=phot[jj].ivarmaggies[used],magerr=mab_err)
 
 
+    oploterror, weff[used]/(1.+phot[jj].z), mab-offset[jj], mab_err, $
+      psym=symcat(16), $
+      symsize=1.5, color=djs_icolor('red'), $
+      errcolor=djs_icolor('red'), errthick=8  
 
 
-; plot M82 SED scaled to WISE ch2
+;; plot M82 SED scaled to WISE ch2
   m82mag = -2.5*alog10(m82flambda * (m82wave)^2)
   sort = sort(abs(m82wave/10000. - weff[isw2]/(1.+phot[jj].z)))
 
@@ -90,7 +94,7 @@ pro plot_3seds
   norm = mab[loc]-offset[jj] - m82mag[sort[0]]
   good = where(m82wave gt 43000./(1.+phot[jj].z), mgood)
   oplot, m82wave[good]/10000., m82mag[good]+norm[0], $
-   color=djs_icolor('blue'), thick=8, linestyle=1
+   color=djs_icolor('blue'), thick=8, linestyle=2
 
 
 ; plot ARP220 SED scaled to WISE ch2
@@ -101,16 +105,16 @@ pro plot_3seds
   ;good = where(arp220wave gt 25000., mgood)
   good = where(arp220wave gt 43000./(1.+phot[jj].z), mgood)
   oplot, arp220wave[good]/10000., arp220mag[good]+norm[0]-offset[jj], $
-    color=djs_icolor('dark green'), linestyle=2, thick=8
+    color=djs_icolor('dark green'), linestyle=3, thick=8
 
-;;; plot QSO2 SED scaled to WISE ch2
-;  torusmag = -2.5*alog10(torusflambda * (toruswave)^2)
-;  sort = sort(abs(toruswave/10000. - weff[isw2]/(1.+phot[jj].z)))
-;  loc = where(weff[used] eq weff[isw2])
-;  norm = mab[loc] - torusmag[sort[0]]
-;  good = where(toruswave gt 43000./(1.+phot[jj].z), mgood)
-;  oplot, toruswave[good]/10000., torusmag[good]+norm[0]-offset[jj], $
-;    color=djs_icolor('red'), linestyle=3, thick=6
+; plot QSO2 SED scaled to WISE ch2
+  torusmag = -2.5*alog10(torusflambda * (toruswave)^2)
+  sort = sort(abs(toruswave/10000. - weff[isw2]/(1.+phot[jj].z)))
+  loc = where(weff[used] eq weff[isw2])
+  norm = mab[loc] - torusmag[sort[0]]
+  good = where(toruswave gt 43000./(1.+phot[jj].z), mgood)
+  oplot, toruswave[good]/10000., torusmag[good]+norm[0]-offset[jj], $
+    color=djs_icolor('red'), linestyle=1, thick=8
 
     oploterror, weff[used]/(1.+phot[jj].z), mab-offset[jj], mab_err, $
       psym=symcat(16), $
@@ -119,12 +123,12 @@ pro plot_3seds
 
   endfor
 
-  ;legend, ['Stellar Population Fit', 'M82 starburst', 'Arp 220 starburst', 'obscured quasar'], $
-  legend, ['Stellar Population Fit', 'M82 Starburst', 'Arp 220 Starburst'], $
-    ;linestyle=[0, 2, 1, 3], $
-    linestyle=[0, 1, 2], $
-    ;color=[djs_icolor('black'), djs_icolor('blue'), djs_icolor('dark green'), djs_icolor('red')], $
-    color=[djs_icolor('black'), djs_icolor('blue'), djs_icolor('dark green')], $
+  legend, ['stellar population fit', 'M82 starburst', 'Arp 220 starburst', 'obscured quasar'], $
+  ;legend, ['Stellar Population Fit', 'M82 Starburst', 'Arp 220 Starburst'], $
+    linestyle=[0, 2, 3, 1], $
+    ;linestyle=[0, 1, 2], $
+    color=[djs_icolor('black'), djs_icolor('blue'), djs_icolor('dark green'), djs_icolor('red')], $
+    ;color=[djs_icolor('black'), djs_icolor('blue'), djs_icolor('dark green')], $
     charsize=1.5, box=0, pos=[xrange[0], yrange[1]+0.5], thick=8
 
 
