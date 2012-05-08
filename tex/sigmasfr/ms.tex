@@ -4,6 +4,7 @@
 \newcommand{\mgii}{\textrm{Mg}~\textsc{ii}}
 \newcommand{\nev}{[\textrm{Ne}~\textsc{v}]}
 \newcommand{\oii}{[\textrm{O}~\textsc{ii}]}
+\newcommand{\hii}{\textrm{H}~\textsc{ii}}
 \newcommand{\oiii}{[\textrm{O}~\textsc{iii}]}
 \newcommand{\msun}{M$_{\odot}$}
 \newcommand{\mstar}{M$_{*}$}
@@ -19,14 +20,14 @@
 
 \begin{document}
 
-\title{In the Crucible: Massive Compact Galaxies with High-Velocity
-  Outflows and Eddington-Limited Star Formation}
+\title{High-Velocity Outflows Without AGN Feedback:
+  \\ Eddington-Limited Star Formation in Compact Massive Galaxies}
 
 \author{Aleksandar M. Diamond-Stanic\altaffilmark{1,2}, John
   Moustakas\altaffilmark{1}, Christy A. Tremonti\altaffilmark{3},
   Alison L. Coil\altaffilmark{1}, Ryan C. Hickox\altaffilmark{4}, Aday
-  Robaina\altaffilmark{5}, Gregory H. Rudnick\altaffilmark{6}, \& Paul
-  Sell\altaffilmark{3} }
+  R. Robaina\altaffilmark{5}, Gregory H. Rudnick\altaffilmark{6}, \&
+  Paul H. Sell\altaffilmark{3} }
 
 \altaffiltext{1}{Center for Astrophysics and Space Sciences,
   University of California, San Diego, La Jolla, CA 92093, USA}
@@ -45,17 +46,16 @@
 \begin{abstract}
 
 We present the discovery of compact, obscured star formation in
-galaxies that exhibit $\gtrsim1000$~\kms\ outflows.  Using optical
-morphologies from the Hubble Space Telescope and infrared photometry
-from the Wide-field Infrared Survey Explorer, we estimate star
-formation rate (SFR) surface densities that approach
-$\sigmasfr\approx5000$~\msun~yr$^{-1}$~kpc$^{-2}$, which is comparable
-to the Eddington limit from radiation pressure on dust grains.  We
-argue that feedback associated with a compact starburst in the form of
-radiation pressure from massive stars and ram pressure from supernovae
-and stellar winds is sufficient to produce the high-velocity outflows
-we observe, without the need to invoke feedback from an active
-galactic nucleus.
+galaxies at $z\sim0.6$ that exhibit $\gtrsim1000$~\kms\ outflows.
+Using optical morphologies from the Hubble Space Telescope and
+infrared photometry from the Wide-field Infrared Survey Explorer, we
+estimate star formation rate (SFR) surface densities that approach
+$\sigmasfr\approx3000$~\units, comparable to the Eddington limit from
+radiation pressure on dust grains.  We argue that feedback associated
+with a compact starburst in the form of radiation pressure from
+massive stars and ram pressure from supernovae and stellar winds is
+sufficient to produce the high-velocity outflows we observe, without
+the need to invoke feedback from an active galactic nucleus.
 
 \end{abstract}
 
@@ -65,62 +65,68 @@ galactic nucleus.
 \section{Introduction}
 
 The central regions of elliptical galaxies are thought to form in
-compact starbursts \citep[e.g.,][]{kor09,hop09}.  Feedback associated
-with such starbursts can produce outflows driven by thermal energy
-from supernova explosions \citep[e.g.,][]{che85}, stellar winds
-\citep[e.g.,][]{lei92}, and momentum input from both supernova ram
-pressure and radiation pressure on dust grains \citep[e.g.,][]{mur05}.
-It has been argued that such feedback imposes a limit on the maximum
-star-formation rate (SFR) surface density ($\sigmasfr$) for starbursts
-\citep[e.g.,][]{leh96,meu97,mur05,tho05} and the maximum stellar
-surface density for elliptical galaxies and star clusters
-\citep[e.g.,][]{hop10}.
+compact starbursts \citep{kor09,hop09}.  Feedback associated with such
+starbursts can produce outflows driven by thermal energy from
+supernova explosions \citep{che85}, stellar winds \citep{lei92}, and
+momentum input from both supernova ram pressure and radiation pressure
+on dust grains \citep{mur05}.  It has been argued that such feedback
+imposes a limit on the maximum star-formation rate (SFR) surface
+density ($\sigmasfr$) for starbursts \citep{leh96,meu97,mur05,tho05}
+and the maximum stellar surface density for elliptical galaxies and
+star clusters \citep{hop10}.
 
 Galactic winds are ubiquitous in star-forming galaxies at all
 redshifts and generally exhibit outflow velocities in the
-100--500~\kms\ range
-\citep[e.g.,][]{hec00,sha03,mar05,rup05,wei09,rub10,ste10}.  Thus, the
-discovery of $|v|>1000$~\kms\ outflows in a sample of massive
+100--500~\kms\ range, which can be attributed to the stellar processes
+described above \citep{hec00,sha03,mar05,rup05,wei09,rub10}.  Outflows
+with significantly higher velocities ($|v|>1000$~\kms) were discovered
+by \citet{tre07} in a sample of massive
 ($\textnormal{\mstar}\approx10^{11}$~\msun) post-starburst galaxies at
-$z\sim0.6$ by \citet{tre07} suggested that a more energetic source,
-such as feedback from an accreting supermassive black hole
-\citep[e.g.,][]{sil98,dim05}, could have been responsible for
-launching the winds \citep[see][for a recent review]{fab12}.
+$z\sim0.6$, and it was suggested that a more energetic source such as
+feedback from an accreting supermassive black hole \citep{sil98,dim05}
+may be responsible for launching the winds \citep[see][for a recent
+  review]{fab12}.
 
 However, it also plausible that feedback from a compact starburst
 could expel gas with such large velocities.  Indeed, there is evidence
 for a positive correlation between outflow velocity and starburst
-luminosity \citep[e.g.,][]{mar05,rup05,tre07}, albeit with significant
-scatter.  Furthermore, \citet{hec11} recently found outflows with
-maximum velocities reaching $-1500$~\kms\ in a sample of local
-starbursts with compact nuclei, and argued that such velocities could
-be explained by feedback from massive stars.
+luminosity \citep{mar05,rup05,tre07}, albeit with significant scatter.
+Furthermore, \citet{hec11} recently found outflows with maximum
+velocities reaching $1500$~\kms\ in a sample of local starbursts with
+compact nuclei, and argued that such velocities could be explained by
+a wind that is launched from $r_0\sim100$~pc and driven by feedback
+from massive stars and supernovae.
 
 
-In this Letter, we present results for a sample of massive galaxies at
-$z\sim0.6$ that exhibit $\gtrsim1000$~\kms\ outflows, expanding on the
-sample from \citet{tre07}.  We seek to test whether the energetic
-outflows in these galaxies could have been driven by feedback from
-starbursts with very large SFR surface densities.  Our analysis
-combines galaxy sizes obtained with the Hubble Space Telescope (HST)
-with SFRs and stellar masses estimated using photometry from the
-Wide-field Infrared Survey Explorer (WISE), the Spitzer Space
-Telescope, the Sloan Digital Sky Survey (SDSS), and the Galaxy
-Evolution Explorer (GALEX).
+In this Letter, we measure sizes and SFRs for a sample of massive
+galaxies at $z\sim0.6$ that exhibit $\gtrsim1000$~\kms\ outflows,
+expanding on the initial study by \citet{tre07}.  We seek to test
+whether the energetic outflows in these galaxies could have been
+driven by feedback from starbursts with very large SFR surface
+densities.  Our analysis combines galaxy sizes measured with the
+Hubble Space Telescope (HST) with SFRs and stellar masses estimated
+from Wide-field Infrared Survey Explorer (WISE), Spitzer Space
+Telescope, Sloan Digital Sky Survey (SDSS), and Galaxy Evolution
+Explorer (GALEX) photometry.
+
+% we focus our analysis on the galaxies with the most extreme
+% $\sigmasfr$ values.
 
 
 \begin{figure}[!t]
-\includegraphics[angle=0,scale=0.41]{3seds.ps}
+\includegraphics[angle=0,scale=0.41]{f1.ps}
 \caption{Left: Observed UV--IR SEDs ($\lrest=0.1$--15~$\mu$m) for
-  three galaxies with large SFR surface densities
-  ($\sigmasfr>3000$~\units).  We show stellar population fits to the
-  $\lrest=0.1$--3~$\mu$m emission (black solid line) and two templates
-  for dust emission \citep[M82 starburst, Arp 220 starburst;][]{pol07}
-  scaled to match the $\lobs=4.6~\mu$m band.  The starburst templates
-  provide reasonable fits to the $\lobs=12$ and 22~$\mu$m WISE
-  photometry, while a quasar template does not.  Right: HST/WFC3 F814W
-  images (probing $\lrest\approx5000$~\AA) showing that these galaxies
-  are dominated by a compact nucleus.}
+  three galaxies with the largest SFR surface densities
+  ($\sigmasfr\approx3000$~\units).  The top two SEDs are offset by 5
+  and 10 magnitudes, respectively.  We show stellar population fits to
+  the $\lrest=0.1$--3~$\mu$m emission (black solid line) and three
+  templates for dust emission \citep[M82 starburst, blue dashed line;
+    Arp 220 starburst, green dot-dashed line; obscured quasar, red
+    dotted line;][]{pol07} scaled to match the $\lobs=4.6~\mu$m band.
+  The starburst templates provide reasonable fits to the $\lobs=12$
+  and 22~$\mu$m WISE photometry, while the quasar template does not.
+  Right: HST/WFC3 F814W images (probing $\lrest\approx5000$~\AA)
+  showing that these galaxies are dominated by a compact nucleus.}
 \label{fig:seds}
 \end{figure}
 
@@ -129,74 +135,85 @@ Evolution Explorer (GALEX).
 
 \subsection{Morphologies and Sizes}
 
-Our sample derives from 29 galaxies targeted for HST/WFC3 imaging in
-programs 12019 and 12272 (PI: C. Tremonti).  Using the F814W filter on
-the UVIS channel, which has $0.04\arcsec$ pixels and
-$\textnormal{FWHM}=0.074\arcsec$, we obtained $4\times10$~min
-exposures in a single orbit for each galaxy.  The dithered images were
-processed with
+We observed 29 galaxies with HST (programs 12019 and 12272) selected
+from a parent sample of $\sim10^3$ galaxies at $0.35<z<1.0$ with
+post-starburst spectral features: B or A-star dominated stellar
+continua and moderately weak nebular emission
+($\textnormal{EW}(\oii)<20$~\AA; see C. Tremonti, et al., in
+preparation for more details).  The galaxies targeted with HST were
+those with the youngest derived post-burst ages
+$t_{burst}\lesssim300$~Myr.  Thus, by design, this sample has bluer
+$U-B$ colors and stronger emission lines than typical post-starburst
+samples \citep{coi11}.  Our subsequent UV--IR SED analysis (see
+Section~\ref{sec:seds}) reveals significant ongoing star formation
+($\textnormal{SFR}>50$~\msun~yr$^{-1}$) in the 14/29 galaxies with
+WISE 22~$\mu$m detections, calling into question the post-starburst
+nature of roughly half of the HST sample.
+
+Using the F814W filter on the WFC3/UVIS channel, which has
+$0.04\arcsec$ pixels, we obtained $4\times10$~min exposures in a
+single orbit for each galaxy.  The dithered images were processed with
 MultiDrizzle\footnote{http://stsdas.stsci.edu/multidrizzle/} to
 produce science mosaics with $0.02\arcsec$ pixels.  For each galaxy,
 we use GALFIT \citep{pen02} to model the two-dimensional surface
-brightness profile with a single Sersic component, using stars in the
-images to construct the model point-spread function (PSF).  The Sersic
-index (n) and effective radius ($r_e$) are free parameters in the
-model.  In cases where the best-fit model returns $n>4$, we also fit
-an $n=4$ de Vaucouleurs model, yielding a larger $r_e$ value (due to
-the covariance between $n$ and $r_e$), and we use these these larger
+brightness profile with a single Sersic component (characterized by
+Sersic index $n$ and effective radius $r_e$), using stars in the
+images to construct the model point-spread function (PSF).  In cases
+where the best-fit model returns $n>4$, we also fit an $n=4$ de
+Vaucouleurs model, yielding a larger $r_e$ value (due to the
+covariance between $n$ and $r_e$), and we use these these larger
 effective radii in our analysis.
 
-For this paper, we are most interested in the galaxies with the
-largest $\sigmasfr$ values, which also have the smallest effective
-radii.  We show the HST images for three high-$\sigmasfr$ galaxies in
-Figure~\ref{fig:seds}.  In all three cases, the single-component model
-GALFIT accounts for $>85\%$ of the total flux.  The residuals show
-diffuse emission that is consistent with these systems being
-late-stage galaxy mergers after final coalescence, although we defer a
-detailed comparison of the observed morphologies with expectations
+In this Letter, we highlight the galaxies with the smallest $r_e$ and
+largest $\sigmasfr$ values because such extreme starbursts could
+conceivably produce the high-velocity outflows we observe (see
+Section~\ref{sec:discussion}).  We show HST images for the three
+highest $\sigmasfr$ galaxies in Figure~\ref{fig:seds}.  In all three
+cases, the single-component GALFIT model accounts for $>85\%$ of the
+total flux.  The residuals show diffuse emission that is consistent
+with these systems being late-stage galaxy mergers, although we defer
+a detailed comparison of the observed morphologies with expectations
 from merger simulations to future work.
 
 For the most compact galaxy (J0905+5759, $r_e=0.013\arcsec$ or
 100~pc), we also show the observed one-dimensional surface brightness
-profile in the bottom-right panel of Figure~\ref{fig:profile}.  We
-compare to the profiles of six stars in the same image, the best-fit
-de Vaucouleurs model, and a de Vaucouleurs model with a larger
-effective radius ($r_e=0.04\arcsec$, the native WFC3/UVIS pixel size,
-which corresponds to a physical scale of 290~pc).  This comparison
-illustrates that this galaxy, while only marginally resolved with an
-effective radius that is $\sim20\%$ of the image FWHM, is clearly more
-extended than a point source.
+profile in Figure~\ref{fig:profile}.  We compare to the profiles of
+six stars in the same image, the best-fit de Vaucouleurs model, and a
+de Vaucouleurs model with $r_e=0.04\arcsec$ (the native WFC3/UVIS
+pixel size, which corresponds to a physical scale of 290~pc).  This
+comparison illustrates that this galaxy, while only marginally
+resolved with an $r_e$ that is $\sim20\%$ of the image FWHM, is
+clearly more extended than a point source.
 
-For such a compact source, there is significant uncertainty in our
-$r_e$ measurement given uncertainties in the model PSF.  To quantify
-this uncertainty, we used TinyTim to generate a model PSF that is
-artificially narrower than the stars in the image (convolving the
-output of tiny2 with a $\textnormal{FWHM}=0.04\arcsec$ Gaussian,
-whereas the image FWHM is $0.074\arcsec$) and found that this
-increased the effective radius in the GALFIT model by a factor of two.
-We also fit a two-component PSF+Sersic model, but found that the
-Sersic component dominates the fit, yielding a similar effective
-radius.  Furthermore, the spectrum of the galaxy shows no evidence for
-an AGN contribution to the $I$-band continuum (see
-Figure~\ref{fig:spectra}), so there is no clear motivation for
-including an unresolved, point-source component in the model.  We
-conclude that this galaxy is quite compact and that our $r_e$ estimate
-of 100~pc, while uncertain, is likely accurate within a factor of two.
+For such a compact source, there is uncertainty in our $r_e$
+measurement given uncertainties in the model PSF.  To quantify this,
+we used TinyTim to generate a model PSF that is narrower than the
+stars in the image (convolving with a $\textnormal{FWHM}=0.04\arcsec$
+Gaussian, whereas the image FWHM is $0.074\arcsec$) and found that
+this increased the $r_e$ in the GALFIT model by a factor of two.  We
+also fit a two-component PSF+Sersic model, but found that the Sersic
+component dominates the fit, yielding a similar $r_e$.  Furthermore,
+the spectrum of the galaxy shows no evidence for an AGN contribution
+to the optical continuum (see Figure~\ref{fig:spectra}), so there is
+no clear motivation for including an unresolved, point-source
+component in the model.  We conclude that this galaxy is quite compact
+and that our $r_e$ estimate is accurate within a factor of two.
 
 \begin{figure}[!t]
-\includegraphics[angle=0,scale=0.41]{profile.ps}
-\label{fig:profile}
+\includegraphics[angle=0,scale=0.41]{f2.ps}
 \caption{One-dimensional surface brightness profile for J0905+5759,
   which has the smallest effective radius in the sample.  The observed
   profile is shown as the solid black line, and the profiles of six
-  stars in the same image are shown in blue.  The best-fit de
-  Vaucouleurs profile with $r_e=100$~pc is shown as a dashed red line,
-  and for comparison a broader profile with $r_e=0.04\arcsec=290$~pc
-  is shown as the dotted green line.  This galaxy is quite compact,
-  but is more extended than a point source.}
+  stars in the same image are shown in blue, normalized to the same
+  central surface brightness.  The best-fit de Vaucouleurs profile
+  with $r_e=100$~pc is shown as a dashed red line, and for comparison
+  a broader profile with $r_e=0.04\arcsec=290$~pc is shown as the
+  dotted green line.  This galaxy is quite compact, but is more
+  extended than a point source.}
+\label{fig:profile}
 \end{figure}
 
-\subsection{Star Formation Rates and Stellar Masses}
+\subsection{Star Formation Rates and Stellar Masses}\label{sec:seds}
 
 % We gathered photometry from the All-Sky Release of the Wide-field
 % Infrared Survey Explorer \citep[WISE,][]{wri10}, the Seventh Data
@@ -207,49 +224,60 @@ We gathered photometry from the WISE All-Sky Release, the SDSS Seventh
 Data Release, and GALEX General Release 6.  We also obtained
 $5\times30$~sec dithered exposures at 3.6~$\mu$m and 4.5~$\mu$m for
 all sources with the Infrared Array Camera on the Spitzer Space
-Telescope as part of General Observer program 60145 (PI: C. Tremonti).
-We used the post--basic calibrated data to perform aperture photometry
-on all sources and point-source photometry on sources in crowded
-fields.  We show spectral energy distributions (SEDs) for the three
-high-$\sigmasfr$ galaxies in Figure~\ref{fig:seds}.
+Telescope as part of GO program 60145.  We used the post--basic
+calibrated data to perform aperture photometry on all sources and
+point-source photometry on sources in crowded fields.  We show
+spectral energy distributions (SEDs) for the three highest $\sigmasfr$
+galaxies in Figure~\ref{fig:seds}.
 
 % All the photometry was corrected for Galactic extinction
 % based on the \citet{sch98} dust maps.
 
 We estimate IR-based SFRs for the 25/29 galaxies with WISE 12 or
 22~$\mu$m detections by fitting \citet{cha01} templates to their 12
-and 22~$\mu$m fluxes.  For the 14/29 galaxies with 22~$\mu$m
+and 22~$\mu$m fluxes.  For the 14/25 galaxies with 22~$\mu$m
 detections, this yields SFRs that agree with those obtained from the
 \citet{ruj12} method based on 24~$\mu$m luminosity with a scatter of
 0.05~dex.  We note that several authors have shown that the shape of
-the IR SED for star-forming galaxies depends on the surface density of
-star formation \citep[e.g.,][]{ruj11,elb11}, with more compact
-starbursts having larger total-IR (8--1000~$\mu$m) to mid-IR
-(8--24~$\mu$m) ratios.  The extreme $\sigmasfr$ values of our sample
-imply large total-IR to mid-IR ratios, characteristic of the most
-luminous galaxies in the local universe \citep[e.g.,][]{rie09}.  If we
-used the most luminous local templates for the 8/29 sources with SFRs
-in the ULIRG regime ($\sfrir>200$~\msun~yr$^{-1}$), we would obtain
-SFRs that are larger by 0.5~dex than the values we adopt for this
-paper.
+the IR SED for star-forming galaxies depends on $\sigmasfr$
+\citep{ruj11,elb11}, with more compact starbursts having larger
+total-IR (8--1000~$\mu$m) to mid-IR (8--24~$\mu$m) ratios,
+characteristic of the most luminous galaxies in the local universe
+\citep{rie09}.  If we used the most luminous local templates for the
+8/25 sources with SFRs in the ULIRG regime
+($\sfrir>100$~\msun~yr$^{-1}$), we would obtain SFRs that are larger
+by 0.5~dex than the values we adopt for this paper.
 
 We also estimate SFRs and stellar masses based on stellar population
 fits to the $\lrest=0.1$--3~$\mu$m SEDs using the method of
-\citet{mou11}.  For galaxies with $\sfrir>50$~\msun~yr$^{-1}$, there
-is agreement between these UV-based SFR estimates and $\sfrir$ with a
-scatter of 0.32~dex.  For an SMC dust law, we find a median
-attenuation of $A_V=0.4$~mag.
+\citet{mou11}.  For the 14/25 galaxies with
+$\sfrir>50$~\msun~yr$^{-1}$, there is agreement between these UV-based
+SFR estimates and $\sfrir$ with a scatter of 0.32~dex.  For an SMC
+dust law, we find a median attenuation of $A_V=0.4$~mag.  We note that
+the observed H$\beta$ luminosities, uncorrected for dust extinction,
+are typically factors of 10--$20\times$ smaller than expected from the
+UV and IR SFRs.  This can be reconciled by either strong differential
+dust attenuation (i.e., $A_V\approx2$--3~mag for the line-emitting
+region), escaping ionizing photons from matter-bounded \hii\ regions,
+or a recently quenched starburst ($t>5~$Myr) with a small ratio of
+ionizing ($\lambda<912$~\AA) to non-ionizing UV photons.
+
 
 \begin{figure}[!t]
-\includegraphics[angle=0,scale=0.41]{spectra.ps}
+\includegraphics[angle=0,scale=0.41]{f3.ps}
 \caption{Spectra covering $\lrest=2500$--5200~\AA\ for the three
-  galaxies shown in Figure~\ref{fig:seds}.  These spectra are
-  dominated by light from the young stellar population and exhibit
-  \oii~$\lambda3727$, H$\beta$~$\lambda4861$, and \oiii~$\lambda5007$
-  emission lines.  The panels on the right highlight the
-  \mgii~$\lambda\lambda2796,2803$ spectral region in both wavelength
-  and velocity space to illustrate the outflow kinematics.  The
-  spectrum in the bottom panel has sufficient spectral resolution
+  galaxies shown in Figure~\ref{fig:seds}.  For clarity the top two
+  spectra are offset by $+10$ and $+20$ units.  These spectra are
+  dominated by the light of a young stellar population but have
+  relatively weak nebular emission lines (\oii~$\lambda3727$,
+  H$\beta$~$\lambda4861$, \oiii~$\lambda5007$) and strong
+  \mgii~$\lambda\lambda2796,2803$ absorption arising from the
+  interstellar medium.  The absense of broad \mgii\ or H$\beta$
+  emission lines rules out a significant contribution to the optical
+  continuum light from an AGN.  The panels on the right highlight the
+  region around the \mgii\ doublet in both wavelength and velocity
+  space to illustrate the outflow kinematics.  The spectrum in the
+  bottom panel has sufficient spectral resolution
   ($\textnormal{FWHM}\approx8$~\kms) to resolve the intrinsic shape of
   the absorption-line profile, revealing that the gas near the
   centroid velocity ($v=-2470$~\kms) covers the entire galaxy.}
@@ -258,7 +286,7 @@ attenuation of $A_V=0.4$~mag.
 
 \begin{figure*}[!t]
 \begin{center}
-\includegraphics[angle=0,scale=.8]{sigmasfr.ps} 
+\includegraphics[angle=0,scale=.8]{f4.ps} 
 \caption{SFR surface densities and stellar masses for the HST--WISE
   sample described in this paper (black circles, with symbol size
   proportional to outflow velocity), along with samples of $z<0.3$
@@ -267,13 +295,15 @@ attenuation of $A_V=0.4$~mag.
   threshold for launching winds \citep[dotted line,
     $\sigmasfr\approx0.1$~\units;][]{hec02}, the 90th-percentile
   starburst intensity limit from \citet{meu97} (dashed line,
-  $\sigmasfr\approx45$~\units), and the Eddington limit from radiation
+  $\sigmasfr\approx25$~\units), and the Eddington limit from radiation
   pressure on dust grains \citep[solid line,
-    $\sigmasfr\approx2000$~\units;][]{mur05,tho05,hop10}.  Our
-  HST--WISE sample overlaps with the region characterized by gas-rich
-  mergers, and extends to very large SFR surface densities near the
-  Eddington limit, suggesting growth that is limited by momentum
-  injection from massive stars.}
+    $\sigmasfr\approx3000$~\units;][]{mur05,tho05,hop10}.  The
+  representative error bar in the top-right portion of the plot
+  corresponds to uncertainties of 0.3~dex in $\sigmasfr$ and 0.2~dex
+  in stellar mass.  Our HST--WISE sample overlaps with the region
+  characterized by gas-rich mergers, and extends to very large SFR
+  surface densities near the Eddington limit, suggesting growth that
+  is limited by momentum injection from massive stars.}
 \label{fig:sigmasfr}
 \end{center}
 \end{figure*}
@@ -284,37 +314,39 @@ We present $\lrest=2500$--5200~\AA\ spectroscopy for three
 high-$\sigmasfr$ sources in Figure~\ref{fig:spectra} based on data
 from MMT/Blue Channel and SDSS (J1506+5402), Magellan/MagE
 (J1341-0321), and Keck/LRIS and Keck/HIRES (J0905+5759).  The spectra
-are dominated by light from the young ($t<50$~Myr) stellar population.
-We highlight the \mgii~$\lambda\lambda2796,2803$ absorption lines,
-which are used used to measure outflow velocities.  At low spectral
-resolution (e.g., the top right panel of Figure~\ref{fig:spectra}) it
-is not possible to determine the intrinsic shape of the absorption
-line profile and therefore the covering factor of the outflowing gas.
-However, the Keck/HIRES spectrum of J0905+5759
-($\textnormal{FWHM}\approx8$~\kms) reveals that the gas covers the
-entire continuum source near the velocity centroid ($v=-2470$~\kms)
-indicating a galaxy-wide outflow.
+are dominated by light from a young ($t<50$~Myr) stellar population.
+We highlight the interstellar medium \mgii~$\lambda\lambda2796,2803$
+absorption lines, which are used to measure outflow velocities.  At
+low spectral resolution (e.g., the top right panel of
+Figure~\ref{fig:spectra}) it is not possible to determine the
+intrinsic shape of the absorption line profile and therefore the
+covering factor of the outflowing gas.  However, the Keck/HIRES
+spectrum of J0905+5759 ($\textnormal{FWHM}\approx8$~\kms) reveals that
+the gas covers the entire continuum source near the velocity centroid
+($v=-2470$~\kms) indicating a galaxy-wide outflow.
 
 
-\section{Discussion}
+\section{Discussion}\label{sec:discussion}
 
 The compact sizes ($r_e\approx100$~pc) and large SFRs
-($\textnormal{SFR}\approx300$~\msun) for the galaxies described above
-implies extremely large SFR surface densities
-($\sigmasfr\approx5000$~\units).  To place these galaxies in context,
-we plot their $\sigmasfr$ values as a function of stellar mass in
-Figure~\ref{fig:sigmasfr}.  We include comparison samples of
-$\sim10^5$ star-forming galaxies at $0.5<z<1.5$ from \citet{wuy11} and
-a few dozen gas-rich mergers at $z<0.3$ including 32 ULIRGs from
-\citet{vei06}, five Lyman break analogs with dominant central objects
-from \citet{ove09}, and the local compact starburst Arp 220
-\citep{sco97, ken98, rod08}.  We also mark the empirical threshold for
-launching winds \citep[$\sigmasfr\approx0.1$~\units,][]{hec02}, the
-90th percentile limit for the surface brightness of starbursts
-measured using UV, H$\alpha$, far-IR, and radio continuum emission
-\citep[$\sigmasfr\approx45$~\units][]{meu97}, and the theoretical
-limit for a starburst limited by feedback from radiation pressure
-\citep[$\sigmasfr\approx2000$~\units,][]{mur05,tho05,hop10}.  The most
+($\textnormal{SFR}\approx200$~\msun) for the three galaxies described
+above imply extremely large SFR surface densities
+($\sigmasfr\approx3000$~\units).  To place these galaxies in context,
+we plot $\sigmasfr$ versus stellar mass for the 25/29 galaxies
+detected by WISE in Figure~\ref{fig:sigmasfr}.  We include comparison
+samples of $\sim10^5$ star-forming galaxies at $0.5<z<1.5$ from
+\citet{wuy11} and a few dozen gas-rich mergers at $z<0.3$ including 32
+ULIRGs from \citet{vei06}, five Lyman break analogs with dominant
+central objects from \citet{ove09}, and the local compact starburst
+Arp 220 \citep{sco97, ken98, rod08}.  We also mark the empirical
+threshold for launching winds
+\citep[$\sigmasfr\approx0.1$~\units,][]{hec02}, the 90th percentile
+limit for the surface brightness of starbursts over a wide range in
+redshift measured using UV, H$\alpha$, far-IR, and radio continuum
+emission \citep[$\sigmasfr\approx25$~\units\ for a Chabrier
+  IMF,][]{meu97}, and the theoretical limit for a starburst limited by
+feedback from radiation pressure
+\citep[$\sigmasfr\approx3000$~\units,][]{mur05,tho05,hop10}.  The most
 luminous, compact starbursts in our sample exhibit SFR surface
 densities that reach the Eddington limit, suggesting that their growth
 is being regulated by momentum input from massive stars.
@@ -328,34 +360,32 @@ bolometric output is dominated by star formation, it is worthwhile to
 consider the level of ongoing AGN activity and its effect on our
 measurements.  Among the high-$\sigmasfr$ galaxies, the strongest case
 for detectable AGN emission can be made for J1506+5402, which has the
-most luminous \oiii~$\lambda5007$ line among the 29 galaxies observed
-by HST.  This source also has a weak \nev~$\lambda3426$ emission line,
-which is associated with AGN activity \citep[e.g.,][]{gil10}.  It was
-observed with the Chandra X-ray Observatory (proposal ID 11700896, PI:
-C. Tremonti) and had four detected counts, corresponding to a
-0.5--8.0~keV X-ray luminosity of $10^{42.7}$~erg~s$^{-1}$ (see P. Sell
-et al., in preparation for more details on the 12/29 galaxies with
-Chandra observations).  Using the relationship between 2--10~keV X-ray
-and 12.3~$\mu$m mid-IR luminosity for AGNs from \citet{gan09}, one
-would expect a source with
+most luminous \oiii~$\lambda5007$ line in the HST sample.  This source
+also has a weak \nev~$\lambda3426$ emission line, which is associated
+with AGN activity \citep{gil10}.  It was observed with the Chandra
+X-ray Observatory (proposal ID 11700896) and had four detected counts,
+corresponding to a 0.5--8.0~keV X-ray luminosity of
+$10^{42.7}$~erg~s$^{-1}$ (see P. Sell et al., in preparation for more
+details on the 12/29 galaxies with Chandra observations).  Using the
+relationship between 2--10~keV X-ray and 12.3~$\mu$m mid-IR luminosity
+for AGNs from \citet{gan09}, one would expect a source with
 $L_{\textnormal{\scriptsize{X}}}\approx5\times10^{42}$~erg~s$^{-1}$ to
 have
 $L_{\textnormal{\scriptsize{MIR}}}\approx7\times10^{42}$~erg~s$^{-1}$,
 which is 400$\times$ smaller than observed luminosity for J1506+5402
 ($L_{\textnormal{\scriptsize{MIR}}}\approx3\times10^{45}$~erg~s$^{-1}$).
-Based on its \oiii\ luminosity ($10^{42.1}$~erg~s$^{-1}$, a
-significant fraction of which could be attributed to star formation)
-and the calibration for type 1 AGNs from \citet{hec05}, one would
-expect an intrinsic 2--10~keV luminosity of
+Based on its \oiii\ luminosity ($10^{42.1}$~erg~s$^{-1}$, which may
+also include a contribution from star formation) and the calibration
+for type 1 AGNs from \citet{hec05}, one would expect an intrinsic
+2--10~keV luminosity of
 $L_{\textnormal{\scriptsize{X}}}\approx5\times10^{43}$~erg~s$^{-1}$,
 suggesting absorption by a factor of $\sim10$ in the X-rays.  However,
 even if the X-ray attenuation were a factor of 100, which is the
 typical value for local Compton-thick AGNs \citep{dia09}, the expected
 mid-IR AGN contribution would only be relevant at the $\lesssim$30\%
 level.  We conclude that the bolometric output of the galaxies in our
-sample is dominated by star formation and we that our results
-regarding large $\sigmasfr$ values are not affected by AGN
-contamination.
+sample is dominated by star formation and that our results regarding
+large $\sigmasfr$ values are not affected by AGN contamination.
 
 % Thus, similar to local ULIRGs \citep[e.g.,][]{far07}, the
 % bolometric output of the galaxies in our sample is dominated by star
@@ -365,15 +395,18 @@ contamination.
 
 \subsection{The Outflow Launching Mechanism}\label{sec:launch}
 
-It is worth considering whether the high-velocity outflows we observe
-could have been produced by the compact starburst.  \citet{mur11}
-argued that massive star clusters with large gas surface densities are
-the ideal launching point for galactic-scale outflows driven by
-radiation pressure, and that the outflow velocity should scale with
-escape velocity of the most massive star clusters in a galaxy.  The
-$\gtrsim1000$~\kms\ outflow velocities we observe correspond
-approximately to the escape velocities for a compact stellar
-population with the sizes and masses that we've measured.
+Are the high-velocity outflows observed in these galaxies produced by
+a compact starburst?  \citet{mur11} argued that massive star clusters
+with large gas surface densities are the ideal launching point for
+galactic-scale outflows driven by radiation pressure, and that the
+outflow velocity should scale with escape velocity of the most massive
+star clusters in a galaxy.  For our sample, if one assumes that the
+spatial extent of the stellar mass is comparable to that of the
+rest-frame $V$-band light (see Section~\ref{sec:context}), then half
+of the stellar mass ($\textnormal{\mstar}\sim10^{11}$~\msun) will be
+within the effective radius ($r_{e}\sim100$~pc).  Such a compact
+stellar population would have an escape velocity comparable to the
+$\gtrsim1000$~\kms\ outflow velocities we observe:
 \begin{eqnarray}\nonumber
 v_{esc}&=&\sqrt{2GM_{*}/r} \\
 &=& 2100
@@ -384,17 +417,17 @@ v_{esc}&=&\sqrt{2GM_{*}/r} \\
 \end{eqnarray}
 This argument, combined with the fact that we observe galaxies with
 significant dust-obscured star formation and $\sigmasfr$ values near
-the Eddington limit, indicates that momentum input from massive stars
+the Eddington limit, suggests that momentum input from massive stars
 in the form of radiation pressure is a viable mechanism for launching
 these outflows.
 
 In addition to radiation pressure, we also expect significant momentum
 flux from stellar winds and supernovae.  For example, a starburst with
 $\textnormal{SFR}\approx200$~\msun~yr$^{-1}$ would be associated with
-radiation pressure $L_{bol}/c\approx2\times10^{35}$~dyne and ram
+radiation pressure $L_{bol}/c\approx3\times10^{35}$~dyne and ram
 pressure $\dot{p}\approx5$--$10\times10^{35}$~dyne from stellar winds
-and supernovae \citep[e.g.,][]{lei92,lei99,vei05}.  Furthermore,
-\citet{hec11} noted that such a large momentum injection
+and supernovae \citep{lei92,lei99,vei05}.  Furthermore, \citet{hec11}
+noted that such a large momentum injection
 ($\dot{p}\approx10^{35}$~dyne) from a small initial radius
 $r_{0}\approx100$~pc could accelerate a cloud with column density
 $N_{H}\approx10^{21}$~cm$^{-2}$ to a terminal velocity
@@ -404,89 +437,90 @@ observe, and it is plausible that both radiation pressure on dust
 grains and supernova ram pressure contribute to driving the winds.
 
 
-\subsection{Placing These Galaxies in Context}
+\subsection{Placing These Galaxies in Context}\label{sec:context}
 
 It is clear from Figure~\ref{fig:sigmasfr} that the high-$\sigmasfr$
 galaxies in our sample constitute a rare population, suggesting that
 they represent an unusual or short-lived phase.  Mergers of gas-rich
 galaxies are a viable mechanism for producing compact starbursts
-\citep[e.g.,][]{mih96}, and such gas-rich major mergers are rare at
-$z\sim0.6$ due to the decline in both the merger rate
-\citep[e.g.,][]{lot11} and the gas fraction \citep[e.g.,][]{tac10} of
-galaxies since $z\sim2$.  Furthermore, the high-$\sigmasfr$ galaxies
-in our sample are caught in a particular time interval where there is
-both vigorous star formation and strong feedback.  The length of this
-phase may be set by the gas consumption timescale or the timescale for
-feedback to suppress subsequent star formation.  Based on the
-Kennicutt--Schmidt (K-S) relation \citep{ken98}, a compact starburst
-with $r_e\approx100$~pc, $\textnormal{SFR}\approx300$~\msun, and
-$\sigmasfr\approx5000$~\units\ would have a gas surface density of
-$\Sigma_{gas}\sim2\times10^{11}$~\msun~kpc$^{-2}$ corresponding to
-$M_{gas}\sim5\times10^{9}$~\msun\ inside 100~pc, which would be
-consumed on a timescale $\sim30$~Myr.  This scenario could be tested
+\citep{mih96}, and such gas-rich major mergers are rare at $z\sim0.6$
+due to the decline in both the gas fraction \citep{tac10} and the
+fractional major merger rate \citep{lot11} of galaxies since $z\sim2$.
+Furthermore, the high-$\sigmasfr$ galaxies in our sample are caught in
+a particular time interval where there is both vigorous star formation
+and strong feedback.  The length of this phase may be set by the gas
+consumption timescale or the timescale for feedback to suppress
+subsequent star formation.  Based on the Kennicutt--Schmidt (K-S)
+relation \citep{ken98}, a compact starburst with $r_e\approx100$~pc,
+$\textnormal{SFR}\approx200$~\msun, and
+$\sigmasfr\approx3000$~\units\ would have a gas surface density of
+$\Sigma_{gas}\sim10^{11}$~\msun~kpc$^{-2}$ corresponding to
+$M_{gas}\sim3\times10^{9}$~\msun\ inside 100~pc, which would be
+consumed on a timescale $\sim20$~Myr.  This scenario could be tested
 with CO observations of molecular gas masses and kinematics for these
 extreme galaxies.
 
 
-Considering our full sample of galaxies in Figure~\ref{fig:sigmasfr},
-a vertical $\sigmasfr$ sequence is apparent.  This could be explained
-as an evolutionary sequence where the high-$\sigmasfr$ galaxies
-represent the peak of the starburst when the high-velocity outflows
-are launched, while the lower $\sigmasfr$ galaxies represent a
-subsequent, post-starburst phase.  It is interesting to note that all
-12/29 galaxies above the $\sigmasfr\approx45$~\units\ limit from
-\citet{meu97} exhibit outflows (with median centroid velocity
-$v=-1500$~\kms), while all 7/29 galaxies without detected outflows
-have $\sigmasfr<30$~\units.  If a compact starburst is a requirement
-for the production of high-velocity outflows, it may be that the
-sources without outflows have not gone through such a phase (see
-A. Robaina, et al., in preparation for a discussion of the
-relationship between galaxy morphology, outflow velocity, and stellar
-population age in this sample).
+Considering our full HST--WISE sample in Figure~\ref{fig:sigmasfr}, we
+find values of $\sigmasfr$ spanning four orders of magnitude.  This
+could be explained as an evolutionary sequence where the
+high-$\sigmasfr$ galaxies represent the peak of the starburst when the
+high-velocity outflows are launched, while the lower $\sigmasfr$
+galaxies represent a subsequent, post-starburst phase.  It is
+interesting to note that all 12/25 galaxies above the
+$\sigmasfr\approx25$~\units\ limit from \citet{meu97} exhibit outflows
+(with median centroid velocity $v=-1500$~\kms), while all 7/25
+galaxies without detected outflows (the smallest black circles in
+Figure~\ref{fig:sigmasfr}) have $\sigmasfr<20$~\units.  If a compact
+starburst is a requirement for the production of high-velocity
+outflows, it may be that the sources without outflows have not gone
+through such a phase (see A. Robaina, et al., in preparation for a
+discussion of the relationship between galaxy morphology, outflow
+velocity, and stellar population age in this sample).
 
-Finally, it is worthwhile to consider the implications of our results
-for models of massive galaxy formation.  Simulations of major galaxy
-mergers with large gas fractions ($f_{gas}\sim50$\%) can produce
-$\textnormal{\mstar}\sim10^{11}$~\msun\ remnants with effective radii
-$r_{e}\sim1$~kpc \citep[e.g.,][]{wuy10}, but our sample includes
-galaxies of similar mass that are smaller by almost an order of
-magnitude.  If these systems do evolve into quiescent elliptical
-galaxies, it would be extremely challenging for them to grow in size
-from $r_e\sim0.1$~kpc to $r_e\sim5$~kpc to reach the local size--mass
+Finally, we consider the implications of our results for models of
+massive galaxy formation.  Simulations of major galaxy mergers with
+large gas fractions ($f_{gas}\sim50$\%) can produce
+$\textnormal{\mstar}\sim10^{11}$~\msun\ remnants with $r_{e}\sim1$~kpc
+\citep{wuy10}, but our sample includes galaxies of similar mass that
+are smaller in the rest-frame $V$ band by almost an order of
+magnitude.  If the mass in these galaxies follows their $V$-band
+light, it would be extremely challenging for them to grow in size from
+$r_e\sim0.1$~kpc to $r_e\sim5$~kpc to reach the local size--mass
 relation \citep{she03} in the $t\sim6$~Gyr since $z=0.6$.  For
 comparison the compact, quiescent galaxies observed at $z\sim2$
-\citep[e.g.,][]{tru07,van08} have $t\sim10$~Gyr to grow by a factor of
-$\sim5$.  In this context, it is worth noting that the half-light
-radius (ignoring dust attenuation) at rest-frame $V$ band (where our
-HST observations probe) can be a factor of 5--10 smaller than the
-half-mass radius for a gas-rich merger at final coalescence near the
-peak of starburst activity \citep{wuy10}.  It would be worthwhile to
-test for such size discrepancies and to probe the radial dependence of
-the mass-to-light ratio for these galaxies by measuring sizes at
+\citep{tru07,van08} have $t\sim10$~Gyr to grow by a factor of $\sim5$.
+In this context, it is worth noting that the half-light radius
+(ignoring dust attenuation) at rest-frame $V$ band can be a factor of
+5--10 smaller than the half-mass radius for a gas-rich merger at final
+coalescence near the peak of starburst activity \citep{wuy10}.  One
+could test for such size discrepancies and probe the radial dependence
+of the mass-to-light ratio for these galaxies by measuring sizes at
 rest-frame near-IR wavelengths.
 
  
 
-\section{Conclusions}
+\section{Summary}
 
 We have measured large SFR surface densities for galaxies that exhibit
 $\gtrsim1000$~\kms\ outflows.  The largest $\sigmasfr$ values are
 comparable to the Eddington limit from radiation pressure on dust
-grains, and such compact starburst are expected to have substantial
-momentum input from massive stars and supernovae.  There is some
-evidence for AGN activity in a fraction of these systems, but the AGN
-is generally not relevant in a bolometric sense.  While high-velocity
+grains, and such compact starbursts are expected to have substantial
+momentum input from massive stars and supernovae.  High-velocity
 outflows have been previously interpreted as a signpost of AGN
-feedback, we conclude that stellar feedback from a compact starburst
-is equally capable of producing such a signature.
+feedback, but given that feedback from a compact starburst is capable
+of producing such a signature and is clearly present in this sample,
+we conclude that the outflows we observe are driven by star formation.
 
 
 \acknowledgments
 
-We acknowledge useful discussions with and assistance from several
-people.  AMD acknowledges support from the Southern California Center
-for Galaxy Evolution, a multi-campus research program funded by the
-University of California Office of Research.
+We acknowledge useful discussions with and assistance from James Aird,
+Brandon Kelly, Dusan Keres, David Law, Alexander Mendez, Kate Rubin,
+Art Wolfe, and Stijn Wuyts.  AMD acknowledges support from the
+Southern California Center for Galaxy Evolution, a multi-campus
+research program funded by the University of California Office of
+Research.
 
 
 \begin{thebibliography}{}
@@ -499,6 +533,8 @@ University of California Office of Research.
   \apj, 556, 562
 \bibitem[Chevalier \& Clegg(1985)]{che85} Chevalier, R.~A., \& Clegg,
   A.~W.\ 1985, \nat, 317, 44
+\bibitem[Coil et al.(2011)]{coi11} Coil, A.~L., Weiner, B.~J., Holz,
+  D.~E., et al.\ 2011, \apj, 743, 46
 %\bibitem[Dale \& Helou(2002)]{dal02} Dale, D.~A., \& Helou, G.\ 2002,
 %  \apj, 576, 159
 %\bibitem[de Vaucouleurs(1948)]{dev48} de Vaucouleurs, G.\ 1948,
@@ -593,9 +629,9 @@ University of California Office of Research.
   S.~D.~M., et al.\ 2003, \mnras, 343, 978
 \bibitem[Silk \& Rees(1998)]{sil98} Silk, J., \& Rees, M.~J.\ 1998,
   \aap, 331, L1
-\bibitem[Steidel et al.(2010)]{ste10} Steidel, C.~C., Erb, D.~K.,
-  Shapley, A.~E., Pettini, M., Reddy, N., Bogosavljevi{\'c}, M.,
-  Rudie, G.~C., \& Rakic, O.\ 2010, \apj, 717, 289
+%\bibitem[Steidel et al.(2010)]{ste10} Steidel, C.~C., Erb, D.~K.,
+%  Shapley, A.~E., Pettini, M., Reddy, N., Bogosavljevi{\'c}, M.,
+%  Rudie, G.~C., \& Rakic, O.\ 2010, \apj, 717, 289
 \bibitem[Tacconi et al.(2010)]{tac10} Tacconi, L.~J., Genzel, R.,
   Neri, R., et al.\ 2010, \nat, 463, 781
 \bibitem[Thompson et al.(2005)]{tho05} Thompson, T.~A., Quataert, E.,
