@@ -84,9 +84,9 @@ splog, fluxmodel[9] / fluxdata[9], fluxresid[9] / fluxdata[9]
   djs_iterstat, stamp_data, median=md, sigma=sig, sigrej=5.0
   min = md-1.*sig
   max = md+3*sig
-  ;imdisp, imgscl(stamp_data,max = max, min=min), $
+  ;imdisp, imgscl(stamp_data,max = md+20*sig, min=min), $
   ;  /usepos, /negative, bottom=40., pos=posa
-  imdisp, asinhscl(stamp_data, beta=20., max=md+30*sig, min=md-1.*sig), $
+  imdisp, asinhscl(stamp_data, beta=30., max=md+30*sig, min=md-1.*sig), $
     /usepos, /negative, bottom=40., pos=posa
 
 if not keyword_set(onlydata) then begin

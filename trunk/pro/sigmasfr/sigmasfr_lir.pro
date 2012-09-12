@@ -110,7 +110,7 @@ pro sigmasfr_lir, clobber=clobber, rebuild_witt=rebuild_witt
     
 ; write out    
     im_mwrfits, out, outfile, clobber=clobber
-
+stop
 return
 end
     
