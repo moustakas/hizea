@@ -1,4 +1,4 @@
-pro plot_sigmasfr
+pro plot_sigmasfr_alma
 ; jm12mar19ucsd - make the sigma-sfr vs mass plot
     path = getenv('HIZEA_DATA')+'/sigmasfr/'
 
@@ -27,7 +27,7 @@ pro plot_sigmasfr
   ;!y.thick=3
   ;!p.charthick=3
 
-    psfile = path+'sigmasfr.ps'
+    psfile = path+'sigmasfr_alma.ps'
     im_plotconfig, 0, pos, psfile=psfile, charsize=2, $
       xmargin=[1.5,0.4], width=6.6, height=5.3
     djs_plot, [0], [0], /nodata, position=pos, xsty=5, ysty=5, $
@@ -180,7 +180,12 @@ pro plot_sigmasfr
       ;djs_oplot, [0., kcorr[good[i]].k_mass], [0., sigmasfr[i]], $
       ;  psym=symcat(16), symsize=psize    
       djs_oplot, [0., isedfit[good[i]].mass], [0., sigmasfr[i]], $
+        ;psym=symcat(16), symsize=psize    
+        psym=symcat(9), symsize=psize
+      if hst[good[i]].z lt 0.64 and hst[good[i]].dec lt 35. then $
+      djs_oplot, [0., isedfit[good[i]].mass], [0., sigmasfr[i]], $
         psym=symcat(16), symsize=psize    
+        ;psym=symcat(9), symsize=psize      
 
     endfor
 
