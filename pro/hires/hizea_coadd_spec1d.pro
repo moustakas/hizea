@@ -1,5 +1,5 @@
 pro hizea_coadd_spec1d, hires1, info1, chip=chip, datapath=datapath, $
-  qafile=qafile, fluxed=fluxed, std=std
+  qafile=qafile, fluxed=fluxed, std=std, clobber=clobber
 ; jm09sepucsd - coadd the 1D spectra, both individual orders and
 ;   repeat observations of the same object; if /FLUXED then coadd the
 ;   fluxed 1D spectra, otherwise coadd the counts
@@ -30,9 +30,10 @@ pro hizea_coadd_spec1d, hires1, info1, chip=chip, datapath=datapath, $
     nobj = n_elements(uname)
 
     npix = 2010
-    minnpix = 1900
+    minnpix = 1500
+;   minnpix = 1900
 
-    for ii = 0L, nobj-1L do begin
+    for ii = 0, nobj-1 do begin
        these = where(uname[ii] eq allname,nthese)
        for kk = 0, nthese-1 do begin
           objfil = strtrim(hires[these[kk]].obj_fil,2)+'.gz'
@@ -56,6 +57,7 @@ pro hizea_coadd_spec1d, hires1, info1, chip=chip, datapath=datapath, $
           endfor
           if (kk eq 0) then allout = out else allout = [allout,out]
        endfor
+
 ; now recollapse ALLOUT into a one-element structure so that it can be
 ; combined with INFO; remove partial orders
        keep = where(allout.partial eq 0,norder)
@@ -73,7 +75,7 @@ pro hizea_coadd_spec1d, hires1, info1, chip=chip, datapath=datapath, $
        outfile = datapath+'spec1d/'+strtrim(info[these[0]].galaxy,2)+$
          '_'+string(info[these[0]].frame,format='(I4.4)')+'.fits'
        final.spec1dfile = file_basename(outfile)+'.gz'
-       im_mwrfits, final, outfile
+       im_mwrfits, final, outfile, clobber=clobber
     endfor
     
 ;; make a QAplot
