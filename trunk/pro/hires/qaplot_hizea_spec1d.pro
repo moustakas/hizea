@@ -3,7 +3,7 @@ pro qaplot_hizea_spec1d, datapath=datapath, qafile=qafile
 
     if (n_elements(datapath) eq 0) then datapath = './'
     im_plotconfig, 2, pos, psfile=qafile, yspace=0.6, $
-      xspace=0.1, width=[3.2,3.2], height=[4.5,4.5], $
+      xspace=0.1, width=4.5*[1,1], height=3.2*[1,1], $
       charsize=1.6, ymargin=[0.5,1.0]
 
     fits = file_search(datapath+'spec1d/*.fits.gz',count=nfits)
@@ -51,7 +51,7 @@ pro qaplot_hizea_spec1d, datapath=datapath, qafile=qafile
           get_element, wave, xrange1, xx
 ;         yrange1 = [0.0,im_max(flux[xx[0]:xx[1]],sigrej=3.0)*1.05]
 ;         yrange1 = [0.0,im_max(snr[xx[0]:xx[1]],sigrej=3.0)*1.2]
-          yrange1 = [0,11]
+          yrange1 = [0,13]
 
           if (odd(jj) eq 0) then begin
 ;            ytitle1 = 'Flux (counts s^{-1})'
@@ -89,7 +89,7 @@ pro qaplot_hizea_spec1d, datapath=datapath, qafile=qafile
        endfor
        thistitle = strtrim(spec.galaxy,2)+', exp'+$
          string(spec.frame,format='(I4.4)')+$
-         ', z='+strtrim(string(spec.z,format='(F12.3)'),2)
+         ', z='+strtrim(string(spec.z,format='(F12.5)'),2)
        xyouts, pos[2,0], pos[3,0]+0.015, thistitle, align=0.5, /norm, $
          charsize=1.4
     endfor

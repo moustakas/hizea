@@ -116,7 +116,7 @@ pro hizea_reduce_night, datapath, setup, chip=chip, clobber=clobber, $
 ; by the flat-field; the output is written in /Final
     if (keyword_set(dostandards) eq 0) and keyword_set(proc) and $
       (nobj ne 0) then begin
-       for jj = 0L, nobj-1L do begin
+       for jj = 0, nobj-1 do begin
           for kk = 0, n_elements(chip)-1 do begin
              hires_proc, hires, setup=setup, obj=obj[jj], $
                chip=chip[kk], clobber=clobber
@@ -131,10 +131,13 @@ pro hizea_reduce_night, datapath, setup, chip=chip, clobber=clobber, $
 ; when tracing (default 0.25 = 1/4 slit width)
     if (keyword_set(dostandards) eq 0) and keyword_set(dotrace) and $
       (nobj ne 0) then begin
-       for jj = 0L, nobj-1L do begin
+       for jj = 0, nobj-1 do begin
           for kk = 0, n_elements(chip)-1 do begin
+;; do some filename juggling to deal with the NOCLOB keyword
+;             these = where(obj[jj] eq hires.obj_id)
+;             objfil = hires_getfil('obj_fil',/name,frame=hires[these].frame,chip=chip[kk])
              hires_fntobj, hires, setup, obj[jj], chip[kk], $
-               objaper=objaper, fwidth=fwidth, chk=chk, clobber=clobber
+               objaper=objaper, fwidth=fwidth, chk=chk, noclob=(keyword_set(clobber) eq 0)
           endfor
        endfor  
     endif
@@ -143,7 +146,7 @@ pro hizea_reduce_night, datapath, setup, chip=chip, clobber=clobber, $
 ; sky-subtract
     if (keyword_set(dostandards) eq 0) and keyword_set(skysub) and $
       (nobj ne 0) then begin
-       for jj = 0L, nobj-1L do begin
+       for jj = 0, nobj-1 do begin
           for kk = 0, n_elements(chip)-1 do begin
              hires_skysub, hires, setup, obj[jj], chip[kk], chk=chk, clobber=clobber
           endfor
@@ -154,7 +157,7 @@ pro hizea_reduce_night, datapath, setup, chip=chip, clobber=clobber, $
 ; extract 1D spectra
     if (keyword_set(dostandards) eq 0) and keyword_set(extract) and $
       (nobj ne 0) then begin
-       for jj = 0L, nobj-1L do begin
+       for jj = 0, nobj-1 do begin
           for kk = 0, n_elements(chip)-1 do begin
 ;            reschk = 1 & chk = 1
              hires_extract, hires, setup, obj[jj], chip[kk], $
@@ -184,7 +187,7 @@ pro hizea_reduce_night, datapath, setup, chip=chip, clobber=clobber, $
 ; even a single object
    if keyword_set(combine) then begin
 ;     message, 'Not recommended!!'
-      for jj = 0L, nobj-1L do begin
+      for jj = 0, nobj-1 do begin
          for kk = 0, n_elements(chip)-1 do begin
             hires_combspec, hires, setup, obj[jj], chip[kk], /noflux;, /mchk, /chk, /achk, /noflux
          endfor

@@ -13,7 +13,7 @@ pro plot_3seds
 
   readcol, path+'/swire/M82_template_norm.sed', m82wave, m82flambda
   readcol, path+'/swire/Arp220_template_norm.sed', arp220wave, arp220flambda
-  readcol, path+'/swire/torus_template_norm.sed', toruswave, torusflambda
+  readcol, path+'/swire/Torus_template_norm.sed', toruswave, torusflambda
 
 ; restore the iSEDfit SEDs
   isedpath = sigmasfr_path(/ised)
@@ -129,7 +129,7 @@ pro plot_3seds
     ;linestyle=[0, 1, 2], $
     color=[djs_icolor('black'), djs_icolor('blue'), djs_icolor('dark green'), djs_icolor('red')], $
     ;color=[djs_icolor('black'), djs_icolor('blue'), djs_icolor('dark green')], $
-    charsize=1.5, box=0, pos=[xrange[0], yrange[1]+0.5], thick=8
+    charsize=1.5, box=0, pos=[xrange[0], yrange[1]+0.5], thick=8, pspacing=2.5
 
 
    

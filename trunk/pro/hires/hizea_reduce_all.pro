@@ -9,14 +9,14 @@ pro hizea_reduce_all, night, setup, chip=chip, init=init, clobber=clobber, $
     
     hizeapath = getenv('HIZEA_HIRES_DIR')+'/'
     spec1dpath = hizeapath+'spec1d/'
-    if (n_elements(night) ne 0L) then $
+    if (n_elements(night) ne 0) then $
       allnight = night else $
-;     allnight = '09dec11'
-      allnight = ['09dec11','09dec10','09aug13','09aug12']
+;     allnight = ['12may14']
+      allnight = ['09dec11','09dec10','09aug13','09aug12','10may20','12may13','12may14']
     nnight = n_elements(allnight)
 
-    xtoler = 0.002
-    chip = [1,2] ; [1=blue, 2=green, 3=red]
+    xtoler = 0.002    
+    chip = [1,2,3] ; [1=blue, 2=green, 3=red]
     
 ; ##################################################
 ; data reduction stuff    
@@ -31,6 +31,9 @@ pro hizea_reduce_all, night, setup, chip=chip, init=init, clobber=clobber, $
           '09dec10': allsetup = [1,2,3]
           '09aug13': allsetup = [1,2]
           '09aug12': allsetup = [1,2]
+          '10may20': allsetup = 1
+          '12may13': allsetup = [1,2,3]
+          '12may14': allsetup = [1,2]
           else: stop
        endcase
        nsetup = n_elements(allsetup)
@@ -54,6 +57,9 @@ pro hizea_reduce_all, night, setup, chip=chip, init=init, clobber=clobber, $
              '09dec10': hires = edit_hires_09dec10(rawhires)
              '09aug13': hires = edit_hires_09aug13(rawhires)
              '09aug12': hires = edit_hires_09aug12(rawhires)
+             '10may20': hires = edit_hires_10may20(rawhires)
+             '12may13': hires = edit_hires_12may13(rawhires)
+             '12may14': hires = edit_hires_12may14(rawhires)
              else: stop
           endcase
 ; run some final setup steps and then write out 
@@ -123,12 +129,45 @@ pro hizea_reduce_all, night, setup, chip=chip, init=init, clobber=clobber, $
                 info[iobj].galaxy = 'J0944+0930'
                 info[iobj].z = 0.5138
              endif
+; May 2012
+             if strmatch(info[iobj].obj,'*1125*') then begin
+                info[iobj].galaxy = 'J1125-0145'
+                info[iobj].z = 0.519
+             endif
+             if strmatch(info[iobj].obj,'*1341*') then begin
+                info[iobj].galaxy = 'J1341-0321'
+                info[iobj].z = 0.6612
+             endif
+             if strmatch(info[iobj].obj,'*1506*') then begin
+                info[iobj].galaxy = 'J1506+5402'
+                info[iobj].z = 0.608
+             endif
+             if strmatch(info[iobj].obj,'*1613*') then begin
+                info[iobj].galaxy = 'J1613+2834'
+                info[iobj].z = 0.449
+             endif
+             if strmatch(info[iobj].obj,'*1219*') then begin
+                info[iobj].galaxy = 'J1219+0336'
+                info[iobj].z = 0.451
+             endif
+             if strmatch(info[iobj].obj,'*1232*') then begin
+                info[iobj].galaxy = 'J1232+0723'
+                info[iobj].z = 0.4003
+             endif
+             if strmatch(info[iobj].obj,'*1450*') then begin
+                info[iobj].galaxy = 'J1450+4621'
+                info[iobj].z = 0.782
+             endif
+             if strmatch(info[iobj].obj,'*1713*') then begin
+                info[iobj].galaxy = 'J1713+2817'
+                info[iobj].z = 0.577
+             endif
           endfor 
 
 ; coadd all the spectra and make a QAplot          
           qafile = datapath+'spec1d/qa_'+allnight[inight]+'_spec1d.ps'
           hizea_coadd_spec1d, hires[objindx], info, $
-            datapath=datapath, qafile=qafile
+            datapath=datapath, qafile=qafile, clobber=clobber
           qaplot_hizea_spec1d, datapath=datapath, qafile=qafile
        endif 
     endfor 
