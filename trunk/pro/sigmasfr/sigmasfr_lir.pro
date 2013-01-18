@@ -64,7 +64,8 @@ pro sigmasfr_lir, clobber=clobber, rebuild_witt=rebuild_witt
 
     good = where(total(cat.maggies[these] gt 0,1) gt 0)
     out[good].lir_chary = alog10(im_wise2lir(cat[good].z,cat[good].maggies[these],$
-      cat[good].ivarmaggies[these],/chary,model_indx=indx_chary))
+      cat[good].ivarmaggies[these],/chary,model_indx=indx_chary,debug=0))
+stop
     out[good].lir_dale = alog10(im_wise2lir(cat[good].z,cat[good].maggies[these],$
       cat[good].ivarmaggies[these],/dale,model_indx=indx_dale))
     out[good].lir_rieke = alog10(im_wise2lir(cat[good].z,cat[good].maggies[these],$
