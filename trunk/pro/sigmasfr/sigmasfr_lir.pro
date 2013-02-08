@@ -71,15 +71,22 @@ pro sigmasfr_lir, clobber=clobber, rebuild_witt=rebuild_witt
     filters = strtrim(sigmasfr_filterlist(),2)
     these = where(filters eq 'wise_w3.par' or filters eq 'wise_w4.par')
 
+; throw out upper limits to make sure the K-corrections in
+; im_simple_kcorrect get computed from the band where the object was
+; detected 
     good = where(total(cat.maggies[these] gt 0,1) gt 0)
-    out[good].lir_chary = alog10(im_wise2lir(cat[good].z,cat[good].maggies[these],$
-      cat[good].ivarmaggies[these],/chary,model_indx=indx_chary,nulnu=nulnu_chary,$
+    wmaggies = cat[good].maggies[these]
+;   wivarmaggies = cat[good].ivarmaggies[these]
+    wivarmaggies = cat[good].ivarmaggies[these]*(wmaggies gt 0)
+    
+    out[good].lir_chary = alog10(im_wise2lir(cat[good].z,wmaggies,wivarmaggies,$
+      /chary,model_indx=indx_chary,nulnu=nulnu_chary,$
       ivar_nulnu=ivar_nulnu_chary,modelwave=modelwave_chary,modelmab=modelmab_chary))
-    out[good].lir_dale = alog10(im_wise2lir(cat[good].z,cat[good].maggies[these],$
-      cat[good].ivarmaggies[these],/dale,model_indx=indx_dale,nulnu=nulnu_dale,$
+    out[good].lir_dale = alog10(im_wise2lir(cat[good].z,wmaggies,wivarmaggies,$
+      /dale,model_indx=indx_dale,nulnu=nulnu_dale,$
       ivar_nulnu=ivar_nulnu_dale,modelwave=modelwave_dale,modelmab=modelmab_dale))
-    out[good].lir_rieke = alog10(im_wise2lir(cat[good].z,cat[good].maggies[these],$
-      cat[good].ivarmaggies[these],/rieke,model_indx=indx_rieke,nulnu=nulnu_rieke,$
+    out[good].lir_rieke = alog10(im_wise2lir(cat[good].z,wmaggies,wivarmaggies,$
+      /rieke,model_indx=indx_rieke,nulnu=nulnu_rieke,$
       ivar_nulnu=ivar_nulnu_rieke,modelwave=modelwave_rieke,modelmab=modelmab_rieke))
 
     outseds[good].modelwave_chary = modelwave_chary
@@ -134,6 +141,34 @@ pro sigmasfr_lir, clobber=clobber, rebuild_witt=rebuild_witt
 
 ; get UV-based SFRs
 ;   out[good].uvsfr_chary = 1.4D-28*l1500*im_lsun()*1500/im_light(/ang)*10.0^(0.4*out[good].a1500_chary) 
+
+; compute upper limits using just the 22-micron flux (ignore the
+; 12-micron flux, if any)
+    crap = where((cat.maggies[these[1]] eq 0) and (cat.ivarmaggies[these[1]] gt 0))
+;   crap = where((total(cat.maggies[these] gt 0,1) eq 0) and (cat.ivarmaggies[these[1]] gt 0))
+    wmaggies = 1.0/sqrt(cat[crap].ivarmaggies[these])
+    wivarmaggies = 1.0/(0.05*wmaggies)^2
+    wivarmaggies[0,*] = 0
+
+    lir_chary = alog10(im_wise2lir(cat[crap].z,wmaggies,wivarmaggies,$
+      /chary,model_indx=indx_chary,nulnu=nulnu_chary,$
+      ivar_nulnu=ivar_nulnu_chary,modelwave=modelwave_chary,modelmab=modelmab_chary))
+    lir_dale = alog10(im_wise2lir(cat[crap].z,wmaggies,wivarmaggies,$
+      /dale,model_indx=indx_dale,nulnu=nulnu_dale,$
+      ivar_nulnu=ivar_nulnu_dale,modelwave=modelwave_dale,modelmab=modelmab_dale))
+    lir_rieke = alog10(im_wise2lir(cat[crap].z,wmaggies,wivarmaggies,$
+      /rieke,model_indx=indx_rieke,nulnu=nulnu_rieke,$
+      ivar_nulnu=ivar_nulnu_rieke,modelwave=modelwave_rieke,modelmab=modelmab_rieke))
+
+    out[crap].lir_chary = -lir_chary
+    out[crap].lir_dale = -lir_dale
+    out[crap].lir_rieke = -lir_rieke
+
+    out[crap].nulnu_chary = -nulnu_chary
+    out[crap].nulnu_dale = -nulnu_dale
+    out[crap].nulnu_rieke = -nulnu_rieke
+
+;   niceprint, cat.galaxy, out.lir_chary, out.nulnu_chary, cat.maggies[these[1]], cat.ivarmaggies[these[1]]
     
 ; write out    
     im_mwrfits, out, outfile, clobber=clobber
