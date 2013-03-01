@@ -1,4 +1,4 @@
-pro plot_sizemass
+pro plot_sizemass_wfc3
 ;+
 ;  amd120330 -- make a size-mass plot for sigmasfr paper
 ;
@@ -10,6 +10,10 @@ pro plot_sizemass
     hst = rsex(path+'hst_sample.dat')
     kcorr = mrdfits(path+'sigmasfr_kcorrect.fits.gz',1)
     lir = mrdfits(path+'sigmasfr_lir.fits.gz',1)
+    isedfit = mrdfits(path+'isedfit/sigmasfr_fsps_chab_smc_sfhgrid01.fits.gz', 1)
+
+    sigmasfr = alog10(lir.sfr_chary/(!pi*hst.r_e^2)/2.0)
+    sigmasfr = sigmasfr-0.25
 
      z0 = rsex(path+'wuyts/logM_logSFRsurfdens_0.02z0.20.cat')
      re = alog10(sqrt(10.^(z0.sfr) / (2. * !pi * 10.^(z0.sigmasfr))))
@@ -43,26 +47,26 @@ pro plot_sizemass
     xtitle = 'log (M_{*} / M'+sunsymbol()+')'
     ytitle=textoidl('log (r_{e} / kpc)')
 
-    psfile = path+'sizemass_sigmasfr.ps'
+    psfile = path+'sizemass_wfc3.ps'
     im_plotconfig, 0, pos, psfile=psfile, charsize=2, $
       xmargin=[1.5,0.4], width=6.6, height=5.3
     djs_plot, [0], [0], xsty=1, ysty=1, $
       xrange=xrange, yrange=yrange, $
       xtitle=xtitle, ytitle=ytitle
 
-  im_hogg_scatterplot, z0[nosf].mstar, re[nosf], $
-    /noerase, xsty=5, xrange=xrange, $
-    yrange=yrange, ysty=5, pos=pos, /nogrey, /internal, $
-    ;xnpix=25., ynpix=25, $
-    xnpix=15, ynpix=15, $
-    ;levels=levels, $
-    levels=[0.68, 0.95, 0.997], $
-    contour_color=djs_icolor('red'), $;('magenta blue'), $
-    c_linestyle=[0,2,1], cthick=5;, /outliers
+  ;im_hogg_scatterplot, z0[nosf].mstar, re[nosf], $
+  ;  /noerase, xsty=5, xrange=xrange, $
+  ;  yrange=yrange, ysty=5, pos=pos, /nogrey, /internal, $
+  ;  ;xnpix=25., ynpix=25, $
+  ;  xnpix=15, ynpix=15, $
+  ;  ;levels=levels, $
+  ;  levels=[0.68, 0.95, 0.997], $
+  ;  contour_color=djs_icolor('red'), $;('magenta blue'), $
+  ;  c_linestyle=[0,2,1], cthick=5;, /outliers
 
 ; hst sample
     good = where(lir.sfr_chary gt -900)    
-    sigmasfr = alog10(lir[good].sfr_chary/(!pi*hst[good].r_e^2)/2.0)
+    ;sigmasfr = alog10(lir[good].sfr_chary/(!pi*hst[good].r_e^2)/2.0)
     absmag_h = kcorr.k_fnuvugrizjhk_absmag_00[8]
     mtest = (4.83-(absmag_h))/2.5
     ml = 10.^(kcorr.k_mass) / 10.^(mtest)
@@ -91,26 +95,29 @@ pro plot_sizemass
       if abs(hst[i].vout) gt 0. then $ 
         psize = spline(outarr, sizearr, alog10(abs(hst[i].vout))) else $
         psize = 1.0
-      djs_oplot, [0., kcorr[i].k_mass], [0., alog10(hst[i].r_e)], psym=symcat(16), symsize=psize    
+      ;djs_oplot, [0., kcorr[i].k_mass], [0., alog10(hst[i].r_e)], psym=symcat(16), symsize=psize    
+djs_oplot, [0., isedfit[i].mass], [0., alog10(hst[i].r_e)], psym=symcat(9), symsize=psize  
+      if sigmasfr[i] gt 1.4 then $
+djs_oplot, [0., isedfit[i].mass], [0., alog10(hst[i].r_e)], psym=symcat(16), symsize=psize  
     endfor
 
 
   
 ; guo et al. 2009    
     maxis = im_array(10.0,12.5,0.02)
-    djs_oplot, maxis, poly(maxis,[-8.45,0.83]), line=5, thick=5
+    djs_oplot, maxis, poly(maxis,[-8.45,0.83]), line=0, thick=5
 
 
 ; hopkins et al. 2010 sigma_mass
-    djs_oplot, maxis, alog10(sqrt(10^(maxis)/(2*!pi*1.d11))), linestyle=1
+    djs_oplot, maxis, alog10(sqrt(10^(maxis)/(2*!pi*1.d11))), linestyle=2
     ;djs_oplot, maxis, alog10(sqrt(10^(maxis)/(2*!pi*1.d12))), linestyle=1
 
 
-;; veilleux et al. 2006    
-    veilleux = rsex(path+'06veilleux.dat')
-  ; assuming median M/L of HST sample 
-    v06_mass = (4.83-(veilleux.absmag_h))/2.5 + alog10(masstolight) 
-    djs_oplot, v06_mass, alog10(veilleux.r50), psym=symcat(15), color='orange'
+;;; veilleux et al. 2006    
+;    veilleux = rsex(path+'06veilleux.dat')
+;  ; assuming median M/L of HST sample 
+;    v06_mass = (4.83-(veilleux.absmag_h))/2.5 + alog10(masstolight) 
+;    djs_oplot, v06_mass, alog10(veilleux.r50), psym=symcat(15), color='orange'
 
 ; van dokkum et al. 2008
     v08_re = [0.47,0.49,0.78,0.76,0.92,0.93,1.42,1.89,2.38]
@@ -139,45 +146,55 @@ pro plot_sizemass
   ;zstr = ['0.1', '0.2<z<0.5', '0.5<z<0.8', '0.8<z<1.1', '1.1<z<1.4', $
   ;        '1.4<z<1.7', '1.7<z<2.0', '2.0<z<2.5', '2.5<z<3.0']
   ;fac = [1., 0.84, 0.63, 0.41, 0.34, 0.26, 0.23, 0.23, 0.14]
-  xyouts, xmass+xoff, z0size+alog10(0.24)+yoff, textoidl('z\sim2.0'), $
-    charsize=zsize, align=0.5, color=djs_icolor(tcolor), charthick=tthick
-  xyouts, xmass+xoff, z0size+alog10(0.40)+yoff, textoidl('z\sim1.0'), $
-    charsize=zsize, align=0.5, color=djs_icolor(tcolor), charthick=tthick
-  xyouts, xmass+xoff, z0size+alog10(0.73)+yoff, textoidl('z\sim0.5'), $
-    charsize=zsize, align=0.5, color=djs_icolor(tcolor), charthick=tthick
+;  xyouts, xmass+xoff, z0size+alog10(0.24)+yoff, textoidl('z\sim2.0'), $
+;    charsize=zsize, align=0.5, color=djs_icolor(tcolor), charthick=tthick
+;  xyouts, xmass+xoff, z0size+alog10(0.40)+yoff, textoidl('z\sim1.0'), $
+;    charsize=zsize, align=0.5, color=djs_icolor(tcolor), charthick=tthick
+;  xyouts, xmass+xoff, z0size+alog10(0.73)+yoff, textoidl('z\sim0.5'), $
+;    charsize=zsize, align=0.5, color=djs_icolor(tcolor), charthick=tthick
   ;xyouts, xmass+xoff, z0size+yoff, textoidl('z\sim0.0'), $
   ;  charsize=zsize, align=0.5, color=djs_icolor(tcolor), charthick=tthick
   t07_mass = [xmass, xmass, xmass]
   t07_size = z0size+alog10([0.24, 0.40, 0.73])
   ;djs_oplot, t07_mass, t07_size, psym=symcat(14), symsize=psize, $
   ;  color=tcolor, thick=10.
-  plots, [xmass, xmass]+0.15, [t07_size[0], z0size], linestyle=0, $
-    thick=tthick*2, color=djs_icolor(tcolor)
-  djs_oplot, [0., xmass+0.15], [0., z0size], psym=symcat(17), $
-    color=djs_icolor(tcolor), symsize=psize*2, thick=tthick*2
+;  plots, [xmass, xmass]+0.15, [t07_size[0], z0size], linestyle=0, $
+;    thick=tthick*2, color=djs_icolor(tcolor)
+;  djs_oplot, [0., xmass+0.15], [0., z0size], psym=symcat(17), $
+;    color=djs_icolor(tcolor), symsize=psize*2, thick=tthick*2
 
-    xyouts, xmass+0.1, z0size+0.12, $
+    ;xyouts, xmass+0.1, z0size+0.12, $
+    ;  textoidl('Size-Mass Relation at z\sim0.1'), $
+    ;  orientation=19, align=0.5;, charsize=1.5
+    xyouts, xmass-0.33, z0size-0.2, $
       textoidl('Size-Mass Relation at z\sim0.1'), $
-      orientation=19, align=0.5, charsize=1.3
-    xyouts, xmass+0.2, t07_size[0]+0.03, 'Trujillo+07', $;'Size Evolution', $
-      orientation=90, color=djs_icolor(tcolor), charsize=1.3, $
-      charthick=6.
-    xyouts, xmass+0.25, z0size-1.14, $
+      orientation=19, align=0.5;, charsize=1.5
+ ;   xyouts, xmass+0.23, t07_size[0]-0.05, 'Trujillo+07', $;'Size Evolution', $
+ ;     orientation=90, color=djs_icolor(tcolor), $;charsize=1.3, $
+ ;     charthick=6.
+    xyouts, xmass+0.14, z0size-1.24, $
       textoidl('\Sigma_{*}=10^{11} M')+sunsymbol()+textoidl(' kpc^{-2}'), $
-      orientation=12, align=0.5, charsize=1.5
+      orientation=12, align=0.5, charthick=4;, charsize=1.5
     ;xyouts, xmass+0.25, z0size-1.64, $
     ;  textoidl('\Sigma_{*}=10^{12} M')+sunsymbol()+textoidl(' kpc^{-2}'), $
     ;  orientation=12, align=0.5, charsize=1.5
 
   lpos = [xrange[0]+0.05, yrange[1]-0.05]
 
-  im_legend, [textoidl('HST-WISE Sample (z\sim0.6)'), $
+;  im_legend, [textoidl('HST-WISE Sample (z\sim0.6)'), $
+;; symsize\propto\Sigma_{SFR}, symsize\propto|v_{out}|
+;      textoidl('compact quiescent galaxies (z\sim2.3)'), $
+;      textoidl('gas-rich mergers (z<0.3)')], $
+;      pos=lpos, box=0, $
+;      charsize=1.5, psym=[16,3,15], $
+;      color=['black','red','orange']
+
+  im_legend, [textoidl('this proposal (z\sim0.6)'), $
 ; symsize\propto\Sigma_{SFR}, symsize\propto|v_{out}|
-      textoidl('compact quiescent galaxies (z\sim2.3)'), $
-      textoidl('gas-rich mergers (z<0.3)')], $
+      textoidl('compact quiescent galaxies (z\sim2.3)')], $
       pos=lpos, box=0, $
-      charsize=1.5, psym=[16,3,15], $
-      color=['black','red','orange']
+      charsize=1.5, psym=[16,3], $
+      color=['black','red']
    
    plotsym, 3, psize*1.2, /fill, color=djs_icolor('red') 
    ;djs_oplot, [0., 10.453], [0., 0.865], psym=8

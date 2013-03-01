@@ -164,6 +164,7 @@ pro plot_seds_scuba2
   good = where(m82wave gt 43000./(1.+phot[jj].z), mgood)
   oplot, m82wave[good]/10000., m82mag[good]+norm[0], $
    color=djs_icolor('blue'), thick=8, linestyle=2
+  m82norm = norm
 
 ; plot ARP220 SED scaled to WISE ch2
   arp220mag = -2.5*alog10(arp220flambda * (arp220wave)^2)
@@ -309,6 +310,7 @@ pro plot_seds_scuba2
 ; plot 450 micron point
     sort = sort(abs(arp220wave/10000. - 450. / (1.+phot[jj].z)))
     oplot, [0, arp220wave[sort[0]]]/10000., [0., arp220mag[sort[0]]+arp220norm[0] ], psym=6
+    splog, 'Arp 220, 450: ', 10.^(-1.*(arp220mag[sort[0]]+arp220norm[0])/2.5)*3631.d3
 
     oploterror, [0, arp220wave[sort[0]]]/10000., [0., arp220mag[sort[0]]+arp220norm[0] ], $
       [1., 0.1], $
@@ -319,6 +321,7 @@ pro plot_seds_scuba2
 ; plot 850 micron point
     sort = sort(abs(arp220wave/10000. - 850. / (1.+phot[jj].z)))
     oplot, [0, arp220wave[sort[0]]]/10000., [0., arp220mag[sort[0]]+arp220norm[0] ], psym=6
+    splog, 'Arp220, 850: ', 10.^(-1.*(arp220mag[sort[0]]+arp220norm[0])/2.5)*3631.d3
 
     oploterror, [0, arp220wave[sort[0]]]/10000., [0., arp220mag[sort[0]]+arp220norm[0] ], $
       [1., 0.1], $

@@ -185,6 +185,10 @@ pro plot_3seds
 
     im_plotconfig, psfile=psfile, /psclose, /pdf, /pskeep
 
+; plot escape velocity v. outflow velocity
+
+plot, 
+
 stop
 return
 end
