@@ -18,11 +18,13 @@ pro plot_sizemass_wfc3
      z0 = rsex(path+'wuyts/logM_logSFRsurfdens_0.02z0.20.cat')
      re = alog10(sqrt(10.^(z0.sfr) / (2. * !pi * 10.^(z0.sigmasfr))))
 
-    plot, z0.mstar, re, psym=3, $
-      xrange=[10.3, 11.7], xsty=1, $
-      yrange=[-1.2, 1.5], ysty=1
-    nosf = where(10^(z0.sfr) / 10.^(z0.mstar) lt 1. / 12.6d9, nnosf)
-    oplot, z0[nosf].mstar, re[nosf], psym=3, color=djs_icolor('red')
+; jm13mar01siena - commented out by moustakas
+;    plot, z0.mstar, re, psym=3, $
+;      xrange=[10.3, 11.7], xsty=1, $
+;      yrange=[-1.2, 1.5], ysty=1
+;    nosf = where(10^(z0.sfr) / 10.^(z0.mstar) lt 1. / 12.6d9, nnosf)
+;    oplot, z0[nosf].mstar, re[nosf], psym=3, color=djs_icolor('red')
+
   ;stop     
     xrange = [10.3, 11.7]
     yrange = [-1.2, 1.5]
@@ -103,8 +105,9 @@ djs_oplot, [0., isedfit[i].mass], [0., alog10(hst[i].r_e)], psym=symcat(16), sym
 
 
   
-; guo et al. 2009    
-    maxis = im_array(10.0,12.5,0.02)
+; guo et al. 2009
+    maxis = range(10.0,12.5,100)
+;   maxis = im_array(10.0,12.5,0.02)
     djs_oplot, maxis, poly(maxis,[-8.45,0.83]), line=0, thick=5
 
 
