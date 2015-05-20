@@ -13,6 +13,33 @@ pro hizea_chandra_plots
     ngal = n_elements(isedfit_results)
     
 ; ---------------------------------------------------------------------------    
+; SFH plots    
+    loadct, 13, /silent
+    color = fix((findgen(ngal)*(255-0.0)+0.0)/float(ngal))
+
+    psfile = isedfit_dir+'qa_sfh.ps'
+    im_plotconfig, 0, pos, psfile=psfile, height=4.7, $
+      xmargin=[1.8,0.4], width=6.3
+
+    xrange = [-5.0,1.0]
+;   xrange = [0.1,9.5]
+    djs_plot, [0], [0], /nodata, xrange=xrange, yrange=[1E-2,2E3], $
+      /ylog, xsty=1, ysty=1, position=pos, xtitle='Time from Burst (Gyr)', $
+      ytitle='SFR (M_{'+sunsymbol()+'} yr^{-1})'
+    for ii = 0, ngal-1 do begin
+       delvarx, aa
+       sfh = isedfit_sfh(isedfit_results[ii],maxage=9.5,outage=aa,/linear)
+       toff = isedfit_results[ii].tburst
+       before = where(aa lt isedfit_results[ii].age,comp=after)
+       cgoplot, aa[before]-toff, sfh[before], line=0, thick=6, color=color[ii]
+       cgoplot, aa[after]-toff, sfh[after], line=2, thick=2, color=color[ii]
+    endfor
+
+    im_plotconfig, psfile=psfile, /psclose, /pdf
+    
+stop
+
+; ---------------------------------------------------------------------------    
 ; photometric best-fits vs spectroscopy
     filterlist = strtrim(params.filterlist,2)
     nfilt = n_elements(filterlist)
@@ -61,36 +88,6 @@ pro hizea_chandra_plots
     endfor 
     im_plotconfig, psfile=psfile, /psclose, /pdf
     
-
-stop    
-    
-; ---------------------------------------------------------------------------    
-; SFH plots    
-    loadct, 13, /silent
-    color = fix((findgen(ngal)*(255-0.0)+0.0)/float(ngal))
-
-    psfile = isedfit_dir+'qa_sfh.ps'
-    im_plotconfig, 0, pos, psfile=psfile, height=4.7, $
-      xmargin=[1.8,0.4], width=6.3
-
-    xrange = [-5.0,1.0]
-;   xrange = [0.1,9.5]
-    djs_plot, [0], [0], /nodata, xrange=xrange, yrange=[1E-2,2E3], $
-      /ylog, xsty=1, ysty=1, position=pos, xtitle='Time from Burst (Gyr)', $
-      ytitle='SFR (M_{'+sunsymbol()+'} yr^{-1})'
-    for ii = 0, ngal-1 do begin
-       delvarx, aa
-       sfh = isedfit_sfh(ised[ii],maxage=9.5,outage=aa,/linear)
-       toff = ised[ii].tburst
-       before = where(aa lt ised[ii].age,comp=after)
-       cgoplot, aa[before]-toff, sfh[before], line=0, thick=6, color=color[ii]
-       cgoplot, aa[after]-toff, sfh[after], line=2, thick=2, color=color[ii]
-    endfor
-
-    im_plotconfig, psfile=psfile, /psclose, /pdf
-    
-stop
-
 return
 end
     

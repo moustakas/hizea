@@ -25,17 +25,24 @@ pro build_hizea_chandra_sample, clobber=clobber
 ;;   id = lindgen(n_elements(gal))+1
 
 ; get the photometry
-    cat = mrdfits(sigmasfr_path()+'sigmasfr_photometry.fits.gz',1)
+    cat = mrdfits(chandrapath+'photometry_v131217.fits',1)
+;   cat = mrdfits(sigmasfr_path()+'sigmasfr_photometry.fits.gz',1)
 ;   cat = struct_addtags(replicate({id: 0},n_elements(cat)),cat)
-
+    
     match, strtrim(mmt.short_name,2), strtrim(cat.galaxy,2), m1, m2
     srt = sort(m1) & m1 = m1[srt] & m2 = m2[srt]
     outcat = cat[m2]
 ;   outcat.id = id[m1]
     niceprint, outcat.galaxy, mmt[m1].short_name, outcat.z, mmt[m1].z
     
+; sort by ra!
+;   outcat = outcat[sort(outcat.ra)]
 ; sort by redshift!
     outcat = outcat[sort(outcat.z)]
+    
+;   outcat = struct_addtags(replicate({id: 0},n_elements(outcat)),outcat)
+;   outcat.id = lindgen(n_elements(outcat))+1
+    struct_print, struct_trimtags(outcat,except=['maggies','ivarmaggies'])
     
     im_mwrfits, outcat, chandrapath+'hizea_chandra_photometry.fits', $
       clobber=clobber
