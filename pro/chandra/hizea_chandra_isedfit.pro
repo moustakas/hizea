@@ -3,8 +3,8 @@ pro hizea_chandra_isedfit, write_paramfile=write_paramfile, build_grids=build_gr
   kcorrect=kcorrect, qaplot_sed=qaplot_sed, thissfhgrid=thissfhgrid, clobber=clobber
 ; jm13sep01siena - fit Paul's Chandra sample
     
-    prefix = 'test'
-;   prefix = 'hizea_chandra'
+;   prefix = 'test'
+    prefix = 'hizea_chandra'
     isedfit_dir = getenv('HIZEA_DATA')+'/chandra/'
     montegrids_dir = isedfit_dir+'montegrids/'
     isedfit_paramfile = isedfit_dir+prefix+'_paramfile.par'
@@ -18,20 +18,21 @@ pro hizea_chandra_isedfit, write_paramfile=write_paramfile, build_grids=build_gr
        write_isedfit_paramfile, params=params, isedfit_dir=isedfit_dir, $
          prefix=prefix, filterlist=filterlist, spsmodels='fsps_v2.4_miles', $
          imf='chab', redcurve='charlot', /igm, use_redshift=cat.z, $
-         nmodel=10000L, age=[1.0,9.0], tau=[0.1,10.0], Zmetal=[0.005,0.03], $
-         AV=[0.0,5.0], mu=[0.0,0.3], /flatAV, /flatmu, pburst=0.5, $
+         nmodel=20000L, age=[1.0,9.0], tau=[0.1,10.0], Zmetal=[0.005,0.03], $
+         AV=[0.0,5.0], mu=[0.0,0.7], /flatAV, /flatmu, pburst=0.5, $
          interval_pburst=8.0, tburst=[1.0,9.0], fburst=[0.1,5.0], $
          dtburst=[0.01,1.0], trunctau=[0.005,0.2], fractrunc=0.8, $
-         oiiihb=[-1.0,0.0], /flatfburst, /flatdtburst, /nebular, $
+         oiiihb=[-1.0,1.0], /flatfburst, /flatdtburst, /nebular, $
          clobber=clobber
-;      write_isedfit_paramfile, params=params, isedfit_dir=isedfit_dir, $
-;        prefix=prefix, filterlist=filterlist, spsmodels='fsps_v2.4_miles', $
-;        imf='chab', redcurve='smc', /igm, use_redshift=cat.z, $
-;        nmodel=5000L, age=[2.0,9.0], tau=[0.1,10.0], Zmetal=[0.005,0.03], $
-;        AV=[0.0,2.0], mu=[0.0,1.0], /flatAV, /flatmu, pburst=0.8, $
-;        interval_pburst=7.0, tburst=[2.0,9.0], fburst=[0.1,5.0], $
-;        dtburst=[0.01,1.0], trunctau=[0.005,0.05], fractrunc=1.0, $
-;        /flatfburst, /flatdtburst, /append
+       write_isedfit_paramfile, params=params, isedfit_dir=isedfit_dir, $
+         prefix=prefix, filterlist=filterlist, spsmodels='fsps_v2.4_miles', $
+         imf='chab', redcurve='smc', /igm, use_redshift=cat.z, $
+         nmodel=20000L, age=[1.0,9.0], tau=[0.1,10.0], Zmetal=[0.005,0.03], $
+         AV=[0.0,5.0], mu=[0.0,0.7], /flatAV, /flatmu, pburst=0.5, $
+         interval_pburst=8.0, tburst=[1.0,9.0], fburst=[0.1,5.0], $
+         dtburst=[0.01,1.0], trunctau=[0.005,0.2], fractrunc=0.8, $
+         oiiihb=[-1.0,1.0], /flatfburst, /flatdtburst, /nebular, $
+         clobber=clobber, /append
     endif
 
 ; --------------------------------------------------
@@ -85,7 +86,7 @@ pro hizea_chandra_isedfit, write_paramfile=write_paramfile, build_grids=build_gr
     if keyword_set(qaplot_sed) then begin
        isedfit_qaplot_sed, isedfit_paramfile, isedfit_dir=isedfit_dir, $
          montegrids_dir=montegrids_dir, thissfhgrid=thissfhgrid, $
-         clobber=clobber, /xlog
+         clobber=clobber, /xlog, xrange=[1D3,8D4], yrange=[26,13]
     endif
 
 return
