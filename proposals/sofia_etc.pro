@@ -4,9 +4,10 @@ pro sofia_etc
 
     light = 2.99792458D18       ; speed of light [A/s]
 
-    info = mrdfits('~/sigmasfr_lir.fits.gz',1)
-    phot = mrdfits('~/sigmasfr_photometry.fits.gz',1)
-    seds = mrdfits('~/sigmasfr_lir_seds.fits.gz',1)
+    sigmapath = getenv('IM_PROJECTS_DIR')+'/hizea/sigmasfr/'
+    info = mrdfits(sigmapath+'sigmasfr_lir.fits.gz',1)
+    phot = mrdfits(sigmapath+'sigmasfr_photometry.fits.gz',1)
+    seds = mrdfits(sigmapath+'sigmasfr_lir_seds.fits.gz',1)
 
     keep = where(phot.maggies[11] gt 0)
     info = info[keep]
@@ -14,16 +15,18 @@ pro sofia_etc
     seds = seds[keep]
     ngal = n_elements(info)
 
-    pred = replicate({galaxy: '', z: 0.0, hawc_chary: fltarr(4), hawc_dale: fltarr(4)},ngal)
+    pred = replicate({galaxy: '', z: 0.0, hawc_chary: fltarr(5), hawc_dale: fltarr(5)},ngal)
     pred.galaxy = info.galaxy
     pred.z = info.z
 
-    filters = 'hawc_band_'+strtrim(indgen(4)+1,2)+'.par'
+    bands = ['A','B','C','D','E']
+    filters = 'sofia_hawc_band'+bands+'.par'
     weff_hawc = k_lambda_eff(filterlist=filters)
 
     weff = k_lambda_eff(filterlist=[hizea_filterlist(),wise_filterlist()])
 
-    psfile = 'sofia_etc.ps'
+    sofiapath = getenv('IM_PROJECTS_DIR')+'/hizea/sofia/'
+    psfile = sofiapath+'sofia_etc.ps'
     im_plotconfig, 0, pos, psfile=psfile, height=5.2, $
       xmargin=[1.6,0.3], width=6.6, thick=8
     for ii = 0, ngal-1 do begin
@@ -59,7 +62,7 @@ pro sofia_etc
     endfor
     im_plotconfig, psfile=psfile, /psclose, /pdf
 
-    mwrfits, pred, 'sofia_etc.fits', /create
+    mwrfits, pred, sofiapath+'sofia_etc.fits', /create
     struct_print, pred
 
 
