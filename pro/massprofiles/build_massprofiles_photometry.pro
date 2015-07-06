@@ -88,9 +88,10 @@ pro build_massprofiles_photometry
 
 ; unwise
     if (n_elements(unwise) eq 0L) then unwise = $
-      mrdfits(getenv('IM_ARCHIVE_DIR')+'/data/sdss/dr10/specmatch-dr10',1)
-    spherematch, unwise.plug_ra, wise.plug_dec, phot.ra, phot.dec, 5D/3600, m1, m2
-    unwise_to_maggies, unwise[m1], mm, ii, prefix='wise'
+      mrdfits(getenv('IM_ARCHIVE_DIR')+'/data/sdss/dr10/specmatch-dr10.fits',1)
+    spherematch, unwise.plug_ra, unwise.plug_dec, phot.ra, phot.dec, 5D/3600, m1, m2
+    unwise_to_maggies, unwise[m1], mm, ii, prefix='wise', ratag='plug_ra', $
+      dectag='plug_dec'
     
     phot[m2].maggies[9:12] = mm
     phot[m2].ivarmaggies[9:12] = ii
