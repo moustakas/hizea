@@ -4,10 +4,11 @@ pro sofia_etc
 
     light = 2.99792458D18       ; speed of light [A/s]
 
-    sigmapath = getenv('IM_PROJECTS_DIR')+'/hizea/sigmasfr/'
-    info = mrdfits(sigmapath+'sigmasfr_lir.fits.gz',1)
-    phot = mrdfits(sigmapath+'sigmasfr_photometry.fits.gz',1)
-    seds = mrdfits(sigmapath+'sigmasfr_lir_seds.fits.gz',1)
+    masspath = massprofiles_path()
+    sofiapath = getenv('HIZEA_DATA')+'/sofia/'
+    info = mrdfits(masspath+'massprofiles_lir.fits.gz',1)
+    phot = mrdfits(masspath+'massprofiles_photometry.fits.gz',1)
+    seds = mrdfits(masspath+'massprofiles_lir_seds.fits.gz',1)
 
     keep = where(phot.maggies[11] gt 0)
     info = info[keep]
@@ -24,8 +25,14 @@ pro sofia_etc
     weff_hawc = k_lambda_eff(filterlist=filters)
 
     weff = k_lambda_eff(filterlist=[hizea_filterlist(),wise_filterlist()])
+    normband = 12 ; 22-micron band
 
-    sofiapath = getenv('IM_PROJECTS_DIR')+'/hizea/sofia/'
+; read the QSO SED
+    light = im_light(/ang)
+    readcol, getenv('HIZEA_DIR')+'/etc/qso2_sed.txt', qlam, nuLnu, $
+      skip=4, format='F,D', /silent
+    qflux = nuLnu*qlam/im_light(/micron) ; [nu*L_nu --> erg/s/Hz]
+
     psfile = sofiapath+'sofia_etc.ps'
     im_plotconfig, 0, pos, psfile=psfile, height=5.2, $
       xmargin=[1.6,0.3], width=6.6, thick=8
@@ -53,6 +60,10 @@ pro sofia_etc
        djs_oplot, weff_hawc/1D4, maggies_chary, psym=6, symsize=3, color='orange'
        djs_oplot, weff_hawc/1D4, maggies_dale, psym=cgsymcat(9), $
          symsize=3, color=cgcolor('forest green')
+
+       zqlam = (1+pred[ii].z)*qlam
+       qnorm = phot[ii].maggies[normband]*10^(-0.4*48.6)*1D26/interpol(qflux,zqlam,weff[normband]/1D4)
+       djs_oplot, zqlam, qflux*qnorm, line=3, color=cgcolor('firebrick')
        
        im_legend, info[ii].galaxy, /left, /top, box=0
        im_legend, ['Chary & Elbaz','Dale & Helou'], /right, /bottom, $
