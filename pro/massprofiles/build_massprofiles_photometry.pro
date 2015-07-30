@@ -103,7 +103,15 @@ pro build_massprofiles_photometry
 ;   k_minerror, maggies, ivarmaggies, minerr
 ;   phot.maggies = maggies
 ;   phot.ivarmaggies = ivarmaggies
-    im_mwrfits, phot, massdir+'massprofiles_photometry.fits', /clob
+    im_mwrfits, phot, massdir+'massprofiles_photometry_all.fits', /clob
+
+; subselect the main sample
+    these = 'J'+['1506+5402','0905+5759','1341-0321','0944+0930',$
+      '2140+1209','0826+4305','1613+2834','1219+0336','1107+0417',$
+      '0901+0314','0106-1023','2116-0634']
+    match, phot.galaxy, these, m1, m2
+    srt = sort(phot[m1].z)
+    im_mwrfits, phot[m1[srt]], massdir+'massprofiles_photometry.fits', /clob
 
 stop
     

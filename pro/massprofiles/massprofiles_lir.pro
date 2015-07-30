@@ -3,9 +3,8 @@ pro massprofiles_lir, debug=debug, clobber=clobber
 
     path = massprofiles_path()
 
-    outfile = path+'massprofiles_lir.fits'
-    outsedsfile = path+'massprofiles_lir_seds.fits'
-    wittfile = path+'massprofiles_witt.fits'
+    outfile = path+'massprofiles_lir_all.fits'
+    outsedsfile = path+'massprofiles_lir_seds_all.fits'
     
 ;   kcorr = mrdfits(path+'massprofiles_kcorrect.fits.gz',1)
     cat = mrdfits(path+'massprofiles_photometry.fits.gz',1)
@@ -28,7 +27,7 @@ pro massprofiles_lir, debug=debug, clobber=clobber
       modelmab_chary: fltarr(1366), modelmab_dale: fltarr(1930), modelmab_rieke: fltarr(6270)},$
       ngal)
     
-    filters = strtrim(massprofiles_filterlist(),2)
+    filters = strtrim(massprofiles_filterlist(/allbands),2)
     these = where(filters eq 'wise_w3.par' or filters eq 'wise_w4.par')
 
 ; throw out upper limits to make sure the K-corrections in
@@ -111,6 +110,16 @@ pro massprofiles_lir, debug=debug, clobber=clobber
 ; write out    
     im_mwrfits, out, outfile, clobber=clobber
     im_mwrfits, outseds, outsedsfile, clobber=clobber
+
+; subselect the main sample
+    these = 'J'+['1506+5402','0905+5759','1341-0321','0944+0930',$
+      '2140+1209','0826+4305','1613+2834','1219+0336','1107+0417',$
+      '0901+0314','0106-1023','2116-0634']
+    match, out.galaxy, these, m1, m2
+    srt = sort(m1)
+    im_mwrfits, out[m1[srt]], repstr(outfile,'_all',''), clobber=clobber
+    im_mwrfits, outseds[m1[srt]], repstr(outsedsfile,'_all',''), clobber=clobber
+
 stop
 return
 end

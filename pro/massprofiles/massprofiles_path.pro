@@ -3,7 +3,7 @@ function massprofiles_path, isedfit=isedfit, montegrids=montegrids, hst=hst
 
     path = getenv('HIZEA_DATA')+'/massprofiles/'
     if keyword_set(isedfit) then path = path+'isedfit/'
-    if keyword_set(montegrids) then path = path+'montegrids/'
+    if keyword_set(montegrids) then path = path+'isedfit/montegrids/'
     if keyword_set(hst) then path = path+'hst/'
     
 return, path
