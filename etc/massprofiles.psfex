@@ -28,7 +28,7 @@ PHOTFLUXERR_KEY FLUXERR_APER(6) # Catalogue parameter for photometric error
  
 PSFVAR_KEYS     X_IMAGE,Y_IMAGE # Catalogue or FITS (preceded by :) params
 PSFVAR_GROUPS   1,1             # Group tag for each context key
-PSFVAR_DEGREES  0               # Polynom degree for each group
+PSFVAR_DEGREES  1               # Polynom degree for each group
 PSFVAR_NSNAP    9               # Number of PSF snapshots per axis
 HIDDENMEF_TYPE  COMMON          # INDEPENDENT or COMMON
 STABILITY_TYPE  EXPOSURE        # EXPOSURE or SEQUENCE
