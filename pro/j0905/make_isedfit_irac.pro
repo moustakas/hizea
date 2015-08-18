@@ -44,11 +44,16 @@ mag = [21.979784, 21.743961, 20.45031, 20.062166, 19.538656]
 mag_err = [0.322197, 0.106713, 0.052093, 0.053842, 0.163799]
 redshift = 0.4134
 
+mag = [mag, 19.381736, 19.768241]
+mag_err = [mag_err, 0.1, 0.1]
+
 maggies = 10.^(mag*(-1.)/2.5)
 maggies_err = mag_err * maggies / 1.086
 maggies_ivar = 1. / (maggies_err)^2
 
-filterlist = sdss_filterlist()
+;filterlist = sdss_filterlist()
+filterlist = [sdss_filterlist(), irac_filterlist(/warm)]
+
 
   cat = {ra: ra, $
          dec: dec, $
@@ -61,7 +66,12 @@ return, cat
 END
 
 
-
+; > make_isedfit, /prelim [couple seconds]
+; > make_isedfit, /montegrid [20 minutes] -> [50 minutes]
+; > make_isedfit, /models [10 minutes] -> [43 minutes]
+; > make_isedfit, /isedfit
+; > make_isedfit, /qaplot
+; > make_isedfit, /posterior
 
 
 PRO make_isedfit, prelim=prelim, $
@@ -69,13 +79,15 @@ PRO make_isedfit, prelim=prelim, $
                   montegrid=montegrid, $
                   isedfit=isedfit, $
                   qaplot=qaplot, $
-                  clobber=clobber
+                  clobber=clobber, $
+                  posterior=posterior
   ;prefix = 'cosmos'
   ;ver = 'v5.2'
-  prefix = 'fg'  
+  ;prefix = 'fg_irac'  
+  prefix = 'fg_irac_50'
 
   ;isedfit_dir = '/path/to/an/existing/directory'
-  isedfit_dir = '/Users/aleks/hizea/p2/isedfit/'
+  isedfit_dir = '/Users/aleks/hizea/p2/isedfit_irac_50/'
   isedfit_paramfile = isedfit_dir+prefix+'_paramfile.par'
   sfhgrid_paramfile = isedfit_dir+prefix+'_sfhgrid.par'
   supergrid_paramfile = isedfit_dir+prefix+'_supergrid.par'
@@ -90,7 +102,8 @@ PRO make_isedfit, prelim=prelim, $
   nzz = 100
   
 ; SFHgrid priors                  [Previous PRIMUS settings]
-  nage = 20                     ; 50
+  ;nage = 20                     ; 50
+  nage = 50
   nmonte = 1000                 ; 1000
   Z = [0.004, 0.04]             ; [0.004, 0.03]
   minage = 0.1                  ; 0.1
@@ -220,5 +233,34 @@ PRO make_isedfit, prelim=prelim, $
       outprefix=outprefix, clobber=clobber, $
       /xlog
   ENDIF
-    
+
+
+; can also do isedfit_compute_posterior
+   
+  IF keyword_set(posterior) THEN  BEGIN
+
+  ;supergrid_paramfile = isedfit_paramfile
+  ;thissupergrid = 'fg_irac_supergrid.par';supergrid_paramfile
+  thissupergrid = 1
+
+ mass = isedfit_reconstruct_posterior(isedfit_paramfile, post=post, params=params, $
+   supergrid_paramfile=supergrid_paramfile, thissupergrid=thissupergrid, $
+   isedfit_dir=isedfit_dir, montegrids_dir=montegrids_dir, index=index, $
+   outprefix=outprefix, age=age, sfrage=sfrage, tau=tau, Z=Z, av=av, nburst=nburt, $
+   sfr0=sfr0, sfr100=sfr100, b100=b100, mgal=mgal, chunkindx=chunkindx, $
+   modelindx=modelindx, indxage=ageindx, bigsfr0=bigsfr, $
+   bigmass=bigmass, bigsfrage=bigsfrage)
+
+      ;mstar = j0905_reconstruct_posterior(isedfit_paramfile,post=post,$
+      ;   isedfit_sfhgrid_dir=isedfit_sfhgrid_dir,iopath=isedpath,$
+      ;   age=age,Z=Z,tau=tau,sfr0=sfr0,av=av,sfrage=sfrage,$
+      ;   chunkindx=chunkindx,modelindx=modelindx,indxage=ageindx,$
+      ;   trunctau=tautrunc,tburst=tburst,fburst=fburst,dtburst=dtburst,$
+      ;   sfrpeak=sfrpeak,timesinceburst=timesinceburst)
+
+
+  stop
+
+  ENDIF
+ 
 END
