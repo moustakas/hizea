@@ -1,90 +1,97 @@
-pro hizea_isedfit, models=models, write_paramfile=write_paramfile, $
-  isedfit=isedfit, qaplot=qaplot, clobber=clobber, debug=debug, $
-  noirac=noirac, j0905=j0905
+pro hizea_isedfit, write_paramfile=write_paramfile, build_grids=build_grids, $
+  model_photometry=model_photometry, qaplot_models=qaplot_models, isedfit=isedfit, $
+  kcorrect=kcorrect, qaplot_sed=qaplot_sed, thissfhgrid=thissfhgrid, $
+  clobber=clobber
 ; jm10dec20ucsd - derive stellar masses for the HIZEA sample
 ; jm11apr06ucsd - major updates
+; jm15oct23siena - total rewrite to conform to latest version of iSEDfit
 
-    iopath = hizea_path(/isedfit)
-    paramfile = iopath+'hizea_isedfit.par'
+; echo "hizea_isedfit, /write_param, /build_grids, /model_phot, /cl" | /usr/bin/nohup idl > & ~/hizea.log & 
 
-    sfhgrid_basedir = hizea_path(/monte)
-    sfhgrid_paramfile = hizea_path(/mass)+'hizea_sfhgrid.par'
+    prefix = 'hizea'
+    massdir = massprofiles_path()
+    isedfit_dir = getenv('HIZEA_DATA')+'/isedfit/'
+    montegrids_dir = isedfit_dir+'montegrids/'
+    isedfit_paramfile = isedfit_dir+prefix+'_paramfile.par'
 
+    filterlist = sigmasfr_filterlist()
+
+    cat = mrdfits(massdir+'massprofiles_photometry_all.fits.gz',1)
+    ngal = n_elements(cat)
+    
 ; --------------------------------------------------
 ; write the parameter file
     if keyword_set(write_paramfile) then begin
-       splog, 'Writing '+paramfile
-       openw, lun, paramfile, /get_lun
-       printf, lun, 'synthmodels          bc03'
-       printf, lun, 'imf                  chab'
-       printf, lun, 'sfhgrid              1'
-       printf, lun, 'redcurve             charlot'
-       printf, lun, 'prefix               hizea'
-       if keyword_set(j0905) then $
-         printf, lun, 'redshift             0.41,0.72,10' else $
-           printf, lun, 'redshift             0.35,0.91,30'
-       printf, lun, 'igm                  1'
-       printf, lun, 'maxold               0 # [0=no, 1=yes]'
-       printf, lun, 'filterlist           '+strjoin(hizea_filterlist(),',')
-       free_lun, lun 
+;      write_isedfit_paramfile, params=params, isedfit_dir=isedfit_dir, $
+;        prefix=prefix, filterlist=filterlist, spsmodels='fsps_v2.4_miles', $
+;        imf='chab', redcurve='charlot', /igm, use_redshift=cat.z, $
+;        nmodel=50000L, age=[1.0,9.0], tau=[0.1,10.0], Zmetal=[0.005,0.03], $
+;        AV=[0.0,5.0], mu=[0.0,0.7], /flatAV, /flatmu, pburst=0.5, $
+;        interval_pburst=8.0, tburst=[1.0,9.0], fburst=[0.1,5.0], $
+;        dtburst=[0.01,1.0], trunctau=[0.005,0.2], fractrunc=0.8, $
+;        oiiihb=[-1.0,1.0], /flatfburst, /flatdtburst, /nebular, $
+;        clobber=clobber
+       write_isedfit_paramfile, params=params, isedfit_dir=isedfit_dir, $
+         prefix=prefix, filterlist=filterlist, spsmodels='fsps_v2.4_miles', $
+         imf='salp', redcurve='smc', /igm, zminmax=[0.4,0.95], nzz=50, $ ; use_redshift=cat.z, $
+         nmodel=50000L, age=[1.0,9.0], tau=[0.1,10.0], Zmetal=[0.005,0.03], $
+         AV=[0.0,5.0], mu=[0.0,0.7], /flatAV, /flatmu, pburst=0.5, $
+         interval_pburst=8.0, tburst=[1.0,9.0], fburst=[0.1,5.0], $
+         dtburst=[0.01,1.0], trunctau=[0.005,0.2], fractrunc=0.8, $
+         oiiihb=[-1.0,1.0], /flatfburst, /flatdtburst, /nebular, $
+         clobber=clobber;, /append
     endif
 
 ; --------------------------------------------------
-; build the models
-    if keyword_set(models) then isedfit_models, paramfile, $
-      iopath=iopath, sfhgrid_basedir=sfhgrid_basedir, clobber=clobber
+; build the Monte Carlo grids    
+    if keyword_set(build_grids) then begin
+       isedfit_montegrids, isedfit_paramfile, isedfit_dir=isedfit_dir, $
+         montegrids_dir=montegrids_dir, thissfhgrid=thissfhgrid, clobber=clobber
+    endif
 
 ; --------------------------------------------------
-; do the fitting!  
-    if keyword_set(isedfit) then begin
-       if keyword_set(j0905) then begin
-          phot = mrdfits(hizea_path(/sdss)+'J0905_photometry.fits.gz',1)
-          outprefix = 'J0905'
-       endif else begin
-          phot = mrdfits(hizea_path(/sdss)+'hizea_galex_sdss_spitzer.fits.gz',1)
-       endelse
-       
-       maggies = phot.maggies
-       ivarmaggies = phot.ivarmaggies
-       zobj = phot.z
-       filt = hizea_filterlist()
+; calculate the model photometry 
+    if keyword_set(model_photometry) then begin
+       isedfit_models, isedfit_paramfile, isedfit_dir=isedfit_dir, $
+         montegrids_dir=montegrids_dir, thissfhgrid=thissfhgrid, $
+         clobber=clobber
+    endif
 
-       if keyword_set(noirac) then begin
-          toss = where(strmatch(filt,'*irac*'))
-          ivarmaggies[toss,*] = 0.0
-          outprefix = 'hizea_noirac'
-       endif
-       isedfit, paramfile, maggies, ivarmaggies, zobj, result, $
-         iopath=iopath, outprefix=outprefix, galchunksize=galchunk, $
-         sfhgrid_paramfile=sfhgrid_paramfile, sfhgrid_basedir=sfhgrid_basedir, $
-         clobber=clobber, debug=debug, index=index
+; --------------------------------------------------
+; generate the model photometry QAplots
+    if keyword_set(qaplot_models) then begin
+       thesefilters = ['galex_NUV','sdss_g0','sdss_r0','sdss_i0','wise_w1']
+       isedfit_qaplot_models, isedfit_paramfile, cat.maggies, $
+         cat.ivarmaggies, cat.z, isedfit_dir=isedfit_dir, $
+         thissfhgrid=thissfhgrid, thesefilters=thesefilters, clobber=clobber
+    endif
+    
+; --------------------------------------------------
+; fit! drop the [ch3,4] WISE photometry
+    if keyword_set(isedfit) then begin
+       wise34 = where(strtrim(filterlist,2) eq 'wise_w3.par' or $
+         strtrim(filterlist,2) eq 'wise_w4.par')
+       cat.ivarmaggies[wise34] = 0       
+       isedfit, isedfit_paramfile, cat.maggies, cat.ivarmaggies, $
+         cat.z, ra=cat.ra, dec=cat.dec, isedfit_dir=isedfit_dir, $
+         thissfhgrid=thissfhgrid, clobber=clobber
     endif 
 
 ; --------------------------------------------------
-; make a QAplot
-    if keyword_set(qaplot) then begin
-       if keyword_set(j0905) then begin
-          outprefix = 'J0905'
-          phot = mrdfits(hizea_path(/sdss)+'J0905_photometry.fits.gz',1)
-          galaxy = phot.galaxy
-       endif
-       if keyword_set(noirac) then outprefix = 'hizea_noirac'
+; compute K-corrections
+    if keyword_set(kcorrect) then begin
+       isedfit_kcorrect, isedfit_paramfile, isedfit_dir=isedfit_dir, $
+         montegrids_dir=montegrids_dir, thissfhgrid=thissfhgrid, $
+         absmag_filterlist=bessell_filterlist(), band_shift=0.0, $
+         clobber=clobber
+    endif 
 
-;      sample = mrdfits(hizea_path(/sdss)+'hizea_galex_sdss_spitzer.fits.gz',1)
-;      index = where(sample.maggies[8] gt 0) ; has ch1 flux
-;      galaxy = sample[index].galaxy
-;      keck = rsex(hizea_path(/sdss)+'keckao_sample.sex')
-;
-;      ra = 15D*im_hms2dec(keck.ra) 
-;      dec = im_hms2dec(keck.dec)
-;      spherematch, sample.ra, sample.dec, ra, dec, 3.0/3600.0, m1, m2
-;      srt = sort(m2) & m1 = m1[srt] & m2 = m2[srt]
-;      index = m1
-;      galaxy = sample[index].galaxy
-       
-       isedfit_qaplot, paramfile, isedfit, iopath=iopath, galaxy=galaxy, $
-         index=index, sfhgrid_basedir=sfhgrid_basedir, clobber=clobber, $
-         outprefix=outprefix
+; --------------------------------------------------
+; generate spectral energy distribution (SED) QAplots
+    if keyword_set(qaplot_sed) then begin
+       isedfit_qaplot_sed, isedfit_paramfile, isedfit_dir=isedfit_dir, $
+         montegrids_dir=montegrids_dir, thissfhgrid=thissfhgrid, $
+         clobber=clobber, /xlog, xrange=[1D3,8D4], yrange=[26,13]
     endif
 
 return

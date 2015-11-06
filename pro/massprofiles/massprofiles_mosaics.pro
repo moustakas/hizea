@@ -1,6 +1,5 @@
-pro massprofiles_mosaics, parse_hst=parse_hst, parse_sdss=parse_sdss, $
-  get_cutouts=get_cutouts, trilogy=trilogy, build_psf=build_psf, $
-  sextractor=sextractor, scale=scale, dual=dual
+pro massprofiles_mosaics, get_cutouts=get_cutouts, trilogy=trilogy, build_psf=build_psf, $
+  sextractor=sextractor, scale=scale, dual=dual, clobber=clobber
 ; jm15jul17siena - process the raw data so that Wei can run APLUS
 
     if n_elements(scale) eq 0 then scale = '65mas'
@@ -21,74 +20,6 @@ pro massprofiles_mosaics, parse_hst=parse_hst, parse_sdss=parse_sdss, $
 
     gal = ['J1341-0321']
     
-; --------------------------------------------------
-; parse the HST data
-    if keyword_set(parse_hst) then begin
-       allfits = file_search(archdir+'*_flt.fits',count=nall)
-       info = replicate({file: '', rootname: '', galaxy: '', $
-         ra: 0D, dec: 0D, filter: ''},nall)
-
-; forage the FITS headers and then group by ra,dec,filter
-       for ii = 0, nall-1 do begin
-          hdr = headfits(allfits[ii])
-          info[ii].file = allfits[ii]
-          info[ii].rootname = sxpar(hdr,'ROOTNAME')
-          info[ii].galaxy = sxpar(hdr,'TARGNAME')
-          info[ii].ra = sxpar(hdr,'RA_TARG')
-          info[ii].dec = sxpar(hdr,'DEC_TARG')
-          info[ii].filter = sxpar(hdr,'FILTER')
-       endfor
-       info = info[sort(info.ra)]
-       mwrfits, info, topdir+'archive-info.fits', /create
-       
-       for ic = 0, ngal-1 do begin
-          spherematch, info.ra, info.dec, cat[ic].ra, cat[ic].dec, $
-            5D/3600.0, m1, m2, maxmatch=0
-          gal = strtrim(cat[ic].galaxy,2)
-          file_mkdir, topdir+gal
-          for ff = 0, nfilt-1 do begin
-             these = where(filt[ff] eq strtrim(info[m1].filter,2),nexp)
-             for nn = 0, nexp-1 do begin
-                outfile = topdir+gal+'/'+file_basename(strtrim(info[m1[these[nn]]].file,2))
-;               outfile = topdir+gal+'/'+gal+'-'+filt[ff]+'-'+strtrim(nn,2)+'.fits'
-;               splog, strtrim(info[m1[these[nn]]].file,2)+' --> '+outfile
-                splog, 'Writing '+outfile
-                file_copy, strtrim(info[m1[these[nn]]].file,2), outfile, /over
-             endfor
-          endfor 
-          print
-       endfor
-    endif
-    
-; --------------------------------------------------
-; parse the SDSS mosaics
-    if keyword_set(parse_sdss) then begin
-       allfits = file_search(sdssdir+'*-r.fits',count=nall)
-       info = replicate({file: '', galaxy: '', ra: 0D, $
-         dec: 0D, filter: 'r'},nall)
-
-; forage the FITS headers and then group by ra,dec,filter
-       for ii = 0, nall-1 do begin
-          hdr = headfits(allfits[ii])
-          extast, hdr, astr
-          info[ii].file = allfits[ii]
-;         info[ii].galaxy = sxpar(hdr,'TARGNAME')
-          info[ii].ra = astr.crval[0]
-          info[ii].dec = astr.crval[1]
-       endfor
-
-       spherematch, info.ra, info.dec, cat.ra, cat.dec, $
-         5D/3600.0, m1, m2
-       if n_elements(m1) ne n_elements(m2) then message, 'Problem here!'
-       
-       for ii = 0, ngal-1 do begin
-          gal = strtrim(cat[m2[ii]].galaxy,2)
-          outfile = topdir+gal+'/sdss-'+gal+'.fits'
-          splog, 'Writing '+outfile
-          file_copy, strtrim(info[m1[ii]].file,2), outfile, /over
-       endfor
-    endif 
-
 ; --------------------------------------------------
 ; run SExtractor and then build the PSF using PSFEx
     if keyword_set(sextractor) then begin
