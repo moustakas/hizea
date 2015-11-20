@@ -25,9 +25,19 @@ pro build_hizea_photometry, out, clobber=clobber
     phot.maggies[0:1] = maggies
     phot.ivarmaggies[0:1] = ivarmaggies
     
-;; spitzer
-;    spit = mrdfits(photpath+'hizea_spitzer.fits.gz',1)
-;    spherematch, sample.ra, sample.dec, spit.ra, spit.dec, 1D/3600, m1, m2
+; spitzer; note: the IRAC fluxes are in microJy, so to convert to maggies
+; multiply by 10^(-0.4*23.9)
+    factor = 10.0^(-0.4*23.9)
+    irac = mrdfits(photpath+'hizea_spitzer.fits.gz',1)
+    spherematch, sample.ra, sample.dec, irac.ra, irac.dec, 1D/3600, m1, m2
+
+    ch1 = where(irac[m2].ch1flux gt 0.0)
+    phot[m1[ch1]].maggies[7] = irac[m2[ch1]].ch1flux*factor
+    phot[m1[ch1]].ivarmaggies[7] = 1.0/(0.1*phot[m1[ch1]].maggies[7])^2
+
+    ch2 = where(irac[m2].ch2flux gt 0.0)
+    phot[m1[ch2]].maggies[8] = irac[m2[ch2]].ch2flux*factor
+    phot[m1[ch2]].ivarmaggies[8] = 1.0/(0.1*phot[m1[ch2]].maggies[7])^2
 ;
 ;    spit = rsex(hizeadir+'hst_sample_spitzer.dat')
 ;    gal = strmid(phot.galaxy,0,5)+strmid(phot.galaxy,10,1)+$

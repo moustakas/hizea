@@ -9,14 +9,13 @@ pro hizea_isedfit, write_paramfile=write_paramfile, build_grids=build_grids, $
 ; echo "hizea_isedfit, /write_param, /build_grids, /model_phot, /cl" | /usr/bin/nohup idl > & ~/hizea.log & 
 
     prefix = 'hizea'
-    massdir = massprofiles_path()
-    isedfit_dir = getenv('HIZEA_DATA')+'/isedfit/'
-    montegrids_dir = isedfit_dir+'montegrids/'
+    photdir = hizea_path(/phot)
+    isedfit_dir = hizea_path(/isedfit)
+    montegrids_dir = hizea_path(/montegrids)
     isedfit_paramfile = isedfit_dir+prefix+'_paramfile.par'
 
-    filterlist = sigmasfr_filterlist()
-
-    cat = mrdfits(massdir+'massprofiles_photometry_all.fits.gz',1)
+    filterlist = hizea_filterlist()
+    cat = mrdfits(photdir+'hizea_sample2_phot.fits.gz',1)
     ngal = n_elements(cat)
     
 ; --------------------------------------------------
@@ -91,7 +90,8 @@ pro hizea_isedfit, write_paramfile=write_paramfile, build_grids=build_grids, $
     if keyword_set(qaplot_sed) then begin
        isedfit_qaplot_sed, isedfit_paramfile, isedfit_dir=isedfit_dir, $
          montegrids_dir=montegrids_dir, thissfhgrid=thissfhgrid, $
-         clobber=clobber, /xlog, xrange=[1D3,8D4], yrange=[26,13]
+         clobber=clobber, /xlog, xrange=[1D3,8D4], yrange=[26,13], $
+         galaxy=cat.galaxy
     endif
 
 return
