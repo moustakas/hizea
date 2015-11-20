@@ -1,3 +1,23 @@
+pro write_hizea_casjobs_input, parent, iopath=iopath
+; jm10dec22ucsd - write the coordinate file that needs to be uploaded
+;   to the MAST/casjobs database; see
+;   ~/research/projects/ages/catalogs/galex/README
+;   for more details
+
+    ngal = n_elements(parent)
+    out = struct_addtags(replicate({id: 0L},ngal),$
+      struct_trimtags(parent,select=['ra','dec']))
+    out.id = lindgen(ngal)
+    
+    outfile = iopath+'hizea_galex_casjobs_input.dat'
+    openw, lun, outfile, /get_lun
+    printf, lun, '# id ra dec'
+    struct_print, out, lun=lun, ddigit=12, /no_head
+    free_lun, lun
+
+return
+end
+
 function casjobs_remove_double, cat
 ; most of the fields in the casjobs catalog are unnecessarily double
 ; precision; change them to float
@@ -23,21 +43,26 @@ function casjobs_remove_double, cat
 return, outcat
 end
 
-pro build_hizea_galex_catalog, out_galex, gr=gr, clobber=clobber
-; jm10apr30ucsd - build a line-matched GALEX catalog for the HIZEA
-; sample using the CasJobs output (see the README in the
-; $HIZEA_REDUX/galex directory)
+pro build_hizea_galex, write_input=write_input, gr=gr, clobber=clobber
+; jm10apr30ucsd - build a line-matched GALEX catalog for the HizEA sample using
+;   the CasJobs output (see the README in the $HIZEA_REDUX/galex directory)
+; jm15nov19siena - updated to the latest Sample2 sample
 
     if (n_elements(gr) eq 0) then gr = 'gr6'
-    hizeapath = getenv('HIZEA_DATA')+'/sdss/'
+    hizeapath = getenv('HIZEA_DATA')+'/phot/'
+    hizeadir = massprofiles_path(/code)+'etc/'
 
-; see WRITE_HIZEA_CASJOBS_INPUT for how the input catalog was written
-    hizea = mrdfits(hizeapath+'hizea_simplefit_dr7.fit',1)
-    ngal = n_elements(hizea)
+    sample = rsex(hizeadir+'hizea_sample2.txt')
+    ngal = n_elements(sample)
     id = lindgen(ngal)
 
-; output filename    
-    outfile = hizeapath+'hizea_galex_'+gr+'.fits'
+; optionally write the casjobs input file and return
+    if keyword_set(write_input) then begin
+       write_hizea_casjobs_input, sample, iopath=hizeapath
+       return
+    endif
+    
+    outfile = hizeapath+'hizea_sample2_galex_'+gr+'.fits'
     if file_test(outfile+'.gz') and (keyword_set(clobber) eq 0) then begin
        splog, 'Output file '+outfile+' exists; use /CLOBBER'
        return
@@ -45,7 +70,7 @@ pro build_hizea_galex_catalog, out_galex, gr=gr, clobber=clobber
     
 ; read the casjobs output; for some reason some input/output objects
 ; are repeated (not sure why), so remove them here
-    incat = mrdfits(hizeapath+'hizea_galex_'+gr+'_casjobs.fits.gz',1)
+    incat = mrdfits(hizeapath+'hizea_sample2_galex_'+gr+'_casjobs.fits',1)
     incat = casjobs_remove_double(incat)
     incat = struct_addtags(replicate({galex_object_position: -999L},$
       n_elements(incat)),temporary(incat))
@@ -72,10 +97,12 @@ pro build_hizea_galex_catalog, out_galex, gr=gr, clobber=clobber
 ; add ID, RA, DEC from the original HIZEA structure to the output
 ; catalog
     out_galex.id = id
-    out_galex.ra = hizea.ra
-    out_galex.dec = hizea.dec
-    im_mwrfits, out_galex, outfile, /clobber
+    out_galex.ra = sample.ra
+    out_galex.dec = sample.dec
+    im_mwrfits, out_galex, outfile, /clobber, /nogzip
 
+stop    
+    
 return
 end
     

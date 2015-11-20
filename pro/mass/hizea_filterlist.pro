@@ -1,5 +1,7 @@
-function hizea_filterlist
+function hizea_filterlist, shortwise=shortwise
 ; jm10dec20ucsd
-    filterlist = [galex_filterlist(),sdss_filterlist(),(irac_filterlist())[0:1]]
+; jm15nov16siena - updated to include WISE
+    filterlist = [galex_filterlist(),sdss_filterlist(),$
+      irac_filterlist(/warm),wise_filterlist(shortwave=shortwise)]
 return, filterlist
 end
