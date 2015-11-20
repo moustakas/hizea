@@ -1,7 +1,7 @@
 pro hizea_isedfit, write_paramfile=write_paramfile, build_grids=build_grids, $
   model_photometry=model_photometry, qaplot_models=qaplot_models, isedfit=isedfit, $
   kcorrect=kcorrect, qaplot_sed=qaplot_sed, thissfhgrid=thissfhgrid, $
-  clobber=clobber
+  write_seds=write_seds, clobber=clobber
 ; jm10dec20ucsd - derive stellar masses for the HIZEA sample
 ; jm11apr06ucsd - major updates
 ; jm15oct23siena - total rewrite to conform to latest version of iSEDfit
@@ -94,5 +94,15 @@ pro hizea_isedfit, write_paramfile=write_paramfile, build_grids=build_grids, $
          galaxy=cat.galaxy
     endif
 
+; --------------------------------------------------
+; write out the SED fits for Alison
+    if keyword_set(write_seds) then begin
+       rr = read_isedfit(isedfit_paramfile,isedfit_dir=isedfit_dir,$
+         montegrids_dir=montegrids_dir,/getmodels,/flam)
+       out = struct_trimtags(rr,select=['isedfit_id','ra','dec','z','wave','flux'])
+       im_mwrfits, out, isedfit_dir+'hizea_fsps_v2.4_miles_salp_smc_sfhgrid01_seds.fits', $
+         clobber=clobber
+    endif
+    
 return
 end
