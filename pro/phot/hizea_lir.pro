@@ -131,6 +131,9 @@ pro hizea_lir, debug=debug, clobber=clobber
        im_legend, ['WISE observed','CE01 model','DH02 model'], /right, /top, $
          box=0, charsize=1.5, psym=[7,6,9], color=['blue','orange','forest green']
 
+;      if strmatch(gal,'*1613') then plots, 33D9
+;      57.5microJy at 33 GHz
+       
 ;      cc = get_kbrd(1)
     endfor
     im_plotconfig, psfile=psfile, /psclose, /pdf
