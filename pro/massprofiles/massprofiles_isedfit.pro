@@ -4,10 +4,8 @@ pro massprofiles_isedfit, write_paramfile=write_paramfile, build_grids=build_gri
   clobber=clobber
 ; jm14sep07siena
 
-; echo "decals_dr1_isedfit, /ised, /qaplot_sed, /cl" | /usr/bin/nohup idl > & logall.log & 
-; echo "decals_dr1_isedfit, /ised, /qaplot_sed, /nosdss, /cl" | /usr/bin/nohup idl > & lognosdss.log & 
-; echo "decals_dr1_isedfit, /ised, /qaplot_sed, /nodecals, /cl" | /usr/bin/nohup idl > & lognodecals.log & 
-
+; echo "massprofiles_isedfit, /write_paramfile, /build_grids, /model_phot, /isedfit, /kcorrect, /qaplot_sed, /cl" | /usr/bin/nohup idl > ~/massprofiles.log 2>&1 &
+ 
     prefix = 'massprofiles'
     massdir = massprofiles_path()
     isedfit_dir = massprofiles_path(/isedfit)
@@ -17,15 +15,17 @@ pro massprofiles_isedfit, write_paramfile=write_paramfile, build_grids=build_gri
     filterlist = massprofiles_filterlist()
 
 ; read the catalog
-    cat = mrdfits(massdir+'massprofiles_photometry.fits.gz',1)
-       
+;   cat = mrdfits(massdir+'massprofiles_photometry.fits.gz',1)
+    cat = read_sg_fluxtable()
+    zobj = cat[uniq(cat.z,sort(cat.z))].z
+
 ; --------------------------------------------------
 ; build the parameter files
     if keyword_set(write_paramfile) then begin
       write_isedfit_paramfile, params=params, isedfit_dir=isedfit_dir, $
          prefix=prefix, filterlist=filterlist, spsmodels='fsps_v2.4_miles', $
-         imf='chab', redcurve='charlot', /igm, use_redshift=cat.z, $
-         nmodel=5000L, age=[1.0,8.8], tau=[0.1,10.0], Zmetal=[0.005,0.03], $
+         imf='chab', redcurve='charlot', /igm, use_redshift=zobj, $
+         nmodel=20000L, age=[1.0,9.2], tau=[0.1,10.0], Zmetal=[0.005,0.03], $
          AV=[0.0,5.0], mu=[0.0,0.7], /flatAV, /flatmu, pburst=0.5, $
          interval_pburst=8.0, tburst=[1.0,9.0], fburst=[0.1,5.0], $
          dtburst=[0.01,1.0], trunctau=[0.005,0.2], fractrunc=0.8, $
@@ -62,18 +62,17 @@ pro massprofiles_isedfit, write_paramfile=write_paramfile, build_grids=build_gri
     if keyword_set(kcorrect) then begin
        isedfit_kcorrect, isedfit_paramfile, isedfit_dir=isedfit_dir, $
          montegrids_dir=montegrids_dir, thissfhgrid=thissfhgrid, $
-         absmag_filterlist=galex_filterlist(), band_shift=0.0, $
+         absmag_filterlist=bessell_filterlist(), band_shift=0.0, $
          clobber=clobber, outprefix=outprefix
     endif 
 
 ; --------------------------------------------------
 ; generate spectral energy distribution (SED) QAplots
     if keyword_set(qaplot_sed) then begin
-       index = lindgen(50)
+       galaxy = cat.galaxy+'/Ap'+cat.aperture
        isedfit_qaplot_sed, isedfit_paramfile, isedfit_dir=isedfit_dir, $
          montegrids_dir=montegrids_dir, thissfhgrid=thissfhgrid, $
-         clobber=clobber, /xlog, nrandom=40, galaxy=galaxy, $
-         index=index, outprefix=outprefix
+         clobber=clobber, /xlog, galaxy=galaxy, outprefix=outprefix
     endif
     
 return

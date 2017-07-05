@@ -7,7 +7,8 @@ pro build_massprofiles_photometry
     massdir = massprofiles_path()
     sigmasfrdir = sigmasfr_path()
     
-    filt = massprofiles_filterlist()
+    filt = hizea_filterlist()
+;   filt = massprofiles_filterlist()
     weff = k_lambda_eff(filterlist=filt)
     nfilt = n_elements(filt)
 
@@ -108,7 +109,10 @@ pro build_massprofiles_photometry
 ; subselect the main sample
     these = 'J'+['1506+5402','0905+5759','1341-0321','0944+0930',$
       '2140+1209','0826+4305','1613+2834','1219+0336','1107+0417',$
-      '0901+0314','0106-1023','2116-0634']
+      '0901+0314','1558+3957','2116-0634']
+;    these = 'J'+['1506+5402','0905+5759','1341-0321','0944+0930',$
+;      '2140+1209','0826+4305','1613+2834','1219+0336','1107+0417',$
+;      '0901+0314','0106-1023','2116-0634']
     match, phot.galaxy, these, m1, m2
     srt = sort(phot[m1].z)
     im_mwrfits, phot[m1[srt]], massdir+'massprofiles_photometry.fits', /clob
