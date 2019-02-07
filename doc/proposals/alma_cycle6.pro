@@ -1,6 +1,8 @@
-pro alma_cycle6
+pro alma_cycle6, final=final
 ; jm18apr08siena - estimate the exposure time to observe the highzea sample with
 ; ALMA at 450 mu
+
+; final -- final version of the plots with just J1341 without the AGN template     
 
     light = 2.99792458D18       ; speed of light [A/s]
     maggies2mJy = 10^(-0.4*48.6)*1D26
@@ -11,7 +13,11 @@ pro alma_cycle6
 
 ;   match, phot.galaxy, ['J1613+2834','J1506+5402'], m1, m2
 ;   match, phot.galaxy, ['J1613+2834','J1506+5402','J1219+0336','J1341-0321','J0905+5759'], m1, m2
-;   phot = phot[m1]
+
+    if keyword_set(final) then begin
+       match, phot.galaxy, ['J1341-0321'], m1, m2
+       phot = phot[m1]
+    endif
     ngal = n_elements(phot)
 
 ;   normband = 12 ; 22-micron band
@@ -31,8 +37,12 @@ pro alma_cycle6
     weff_450 = 450 * 1E4 ; [Angstrom]
     weff = k_lambda_eff(filterlist=[hizea_filterlist(),wise_filterlist()])
 
-    psfile = almapath+'alma_cycle6.ps'
-    im_plotconfig, 0, pos, psfile=psfile, height=4.5, $
+    if keyword_set(final) then begin
+       psfile = almapath+'j1314_alma.ps'
+    endif else begin
+       psfile = almapath+'alma_cycle6.ps'
+    endelse
+    im_plotconfig, 0, pos, psfile=psfile, height=4.3, $
       xmargin=[1.6,0.3], width=6.6, thick=8
     for ii = 0, ngal-1 do begin
 
@@ -60,31 +70,49 @@ pro alma_cycle6
 
        djs_plot, [0], [0], /nodata, position=pos, xsty=1, ysty=1, $
          /xlog, /ylog, xrange=[3.0,3E3], yrange=[0.1,900], $
-         xtitle='Wavelength (\mu'+'m)', ytitle='F_{\nu} (mJy)'
+         xtitle='Observed-frame Wavelength (\mu'+'m)', ytitle='F_{\nu} (mJy)'; $
+;        xticklen=1.0, yticklen=1.0, xgridstyle=1, ygridstyle=1, $
+
        djs_oplot, zirwave/1D4, norm_ms*fnu_ms
        djs_oplot, zirwave/1D4, norm_sb*fnu_sb, line=3
-       djs_oplot, zirwave/1D4, norm_agn*fnu_agn, line=5
+       if not keyword_set(final) then $
+         djs_oplot, zirwave/1D4, norm_agn*fnu_agn, line=5
 
        djs_oplot, weff/1D4, phot[ii].maggies*maggies2mJy, psym=6, $
          symsize=3, color=cgcolor('orange')
-       djs_oplot, [weff_450/1D4], [pred[ii].alma_ms], psym=symcat(6), $
+       djs_oplot, [weff_450/1D4], [pred[ii].alma_ms], psym=symcat(9), $
          symsize=3, color=cgcolor('forest green')
        djs_oplot, [weff_450/1D4], [pred[ii].alma_sb], psym=symcat(5), $
          symsize=3, color=cgcolor('dodger blue')
-       djs_oplot, [weff_450/1D4], [pred[ii].alma_agn], psym=symcat(9), $
-         symsize=3, color=cgcolor('firebrick')
+       if not keyword_set(final) then begin
+          djs_oplot, [weff_450/1D4], [pred[ii].alma_agn], psym=symcat(9), $
+            symsize=3, color=cgcolor('firebrick')
+       endif
 
-       im_legend, phot[ii].galaxy, /left, /top, box=0
-       im_legend, ['Main seq. SF','Starburst','AGN'], /right, /top, $
-         box=0, line=[0,3,5], pspacing=1.9, charsize=1.5, $
-         position=[0.75,0.45], /norm, thick=8, $
-         color=['forest green','dodger blue','firebrick']
+       if keyword_set(final) then begin
+          xyouts, 800, 200, 'Band 9!cPrediction', /data, align=0.5, $
+            charsize=1.3
+          im_legend, 'WISE W1-W4', color='orange', /left, /top, box=0, $
+            psym=6, symsize=3, charsize=1.7
+          im_legend, ['Star-forming','Starburst'], /right, /top, $
+            box=0, line=[0,3], pspacing=1.9, charsize=1.5, $
+            position=[0.8,0.45], /norm, thick=8;, $
+;           color=['forest green','dodger blue']
+       endif else begin
+          im_legend, phot[ii].galaxy, /left, /top, box=0
+          im_legend, ['Main seq. SF','Starburst','AGN'], /right, /top, $
+            box=0, line=[0,3,5], pspacing=1.9, charsize=1.5, $
+            position=[0.75,0.45], /norm, thick=8, $
+            color=['forest green','dodger blue','firebrick']
+       endelse
 
     endfor
     im_plotconfig, psfile=psfile, /psclose, /pdf
 
-    mwrfits, pred, almapath+'alma_cycle6.fits', /create
-;   struct_print, pred
+    if not keyword_set(final) then begin
+       mwrfits, pred, almapath+'alma_cycle6.fits', /create
+;      struct_print, pred
+    endif
 
 stop
 
