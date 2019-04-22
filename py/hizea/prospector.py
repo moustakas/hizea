@@ -70,6 +70,18 @@ def load_obs(snr=10):
     run_params['maxfev'] = 500
     run_params['xtol'] = 3e-16
     run_params["min_method"] = 'levenberg_marquardt'
+
+    # dynesty Fitter parameters
+    dyn_params = {'nested_bound': 'multi', # bounding method
+              'nested_sample': 'unif', # sampling method
+              'nested_nlive_init': 100,
+              'nested_nlive_batch': 100,
+              'nested_bootstrap': 0,
+              'nested_dlogz_init': 0.05,
+              'nested_weight_kwargs': {"pfrac": 1.0},
+              'nested_stop_kwargs': {"post_thresh": 0.1}
+              }
+    run_params.update(dyn_params)
     
     return obs, run_params
 
@@ -123,7 +135,7 @@ def load_model(template_library='delayed-tau', redshift=0.0):
 
     return model
 
-def lnprobfn(theta, nested=False, verbose=False):
+def lnprobfn(theta, model, obs, sps, nested=False, verbose=False):
     """
     Given a parameter vector, a dictionary of observational data 
     a model object, and an sps object, return the ln of the posterior. 
@@ -225,3 +237,26 @@ def max_likelihood(run_params, model, obs, sps, seed=1, verbose=True):
 
     return theta_best
 
+def dynesty_solve(run_params, model, nested=False):
+
+    from prospect import fitting
+    from dynesty.dynamicsampler import stopping_function, weight_function
+
+    t0 = time.time()  # time it
+    out = fitting.run_dynesty(obs, model, sps, lnprobfn=lnprobfn, prior_transform, 
+                              stop_function=stopping_function,
+                              wt_function=weight_function,
+                              logl_args=(model, obs, sps, nested, verbose),
+                              **run_params)
+
+    #def prior_transform(u, model=model):
+    #    return model.prior_transform(u)
+    #
+    #out = fitting.run_dynesty_sampler(lnprobfn, prior_transform, model.ndim,
+    #                                  stop_function=stopping_function,
+    #                                  wt_function=weight_function,
+    #                                  logl_args=(model, obs, sps, nested, verbose),
+    #                                  **run_params)
+    print('done sampling in {:.3f} min'.format((time.time() - t0)/60))
+
+    return out
