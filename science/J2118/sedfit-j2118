@@ -1,0 +1,199 @@
+#!/usr/bin/env python
+"""
+Fit the SED of J2118 using Prospector.
+
+"""
+import os, time, argparse, pdb
+import numpy as np
+import multiprocessing
+
+def load_obs(seed=1, nproc=1):
+    """
+    Load the photometry for J2118.
+    
+    From Christy:
+      W1      14.8739    0.0154054
+      W2      14.1342    0.0283280
+      W3      10.4872    0.0699660
+      W4      8.02651     0.179578
+    
+    """
+    import sedpy
+    from prospect.utils.obsutils import fix_obs    
+
+    phot = dict(
+        FUV=(1.82491e-09, 1.15115e+19),
+        NUV=(8.06441e-09, 2.25963e+19),
+        u=(1.27666e-08, 1.53319e+18),
+        g=(1.59991e-08, 7.47418e+18),
+        r=(3.15573e-08, 2.18797e+18),
+        i=(3.63049e-08, 1.53877e+18),
+        z=(4.14564e-08, 2.71207e+17),
+        ch1=(9.25971e-08, 3.91873e+17),
+        ch2=(9.67009e-08, 3.54276e+17),
+        W1=(9.40651e-08, 5.61366e+17),
+        W2=(1.02882e-07, 1.38784e+17),
+        W3=(5.44324e-07, 8.12757e+14),
+        W4=(1.38524e-06, 1.90498e+13))    
+
+    galex = ['galex_FUV', 'galex_NUV']
+    sdss = ['sdss_{}0'.format(b) for b in ['u','g','r','i','z']]
+    spitzer = ['spitzer_irac_ch{}'.format(n) for n in ['1','2']]
+    wise = ['wise_w{}'.format(n) for n in ['1','2', '3', '4']]
+    filternames = galex + sdss + spitzer + wise
+
+    obs = {}
+    obs['redshift'] = 0.535
+    obs["filters"] = sedpy.observate.load_filters(filternames)
+
+    obs["maggies"] = np.array([phot[filt][0] for filt in phot.keys()])
+    obs["maggies_unc"] = np.array([1/np.sqrt(phot[filt][1]) for filt in phot.keys()])
+
+    # mask out W4
+    #obs["phot_mask"] = np.array(['w4' in f.name for f in obs["filters"]])    
+    
+    # Create a handy vector of effective wavelengths (optional) 
+    obs["phot_wave"] = [f.wave_effective for f in obs["filters"]]
+    obs["wavelength"] = None # spectral wavelength
+    obs["spectrum"] = None
+    obs['unc'] = None  # spectral uncertainties are given here
+    obs['mask'] = None
+    obs = fix_obs(obs)
+
+    #run_params = {}
+    run_params = {
+        'redshift': obs['redshift'],
+        'verbose': True,
+        'debug': False,
+        'outfile':'J2118',
+        'ftol':0.5e-5,
+        'maxfev':5000,
+        'do_levenberg': True,
+        'nmin': 10}
+    
+    #run_params['min_method'] = 'lm' # Levenberg-Marquardt
+    run_params['seed'] = seed
+    run_params['nproc'] = nproc
+
+    # dynesty Fitter parameters
+    dyn_params = {
+              'nested_bound': 'multi', # bounding method
+              'nested_sample': 'unif', # sampling method
+              'nested_nlive_init': 100,
+              'nested_nlive_batch': 100,
+              'nested_bootstrap': 0,
+              'nested_dlogz_init': 0.05,
+              'nested_weight_kwargs': {"pfrac": 1.0},
+              #'nested_stop_kwargs': {"post_thresh": 0.05}
+              }
+    run_params.update(dyn_params)
+    
+    return obs, run_params
+
+def load_sps(zcontinuous=1, verbose=False):
+    """zcontinuous - interpolate between metallicity values.
+
+    """
+    from prospect.sources import CSPSpecBasis
+
+    t0 = time.time()
+    sps = CSPSpecBasis(zcontinuous=zcontinuous)
+    if verbose:
+        print('Loading SPS models took {:.2f} sec'.format(time.time()-t0))
+    return sps
+
+def load_model(template_library='delayed-tau', redshift=0.0, verbose=False):
+    
+    from prospect.models import priors
+    from prospect.models.sedmodel import SedModel
+    from prospect.models.templates import TemplateLibrary
+
+    if template_library == 'delayed-tau':
+        if verbose:
+            TemplateLibrary.describe('parametric_sfh')
+
+        model_params = TemplateLibrary['parametric_sfh']        
+
+        # Initial values
+        model_params["zred"]['init'] = redshift
+        model_params["mass"]["init"] = 3e11
+        model_params["tau"]["init"] = 10.0
+        model_params["tage"]["init"] = 1.0
+        model_params["dust2"]["init"] = 1.0
+        model_params["logzsol"]['init'] = 0.1
+        
+        model_params["zred"]['isfree'] = False # fixed redshift
+
+        # Prior ranges
+        model_params['mass']['prior'] = priors.LogUniform(mini=1e10, maxi=1e12)
+        model_params['tau']['prior'] = priors.LogUniform(mini=1, maxi=100)
+        model_params['tage']['prior'] = priors.LogUniform(mini=0.1, maxi=10)
+        model_params['dust2']['prior'] = priors.TopHat(mini=0.0, maxi=2.0)
+        model_params['logzsol']['prior'] = priors.TopHat(mini=-0.5, maxi=0.3)
+
+        ## If we are going to be using emcee, it is useful to provide a 
+        ## minimum scale for the cloud of walkers (the default is 0.1)
+        #model_params["mass"]["disp_floor"] = 1e9
+        #model_params["tau"]["disp_floor"] = 1.0
+        #model_params["tage"]["disp_floor"] = 0.05
+        #model_params['dust2']['disp_floor'] = 0.1
+        #model_params['logzsol']['disp_floor'] = 0.05
+
+        # Add dust emission (with fixed dust SED parameters)
+        model_params.update(TemplateLibrary["dust_emission"])
+        
+    # Now instantiate the model using this new dictionary of parameter specifications
+    model = SedModel(model_params)
+
+    return model
+
+def main():
+    """
+    Main wrapper script.
+
+    """
+    import prospect.io
+    import prospect.fitting
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--priors', default='delayed-tau', type=str, choices=['delayed-tau', 'bursty'],
+                        help='Choose the model priors.')
+    parser.add_argument('--prefix', default='j2118', type=str, help='Output file prefix.')
+    parser.add_argument('--seed', default=1, type=int, help='Seed for random number generation.')
+    parser.add_argument('--nproc', default=1, type=int, help='Number of cores to use.')
+    parser.add_argument('--sedfit', action='store_true', help='Do the SED fit.')
+    parser.add_argument('--qaplots', action='store_true', help='Make pretty plots.')
+    parser.add_argument('--verbose', action='store_true', help='Be verbose.')
+    args = parser.parse_args()
+
+    # Read the photometry.
+    obs, rp = load_obs(seed=args.seed, nproc=args.nproc)
+
+    # Initialize the SPS models (takes a bit) and the priors.
+    sps = load_sps(verbose=args.verbose)
+    model = load_model(args.priors, redshift=obs['redshift'], verbose=args.verbose)
+
+    if args.sedfit:
+
+        with multiprocessing.Pool(args.nproc) as P:
+            output = prospect.fitting.fit_model(obs, model, sps, noise=(None, None),
+                                                optimize=False, dynesty=True, emcee=False,
+                                                pool=None, **rp)
+
+        hfile = "{}-{}.h5".format(args.prefix, args.priors)
+        if os.path.isfile(hfile):
+            os.remove(hfile)
+        print('Writing {}'.format(hfile))
+        prospect.io.write_results.write_hdf5(hfile, rp, model, obs,
+                                             output["sampling"][0],
+                                             output["optimization"][0],
+                                             tsample=output["sampling"][1],
+                                             toptimize=output["optimization"][1])
+
+    if args.qaplots:
+        pass
+    
+    pdb.set_trace()
+
+if __name__ == '__main__':
+    main()
