@@ -3,20 +3,33 @@
 Fit the SED of J2118 using Prospector.
 
 """
-import os, time, argparse, pdb
+import os, sys, time, argparse, pdb
 import numpy as np
 import multiprocessing
 
-def load_obs(seed=1, nproc=1):
-    """
-    Load the photometry for J2118.
+def logmass2mass(logmass=11.0, **extras):
+    return 10**logmass
+
+def load_obs(seed=1, nproc=1, nmin=10, verbose=False, sps=None):
+    """Load the photometry for J2118.
     
     From Christy:
       W1      14.8739    0.0154054
       W2      14.1342    0.0283280
       W3      10.4872    0.0699660
       W4      8.02651     0.179578
+
+    Jim’s latest 2mm measurement: 32+/-11 micro-Jy; bandpass to use is a tophat
+    over 143.5-146.5 GHz.
+
+    https://speclite.readthedocs.io/en/latest/filters.html
     
+    import speclite.filters ; import numpy as np ; import astropy.units as u
+    wave = 2.995e18/(1e9*np.hstack([143.4999, np.arange(143.5, 146.6, 0.01), 146.6001]))
+    resp = np.hstack([0, np.ones(len(wave)-2), 0])
+    filt = speclite.filters.FilterResponse(wavelength=wave*u.Angstrom,
+      response=resp, meta=dict(group_name='alma', band_name='alma'))
+
     """
     import sedpy
     from prospect.utils.obsutils import fix_obs    
@@ -34,7 +47,7 @@ def load_obs(seed=1, nproc=1):
         W1=(9.40651e-08, 5.61366e+17),
         W2=(1.02882e-07, 1.38784e+17),
         W3=(5.44324e-07, 8.12757e+14),
-        W4=(1.38524e-06, 1.90498e+13))    
+        W4=(1.38524e-06, 1.90498e+13))
 
     galex = ['galex_FUV', 'galex_NUV']
     sdss = ['sdss_{}0'.format(b) for b in ['u','g','r','i','z']]
@@ -57,35 +70,34 @@ def load_obs(seed=1, nproc=1):
     obs["wavelength"] = None # spectral wavelength
     obs["spectrum"] = None
     obs['unc'] = None  # spectral uncertainties are given here
-    obs['mask'] = None
+    obs['mask'] = [1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0]
     obs = fix_obs(obs)
 
-    #run_params = {}
-    run_params = {
-        'redshift': obs['redshift'],
-        'verbose': True,
-        'debug': False,
-        'outfile':'J2118',
-        'ftol':0.5e-5,
-        'maxfev':5000,
-        'do_levenberg': True,
-        'nmin': 10}
-    
-    #run_params['min_method'] = 'lm' # Levenberg-Marquardt
+    run_params = {}
+    run_params['redshift'] = obs['redshift']
+    run_params['verbose'] = verbose
+    run_params['debug'] = False
     run_params['seed'] = seed
     run_params['nproc'] = nproc
+    run_params['param_file'] = '' # no parameter file
+
+    run_params['min_method'] = 'lm'
+    run_params['nmin'] = 1
+    
+    if sps:
+        run_params['sps_libraries'] = sps.ssp.libraries
 
     # dynesty Fitter parameters
     dyn_params = {
-              'nested_bound': 'multi', # bounding method
-              'nested_sample': 'unif', # sampling method
-              'nested_nlive_init': 100,
-              'nested_nlive_batch': 100,
-              'nested_bootstrap': 0,
-              'nested_dlogz_init': 0.05,
-              'nested_weight_kwargs': {"pfrac": 1.0},
-              #'nested_stop_kwargs': {"post_thresh": 0.05}
-              }
+        'nested_bound': 'multi',  # bounding method
+        'nested_sample': 'unif', # 'unif', 'slice' # sampling method
+        'nested_nlive_init': 100,
+        'nested_nlive_batch': 100,
+        'nested_bootstrap': 0,
+        'nested_dlogz_init': 0.05,
+        'nested_weight_kwargs': {"pfrac": 1.0},
+        #'nested_stop_kwargs': {"post_thresh": 0.05}
+        }
     run_params.update(dyn_params)
     
     return obs, run_params
@@ -103,47 +115,103 @@ def load_sps(zcontinuous=1, verbose=False):
     return sps
 
 def load_model(template_library='delayed-tau', redshift=0.0, verbose=False):
+    """
+    http://dfm.io/python-fsps/current/stellarpop_api/#api-reference
+    https://github.com/moustakas/siena-astrophysics/blob/master/research/redmapper/redmapper-stellar-mass.py#L125-L197    
     
+    """
     from prospect.models import priors
     from prospect.models.sedmodel import SedModel
     from prospect.models.templates import TemplateLibrary
+    from prospect.models.transforms import dustratio_to_dust1
+
+    def base_delayed_tau():
+        model_params = TemplateLibrary['parametric_sfh']
+
+        # Initialize with sensible numbers.
+        model_params['tau']['init'] = 10.0
+        model_params['tage']['init'] = 1.0
+        model_params['logzsol']['init'] = 0.2
+
+        model_params['logmass'] = {'N': 1, 'isfree': True, 'init': 11.0,
+                                   'prior': priors.TopHat(mini=10.0, maxi=12.0),
+                                   'units': '$M_{\odot}$'}
+
+        model_params['mass']['isfree'] = False
+        model_params['mass']['init'] = 10**model_params['logmass']['init']
+        model_params['mass']['prior'] = None
+        model_params['mass']['depends_on'] = logmass2mass
+        
+        # Adjust the prior ranges.
+        model_params['tau']['prior'] = priors.LogUniform(mini=0.1, maxi=30.0)
+        model_params['tage']['prior'] = priors.LogUniform(mini=0.01, maxi=10.0)
+        model_params['logzsol']['prior'] = priors.TopHat(mini=-0.5, maxi=0.2)
+
+        #print('HACK!!!!!!!!!!!!!')
+        model_params['tau']['isfree'] = False
+        model_params['tage']['isfree'] = False
+        model_params['logzsol']['isfree'] = False
+        model_params['dust2']['isfree'] = False
+
+        return model_params
 
     if template_library == 'delayed-tau':
-        if verbose:
-            TemplateLibrary.describe('parametric_sfh')
+        # Underlying delayed tau model.
+        model_params = base_delayed_tau()
 
-        model_params = TemplateLibrary['parametric_sfh']        
-
-        # Initial values
-        model_params["zred"]['init'] = redshift
-        model_params["mass"]["init"] = 3e11
-        model_params["tau"]["init"] = 10.0
-        model_params["tage"]["init"] = 1.0
-        model_params["dust2"]["init"] = 1.0
-        model_params["logzsol"]['init'] = 0.1
+    if template_library == 'bursty':
+        # Underlying delayed tau model.
+        model_params = base_delayed_tau()
         
-        model_params["zred"]['isfree'] = False # fixed redshift
+        # Add bursts
+        model_params.update(TemplateLibrary['burst_sfh'])
+        
+        #model_params['tburst']['isfree'] = True
+        #model_params['tburst']['init'] = 8.0
+        #model_params['tburst']['prior'] = priors.TopHat(mini=0.0, maxi=10.0)
 
-        # Prior ranges
-        model_params['mass']['prior'] = priors.LogUniform(mini=1e10, maxi=1e12)
-        model_params['tau']['prior'] = priors.LogUniform(mini=1, maxi=100)
-        model_params['tage']['prior'] = priors.LogUniform(mini=0.1, maxi=10)
-        model_params['dust2']['prior'] = priors.TopHat(mini=0.0, maxi=2.0)
-        model_params['logzsol']['prior'] = priors.TopHat(mini=-0.5, maxi=0.3)
+        model_params['fburst']['isfree'] = True
+        model_params['fburst']['init'] = 0.1
+        model_params['fburst']['prior'] = priors.TopHat(mini=0.0, maxi=1.0)
 
-        ## If we are going to be using emcee, it is useful to provide a 
-        ## minimum scale for the cloud of walkers (the default is 0.1)
-        #model_params["mass"]["disp_floor"] = 1e9
-        #model_params["tau"]["disp_floor"] = 1.0
-        #model_params["tage"]["disp_floor"] = 0.05
-        #model_params['dust2']['disp_floor'] = 0.1
-        #model_params['logzsol']['disp_floor'] = 0.05
+        model_params['fage_burst']['isfree'] = True
+        model_params['fage_burst']['init'] = 0.9
+        model_params['fage_burst']['prior'] = priors.TopHat(mini=0.5, maxi=1.0)
 
-        # Add dust emission (with fixed dust SED parameters)
-        model_params.update(TemplateLibrary["dust_emission"])
+    # Add dust emission (with fixed dust SED parameters).
+    #model_params.update(TemplateLibrary['dust_emission'])
+
+    model_params['dust2']['init'] = 1.0 # diffuse dust
+    model_params['dust2']['prior'] = priors.TopHat(mini=0.0, maxi=4.0)
+
+    ## Add more dust flexibility.
+    #model_params['dust_type'] = {'N': 1, 'isfree': False, 'init': 0, 'units': 'dust model'}
+    #model_params['dust_index'] = {'N': 1, 'isfree': False, 'init': -0.7,
+    #                              'units': 'power-law index', 'prior': None}
+    #
+    #model_params['dust1'] = {'N': 1, 'isfree': False, 'init': 0.0, 'prior': None,
+    #                         'units': 'optical depth towards young stars',
+    #                         'depends_on': dustratio_to_dust1}
+    #model_params['dust_ratio'] = {'N': 1, 'isfree': True, 'init': 1.0,
+    #                              'prior': priors.TopHat(mini=1.0, maxi=10.0),
+    #                              'units': 'dust1/dust2 ratio (optical depth to young stars vs diffuse)'}
+
+    ## Add nebular emission.
+    #model_params.update(TemplateLibrary['nebular'])
+    ##model_params['add_neb_continuum']['init'] = False
+    #model_params['gas_logu']['init'] = -1.0 # harder radiation field [default is -2.0]
+
+    # Fixed redshift.
+    model_params['zred']['init'] = redshift
+    model_params['zred']['isfree'] = False 
+
+    # Change the IMF from Kroupa to Salpeter.
+    #model_params['imf_type']['init'] = 0
         
     # Now instantiate the model using this new dictionary of parameter specifications
     model = SedModel(model_params)
+    if verbose:
+        print(model)
 
     return model
 
@@ -158,7 +226,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--priors', default='delayed-tau', type=str, choices=['delayed-tau', 'bursty'],
                         help='Choose the model priors.')
-    parser.add_argument('--prefix', default='j2118', type=str, help='Output file prefix.')
+    parser.add_argument('--prefix', default='J2118', type=str, help='Output file prefix.')
     parser.add_argument('--seed', default=1, type=int, help='Seed for random number generation.')
     parser.add_argument('--nproc', default=1, type=int, help='Number of cores to use.')
     parser.add_argument('--sedfit', action='store_true', help='Do the SED fit.')
@@ -166,34 +234,31 @@ def main():
     parser.add_argument('--verbose', action='store_true', help='Be verbose.')
     args = parser.parse_args()
 
-    # Read the photometry.
-    obs, rp = load_obs(seed=args.seed, nproc=args.nproc)
-
-    # Initialize the SPS models (takes a bit) and the priors.
+    # Initialize the SPS library (takes a bit).
     sps = load_sps(verbose=args.verbose)
+
+    # Read the photometry, the "run parameters" dictionary, and the priors.
+    obs, rp = load_obs(seed=args.seed, nproc=args.nproc, verbose=args.verbose, sps=sps)
+
     model = load_model(args.priors, redshift=obs['redshift'], verbose=args.verbose)
 
     if args.sedfit:
-
-        with multiprocessing.Pool(args.nproc) as P:
-            output = prospect.fitting.fit_model(obs, model, sps, noise=(None, None),
-                                                optimize=False, dynesty=True, emcee=False,
-                                                pool=None, **rp)
+        #with multiprocessing.Pool(args.nproc) as P:
+        output = prospect.fitting.fit_model(obs, model, sps, noise=(None, None),
+                                            optimize=False, dynesty=True, emcee=False,
+                                            #nested_posterior_thresh=0.05,
+                                            pool=None, **rp)
 
         hfile = "{}-{}.h5".format(args.prefix, args.priors)
         if os.path.isfile(hfile):
             os.remove(hfile)
         print('Writing {}'.format(hfile))
-        prospect.io.write_results.write_hdf5(hfile, rp, model, obs,
-                                             output["sampling"][0],
-                                             output["optimization"][0],
-                                             tsample=output["sampling"][1],
-                                             toptimize=output["optimization"][1])
+        prospect.io.write_results.write_hdf5(hfile, rp, model, obs, output["sampling"][0],
+            output["optimization"][0], tsample=output["sampling"][1],
+            toptimize=output["optimization"][1])
 
     if args.qaplots:
         pass
     
-    pdb.set_trace()
-
 if __name__ == '__main__':
     main()
