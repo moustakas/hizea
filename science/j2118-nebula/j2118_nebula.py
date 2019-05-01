@@ -114,7 +114,7 @@ def load_sps(zcontinuous=1, verbose=False):
         print('Loading SPS models took {:.2f} sec'.format(time.time()-t0))
     return sps
 
-def load_model(template_library='delayed-tau', redshift=0.0, verbose=False):
+def load_model(obs, template_library='delayed-tau', verbose=False):
     """
     http://dfm.io/python-fsps/current/stellarpop_api/#api-reference
     https://github.com/moustakas/siena-astrophysics/blob/master/research/redmapper/redmapper-stellar-mass.py#L125-L197    
@@ -133,6 +133,7 @@ def load_model(template_library='delayed-tau', redshift=0.0, verbose=False):
         model_params['tage']['init'] = 1.0
         model_params['logzsol']['init'] = 0.2
 
+        # optimize log-stellar mass, not linear stellar mass
         model_params['logmass'] = {'N': 1, 'isfree': True, 'init': 11.0,
                                    'prior': priors.TopHat(mini=10.0, maxi=12.0),
                                    'units': '$M_{\odot}$'}
@@ -145,9 +146,9 @@ def load_model(template_library='delayed-tau', redshift=0.0, verbose=False):
         # Adjust the prior ranges.
         model_params['tau']['prior'] = priors.LogUniform(mini=0.1, maxi=30.0)
         model_params['tage']['prior'] = priors.LogUniform(mini=0.01, maxi=10.0)
-        model_params['logzsol']['prior'] = priors.TopHat(mini=-0.5, maxi=0.2)
+        model_params['logzsol']['prior'] = priors.TopHat(mini=-0.5, maxi=0.3)
 
-        #print('HACK!!!!!!!!!!!!!')
+        print('HACK!!!!!!!!!!!!!')
         model_params['tau']['isfree'] = False
         model_params['tage']['isfree'] = False
         model_params['logzsol']['isfree'] = False
@@ -179,7 +180,7 @@ def load_model(template_library='delayed-tau', redshift=0.0, verbose=False):
         model_params['fage_burst']['prior'] = priors.TopHat(mini=0.5, maxi=1.0)
 
     # Add dust emission (with fixed dust SED parameters).
-    #model_params.update(TemplateLibrary['dust_emission'])
+    model_params.update(TemplateLibrary['dust_emission'])
 
     model_params['dust2']['init'] = 1.0 # diffuse dust
     model_params['dust2']['prior'] = priors.TopHat(mini=0.0, maxi=4.0)
@@ -202,7 +203,7 @@ def load_model(template_library='delayed-tau', redshift=0.0, verbose=False):
     #model_params['gas_logu']['init'] = -1.0 # harder radiation field [default is -2.0]
 
     # Fixed redshift.
-    model_params['zred']['init'] = redshift
+    model_params['zred']['init'] = obs['redshift']
     model_params['zred']['isfree'] = False 
 
     # Change the IMF from Kroupa to Salpeter.
@@ -240,7 +241,7 @@ def main():
     # Read the photometry, the "run parameters" dictionary, and the priors.
     obs, rp = load_obs(seed=args.seed, nproc=args.nproc, verbose=args.verbose, sps=sps)
 
-    model = load_model(args.priors, redshift=obs['redshift'], verbose=args.verbose)
+    model = load_model(obs, args.priors, verbose=args.verbose)
 
     if args.sedfit:
         #with multiprocessing.Pool(args.nproc) as P:
@@ -249,13 +250,14 @@ def main():
                                             #nested_posterior_thresh=0.05,
                                             pool=None, **rp)
 
-        hfile = "{}-{}.h5".format(args.prefix, args.priors)
+        hfile = '{}-{}.h5'.format(args.prefix, args.priors)
         if os.path.isfile(hfile):
             os.remove(hfile)
         print('Writing {}'.format(hfile))
-        prospect.io.write_results.write_hdf5(hfile, rp, model, obs, output["sampling"][0],
-            output["optimization"][0], tsample=output["sampling"][1],
-            toptimize=output["optimization"][1])
+        prospect.io.write_results.write_hdf5(
+            hfile, rp, model, obs, output['sampling'][0],
+            output['optimization'][0], tsample=output['sampling'][1],
+            toptimize=output['optimization'][1])
 
     if args.qaplots:
         pass
