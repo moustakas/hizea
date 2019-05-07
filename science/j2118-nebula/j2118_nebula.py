@@ -47,7 +47,7 @@ def _galaxyphot(obs):
         galphoterr = obs['maggies_unc'] * maggies2mJy
     else:
         galphot = -2.5 * np.log10(obs['maggies'])
-        galphoterr = 2.5 * obs['maggies_unc'] / obs['maggies_unc'] / np.log(10)
+        galphoterr = 2.5 * obs['maggies_unc'] / obs['maggies'] / np.log(10)
 
     return weff, fwhm, galphot, galphoterr
 
