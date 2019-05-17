@@ -121,13 +121,13 @@ def bestfit_sed(obs, chain=None, lnprobability=None, theta=None, sps=None,
     #print(modelspec.min(), modelspec.max())
 
     # Establish the wavelength and flux limits.
-    minwave, maxwave = 0.1, 1000.0
+    minwave, maxwave = 0.1, 40
     #minwave, maxwave = np.min(weff - 5*fwhm), np.max(weff + fwhm)
 
     inrange = (modelwave > minwave) * (modelwave < maxwave)
     #maxflux = np.hstack( (galphot + 5*galphoterr, modelspec[inrange]) ).max() * 1.2
     #minflux = -0.05 * maxflux
-    minflux, maxflux = (9, 24)
+    minflux, maxflux = (11, 24)
 
     fig, ax = plt.subplots(figsize=(8, 6))
     if chain is not None and nrand > 0:
@@ -296,7 +296,7 @@ def load_obs(seed=1, nproc=1, nmin=10, verbose=False, sps=None):
     filternames = galex + sdss + spitzer + wise
 
     obs = {}
-    obs['redshift'] = 0.535
+    obs['redshift'] = 0.459
     obs["filters"] = sedpy.observate.load_filters(filternames)
 
     obs["maggies"] = np.array([phot[filt][0] for filt in phot.keys()])
@@ -505,14 +505,6 @@ def main():
         result, obs, _ = reader.results_from(hfile, dangerous=False)
         print('...took {:.2f} sec'.format(time.time()-t0))
 
-        png = os.path.join(j2118dir, '{}-{}-corner.png'.format(args.prefix, args.priors))
-        subtriangle(result, showpars=['logmass', 'tage', 'tau', 'dust2', 'dust_ratio'],
-                    logify=['tau'], png=png)
-
-        #reader.subcorner(result, start=0, thin=1, fig=plt.subplots(5,5,figsize=(27,27))[0])
-
-        pdb.set_trace()
-
         # SED
         sps = load_sps(verbose=args.verbose)
         model = load_model(obs, args.priors, verbose=args.verbose)
@@ -521,5 +513,15 @@ def main():
         bestfit_sed(obs, chain=result['chain'], lnprobability=result['lnprobability'], 
                     sps=sps, model=model, seed=1, nrand=100, png=png)
     
+        pdb.set_trace()
+        
+        png = os.path.join(j2118dir, '{}-{}-corner.png'.format(args.prefix, args.priors))
+        subtriangle(result, showpars=['logmass', 'tage', 'tau', 'dust2', 'dust_ratio'],
+                    logify=['tau'], png=png)
+
+        #reader.subcorner(result, start=0, thin=1, fig=plt.subplots(5,5,figsize=(27,27))[0])
+
+        pdb.set_trace()
+
 if __name__ == '__main__':
     main()
