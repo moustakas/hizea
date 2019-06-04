@@ -6,7 +6,7 @@ import matplotlib
 matplotlib.use('Agg')
 
 import os, sys, time, pdb
-import argparse
+import shutil, argparse
 import numpy as np
 from astropy.table import Table, hstack
 from contextlib import redirect_stdout, redirect_stderr
@@ -23,6 +23,168 @@ SURVEY_DIR = '/global/project/projectdirs/cosmo/work/legacysurvey/dr8'
 HIZEA_DIR = '/global/project/projectdirs/desi/users/ioannis/hizea-lsphot'
 HIZEA_CODE_DIR = '/global/u2/i/ioannis/repos/git/hizea'
 
+RADIUS_MOSAIC = 60.0 # [arcsec]
+
+def custom_brickname(ra, dec):
+    brickname = '{:06d}{}{:05d}'.format(
+        int(1000*ra), 'm' if dec < 0 else 'p',
+        int(1000*np.abs(dec)))
+    return brickname
+
+def _copyfile(infile, outfile):
+    if os.path.isfile(infile):
+        os.rename(infile, outfile)
+        #shutil.copy2(infile, outfile)
+        return 1
+    else:
+        print('Missing file {}; please check the logfile.'.format(infile))
+        return 0
+    
+def pipeline_coadds(onegal, survey, radius_mosaic=60, nproc=1, pixscale=0.262,
+                    run='decam', force=False, cleanup=True, log=None):
+    """
+    radius_mosaic in arcsec
+    
+    """
+    import subprocess
+
+    galaxy = onegal['galaxy']
+    galaxydir = survey.output_dir
+
+    cmd = 'python {legacypipe_dir}/py/legacypipe/runbrick.py '
+    cmd += '--radec {ra} {dec} --width {width} --height {width} --pixscale {pixscale} '
+    cmd += '--threads {threads} --outdir {outdir} '
+    cmd += '--survey-dir {survey_dir} --run {run} '
+    #cmd += '--stage image_coadds --early-coadds '
+    #cmd += '--write-stage tims '
+    cmd += '--write-stage srcs '
+    #cmd += '--min-mjd 0 ' # obsolete
+    cmd += '--skip-calibs '
+    #cmd += '--no-wise-ceres '
+    cmd += '--unwise-coadds '
+    cmd += '--checkpoint {galaxydir}/{galaxy}-runbrick-checkpoint.p '
+    cmd += '--pickle {galaxydir}/{galaxy}-runbrick-%%(stage)s.p '
+    
+    if force:
+        cmd += '--force-all '
+        checkpointfile = '{galaxydir}/{galaxy}-runbrick-checkpoint.p'.format(
+            galaxydir=galaxydir, galaxy=galaxy)
+        if os.path.isfile(checkpointfile):
+            os.remove(checkpointfile)
+
+    width = np.ceil(radius_mosaic / pixscale).astype(int)
+    
+    cmd = cmd.format(legacypipe_dir=os.getenv('LEGACYPIPE_DIR'), galaxy=galaxy,
+                     ra=onegal['ra'], dec=onegal['dec'], width=width,
+                     pixscale=pixscale, threads=nproc, outdir=survey.output_dir,
+                     galaxydir=galaxydir, survey_dir=survey.survey_dir, run=run)
+    print(cmd, flush=True, file=log)
+    err = subprocess.call(cmd.split(), stdout=log, stderr=log)
+
+    if err != 0:
+        print('Something went wrong; please check the logfile.')
+        return 0
+    else:
+        # Move (rename) files into the desired output directory and clean up.
+        brickname = 'custom-{}'.format(custom_brickname(onegal['ra'], onegal['dec']))
+
+        # tractor catalog
+        ok = _copyfile(
+            os.path.join(survey.output_dir, 'tractor', 'cus', 'tractor-{}.fits'.format(brickname)),
+            os.path.join(survey.output_dir, '{}-pipeline-tractor.fits'.format(galaxy)) )
+        if not ok:
+            return ok
+
+        # CCDs, maskbits, blob images, outlier masks, and depth images
+        ok = _copyfile(
+            os.path.join(survey.output_dir, 'coadd', 'cus', brickname,
+                         'legacysurvey-{}-ccds.fits'.format(brickname)),
+            os.path.join(survey.output_dir, '{}-ccds.fits'.format(galaxy)) )
+        if not ok:
+            return ok
+
+        ok = _copyfile(
+            os.path.join(survey.output_dir, 'coadd', 'cus', brickname,
+                         'legacysurvey-{}-maskbits.fits.fz'.format(brickname)),
+            os.path.join(survey.output_dir, '{}-maskbits.fits.fz'.format(galaxy)) )
+        if not ok:
+            return ok
+
+        ok = _copyfile(
+            os.path.join(survey.output_dir, 'metrics', 'cus', 'blobs-{}.fits.gz'.format(brickname)),
+            os.path.join(survey.output_dir, '{}-blobs.fits.gz'.format(galaxy)) )
+        if not ok:
+            return ok
+
+        ok = _copyfile(
+            os.path.join(survey.output_dir, 'metrics', 'cus', 'outlier-mask-{}.fits.fz'.format(brickname)),
+            os.path.join(survey.output_dir, '{}-outlier-mask.fits.fz'.format(galaxy)) )
+        if not ok:
+            return ok
+
+        for band in ('g', 'r', 'z'):
+            ok = _copyfile(
+                os.path.join(survey.output_dir, 'coadd', 'cus', brickname,
+                             'legacysurvey-{}-depth-{}.fits.fz'.format(brickname, band)),
+                os.path.join(survey.output_dir, '{}-depth-{}.fits.fz'.format(galaxy, band)) )
+            if not ok:
+                return ok
+        
+        # Data and model images
+        for band in ('g', 'r', 'z'):
+            for imtype in ('image', 'model'):
+                ok = _copyfile(
+                    os.path.join(survey.output_dir, 'coadd', 'cus', brickname,
+                                 'legacysurvey-{}-{}-{}.fits.fz'.format(brickname, imtype, band)),
+                    os.path.join(survey.output_dir, '{}-pipeline-{}-{}.fits.fz'.format(galaxy, imtype, band)) )
+                if not ok:
+                    return ok
+
+        for band in ('g', 'r', 'z'):
+            ok = _copyfile(
+                os.path.join(survey.output_dir, 'coadd', 'cus', brickname,
+                             'legacysurvey-{}-invvar-{}.fits.fz'.format(brickname, band)),
+                os.path.join(survey.output_dir, '{}-invvar-{}.fits.fz'.format(galaxy, band)) )
+            if not ok:
+                return ok
+
+        # JPG images
+
+        # Look for WISE stuff in the unwise module--
+        for band in ('W1', 'W2', 'W3', 'W4'):
+            for imtype in ('image', 'model', 'invvar'):
+                ok = _copyfile(
+                    os.path.join(survey.output_dir, 'coadd', 'cus', brickname,
+                                 'legacysurvey-{}-{}-{}.fits.fz'.format(brickname, imtype, band)),
+                    os.path.join(survey.output_dir, '{}-{}-{}.fits.fz'.format(galaxy, imtype, band)) )
+                if not ok:
+                    return ok
+
+        for imtype, suffix in zip(('wise', 'wisemodel'),
+                                  ('pipeline-image', 'pipeline-model')):
+            ok = _copyfile(
+                os.path.join(survey.output_dir, 'coadd', 'cus', brickname,
+                             'legacysurvey-{}-{}.jpg'.format(brickname, imtype)),
+                os.path.join(survey.output_dir, '{}-{}-W1W2.jpg'.format(galaxy, suffix)) )
+            if not ok:
+                return ok
+
+        for imtype in ('image', 'model', 'resid'):
+            ok = _copyfile(
+                os.path.join(survey.output_dir, 'coadd', 'cus', brickname,
+                             'legacysurvey-{}-{}.jpg'.format(brickname, imtype)),
+                os.path.join(survey.output_dir, '{}-pipeline-{}-grz.jpg'.format(galaxy, imtype)) )
+            if not ok:
+                return ok
+
+        if cleanup:
+            shutil.rmtree(os.path.join(survey.output_dir, 'coadd'))
+            shutil.rmtree(os.path.join(survey.output_dir, 'metrics'))
+            shutil.rmtree(os.path.join(survey.output_dir, 'tractor'))
+            shutil.rmtree(os.path.join(survey.output_dir, 'tractor-i'))
+
+        return 1
+
 def read_all_ccds(dr='dr8'):
     """Read the CCDs files, treating DECaLS and BASS+MzLS separately.
 
@@ -30,7 +192,8 @@ def read_all_ccds(dr='dr8'):
     from astrometry.libkd.spherematch import tree_open
     #survey = LegacySurveyData()
 
-    drdir = os.path.join(legacyhalos.io.sample_dir(), dr)
+    #drdir = os.path.join(legacyhalos.io.sample_dir(), dr)
+    drdir = SURVEY_DIR
 
     kdccds_north = []
     for camera in ('90prime', 'mosaic'):
@@ -46,26 +209,27 @@ def read_all_ccds(dr='dr8'):
 
     return kdccds_north, kdccds_south
 
-def get_run(onegal, radius_mosaic, pixscale, kdccds_north, kdccds_south, log=None):
+def get_run(onegal, pixscale, kdccds_north, kdccds_south, radius_mosaic=60, log=None):
     """Determine the "run", i.e., determine whether we should use the BASS+MzLS CCDs
     or the DECaLS CCDs file when running the pipeline.
+
+    radius_mosaic in arcsec
 
     """
     from astrometry.util.util import Tan
     from astrometry.libkd.spherematch import tree_search_radec
     from legacypipe.survey import ccds_touching_wcs
     
-    ra, dec = onegal['RA'], onegal['DEC']
+    ra, dec = onegal['ra'], onegal['dec']
     if dec < 25:
         run = 'decam'
     elif dec > 40:
         run = '90prime-mosaic'
     else:
-        width = legacyhalos.coadds._mosaic_width(radius_mosaic, pixscale)
+        width = np.ceil(radius_mosaic / pixscale).astype(int)
         wcs = Tan(ra, dec, width/2+0.5, width/2+0.5,
                   -pixscale/3600.0, 0.0, 0.0, pixscale/3600.0, 
                   float(width), float(width))
-
         # BASS+MzLS
         TT = []
         for fn, kd in kdccds_north:
@@ -87,12 +251,12 @@ def get_run(onegal, radius_mosaic, pixscale, kdccds_north, kdccds_south, log=Non
             isouth = ccds_touching_wcs(wcs, ccds)
         else:
             isouth = []
-
+            
         if len(inorth) > len(isouth):
             run = '90prime-mosaic'
         else:
             run = 'decam'
-        print('Cluster RA, Dec={:.6f}, {:.6f}: run={} ({} north CCDs, {} south CCDs).'.format(
+        print('Galaxy RA, Dec={:.6f}, {:.6f}: run={} ({} north CCDs, {} south CCDs).'.format(
             ra, dec, run, len(inorth), len(isouth)), flush=True, file=log)
 
     return run
@@ -126,253 +290,161 @@ def check_and_read_ccds(galaxy, survey, debug=False, logfile=None):
         return False
     return True
 
-def missing_files(sample, filetype='coadds', size=1, htmldir=None,
-                  hsc=False, sdss=False, clobber=False):
-    """Find missing data of a given filetype."""    
-
-    if filetype == 'coadds':
-        filesuffix = '-pipeline-resid-grz.jpg'
-    elif filetype == 'sdss-coadds':
-        filesuffix = '-sdss-image-gri.jpg'
-    else:
-        print('Unrecognized file type!')
-        raise ValueError
-
-    ngal = len(sample)
-    indices = np.arange(ngal)
-    todo = np.ones(ngal, dtype=bool)
-
-    if filetype == 'html':
-        if hsc:
-            galaxy, _, galaxydir = legacyhalos.hsc.get_galaxy_galaxydir(sample, htmldir=htmldir, html=True)
-        else:
-            galaxy, _, galaxydir = legacyhalos.io.get_galaxy_galaxydir(sample, htmldir=htmldir, html=True)
-    else:
-        if hsc:
-            galaxy, galaxydir = legacyhalos.hsc.get_galaxy_galaxydir(sample, htmldir=htmldir)
-        else:
-            galaxy, galaxydir = legacyhalos.io.get_galaxy_galaxydir(sample, htmldir=htmldir)
-
-    for ii, (gal, gdir) in enumerate( zip(np.atleast_1d(galaxy), np.atleast_1d(galaxydir)) ):
-        checkfile = os.path.join(gdir, '{}{}'.format(gal, filesuffix))
-        if os.path.exists(checkfile) and clobber is False:
-            todo[ii] = False
-
-    if np.sum(todo) == 0:
-        return list()
-    else:
-        indices = indices[todo]
-        
-    return np.array_split(indices, size)
-
-def _missing_files(args, sample, size, htmldir=None):
-    """Simple task-specific wrapper on missing_files.
-
-    """
-    if args.coadds:
-        if args.sdss:
-            suffix = 'sdss-coadds'
-        else:
-            suffix = 'coadds'
-    else:
-        suffix = ''        
-
-    if suffix != '':
-        groups = missing_files(sample, filetype=suffix, size=size, hsc=args.hsc,
-                               sdss=args.sdss, clobber=args.clobber, htmldir=htmldir)
-    else:
-        groups = []        
-
-    return suffix, groups
-
-def _start(galaxy, log=None, seed=None):
-    if seed:
-        print('Random seed = {}'.format(seed), flush=True)        
-    print('Started working on galaxy {} at {}'.format(
-        galaxy, time.asctime()), flush=True, file=log)
-
-def _done(galaxy, err, t0, log=None):
-    if err == 0:
-        print('ERROR: galaxy {}; please check the logfile.'.format(galaxy), flush=True, file=log)
-    print('Finished galaxy {} in {:.3f} minutes.'.format(
-          galaxy, (time.time() - t0)/60), flush=True, file=log)
-
-def _call_pipeline_coadds(onegal, galaxy, radius_mosaic, survey, kdccds_north,
-                          kdccds_south, pixscale, nproc, force, debug, hsc,
-                          logfile):
-    """Wrapper script to build the pipeline coadds.
-
-    radius_mosaic in arcsec
-
-    """
-    cleanup = True
-
-    t0 = time.time()
-    if debug:
-        _start(galaxy)
-        run = get_run(onegal, radius_mosaic, pixscale, kdccds_north, kdccds_south)
-        err = legacyhalos.coadds.pipeline_coadds(onegal, galaxy=galaxy, radius_mosaic=radius_mosaic,
-                                                 survey=survey, pixscale=pixscale, run=run,
-                                                 nproc=nproc, force=force, cleanup=cleanup)
-        _done(galaxy, err, t0)
-    else:
-        with open(logfile, 'a') as log:
-            with redirect_stdout(log), redirect_stderr(log):
-                _start(galaxy, log=log)
-                run = get_run(onegal, radius_mosaic, pixscale, kdccds_north, kdccds_south, log=log)
-                err = legacyhalos.coadds.pipeline_coadds(onegal, galaxy=galaxy, radius_mosaic=radius_mosaic,
-                                                         survey=survey, pixscale=pixscale, run=run,
-                                                         nproc=nproc, force=force, log=log, cleanup=cleanup)
-                _done(galaxy, err, t0, log=log)
-
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--nproc', default=1, type=int, help='number of multiprocessing processes per MPI rank.')
-    parser.add_argument('--mpi', action='store_true', help='Use MPI parallelism')
 
     parser.add_argument('--sdss', action='store_true', help='Analyze the SDSS galaxies.')
-
     parser.add_argument('--first', type=int, default=0, help='Index of first object to process.')
     parser.add_argument('--last', type=int, help='Index of last object to process.')
     parser.add_argument('--coadds', action='store_true', help='Build the pipeline coadds.')
+    parser.add_argument('--galex', action='store_true', help='GALEX photometry.')
 
     parser.add_argument('--pixscale', default=0.262, type=float, help='pixel scale (arcsec/pix).')
     parser.add_argument('--sdss-pixscale', default=0.396, type=float, help='SDSS pixel scale (arcsec/pix).')
     
     parser.add_argument('--force', action='store_true', help='Use with --coadds; ignore previous pickle files.')
     parser.add_argument('--count', action='store_true', help='Count how many objects are left to analyze and then return.')
-    parser.add_argument('--nomakeplots', action='store_true', help='Do not remake the QA plots for the HTML pages.')
 
     parser.add_argument('--debug', action='store_true', help='Log to STDOUT and build debugging plots.')
     parser.add_argument('--verbose', action='store_true', help='Enable verbose output.')
     parser.add_argument('--clobber', action='store_true', help='Overwrite existing files.')                                
     args = parser.parse_args()
 
-    if args.mpi:
-        from mpi4py import MPI
-        comm = MPI.COMM_WORLD
-        rank, size = comm.rank, comm.size
-    else:
-        comm = None
-        rank, size = 0, 1
-
     # Read and broadcast the sample.  For some reason, can't pickle the CCDs
     # files, so have each rank read them (the error is with pickling
     # spherematch).
-    if rank == 0:
-        samplefile = os.path.join(HIZEA_CODE_DIR, 'hizea_sample2.txt')
-        sample = Table.read(samplefile, format='ascii.sextractor')
-        if args.last is None:
-            args.last = len(sample)
-            rows = np.arange(args.first, args.last)
-        else:
-            rows = np.arange(args.first, args.last + 1)
-        sample = sample[rows]
-        print('Read {} galaxies from {}'.format(len(sample), samplefile))
+    samplefile = os.path.join(HIZEA_CODE_DIR, 'etc', 'hizea_sample2.txt')
+    sample = Table.read(samplefile, format='ascii.sextractor')
+    if args.last is None:
+        args.last = len(sample)
+        rows = np.arange(args.first, args.last)
     else:
-        sample = None
+        rows = np.arange(args.first, args.last + 1)
+    sample = sample[rows]
+    print('Read {} galaxies from {}'.format(len(sample), samplefile))
 
-    if comm:
-        sample = comm.bcast(sample, root=0)
+    if args.coadds:
+        kdccds_north, kdccds_south = read_all_ccds()
+        survey = LegacySurveyData(survey_dir=SURVEY_DIR)
 
-    kdccds_north, kdccds_south = read_all_ccds()
-
-    survey = LegacySurveyData(survey_dir=SURVEY_DIR)
-    survey.output_dir = HIZEA_DIR
-
-    run = get_run(onegal, radius_mosaic, pixscale, kdccds_north, kdccds_south)
-
-
-    # Determine how many more objects we need to analyze and divide them
-    # across ranks.
-    groups, suffix = [], ''
-    if rank == 0:
-        suffix, groups = _missing_files(args, sample, size, args.htmldir)
-
-    if comm:
-        groups = comm.bcast(groups, root=0)
-        suffix = comm.bcast(suffix, root=0)
-
-    if len(groups) == 0:
-        ntodo = 0
-    else:
-        ntodo = len(np.hstack(np.atleast_1d(groups)))
-        
-    if rank == 0:
-        if ntodo == 0:
-            print('{} for all {} galaxies are complete!'.format(
-                suffix.upper(), len(sample)), flush=True)
-            return
-        else:
-            print('{} left to do: {} / {} divided across {} group(s) and {} rank(s).'.format(
-                suffix.upper(), ntodo, len(sample), len(groups), size), flush=True)
-
-    if len(groups[rank]) == 0 or args.count:
-        if len(groups[rank]) > 0 and args.debug:
-            if args.hsc:
-                galaxy, galaxydir = legacyhalos.hsc.get_galaxy_galaxydir(sample[groups], htmldir=args.htmldir)
-            else:
-                galaxy, galaxydir = legacyhalos.io.get_galaxy_galaxydir(sample[groups], htmldir=args.htmldir)
-            for ii, dd in zip(groups[rank], galaxydir):
-                print('  {} {}'.format(ii, dd))
-            #[print('  {}'.format(dd)) for dd in np.atleast_1d(galaxydir)]
-        return
-
-    # Loop on the remaining objects.
-    print('Starting {} {} on rank {} at {}'.format(len(groups[rank]), suffix.upper(),
-                                                   rank, time.asctime()), flush=True)
-    tall = time.time()
-    for count, ii in enumerate(groups[rank]):
-        onegal = sample[ii]
-        if args.hsc:
-            galaxy, galaxydir = legacyhalos.hsc.get_galaxy_galaxydir(onegal, htmldir=args.htmldir)
-        else:
-            galaxy, galaxydir = legacyhalos.io.get_galaxy_galaxydir(onegal, htmldir=args.htmldir)
-        if not os.path.isdir(galaxydir):
-            os.makedirs(galaxydir, exist_ok=True)
-
-        #if (count+1) % 10 == 0:
-        print('Rank {:03d} ({} / {}): {} (index {})'.format(
-            rank, count+1, len(groups[rank]), galaxydir, ii), flush=True)
-
-        if args.debug:
-            logfile = None
-        else:
-            logfile = os.path.join(galaxydir, '{}-{}.log'.format(galaxy, suffix))
-            #print('Logging to {} '.format(logfile), flush=True)
-        
-        # Need the cluster "radius" to build the coadds.
-        if args.coadds or args.custom_coadds or args.sky or args.htmlplots:
-            if args.hsc:
-                radius_mosaic_arcsec = legacyhalos.misc.cutout_radius_kpc(
-                    redshift=onegal['Z_BEST'], radius_kpc=HSC_RADIUS_CLUSTER_KPC) # [arcsec]
-            else:
-                radius_mosaic_arcsec = legacyhalos.misc.cutout_radius_kpc(
-                    redshift=onegal['Z_LAMBDA'], radius_kpc=RADIUS_CLUSTER_KPC) # [arcsec]
-
-            survey = LegacySurveyData(survey_dir=SURVEY_DIR)
-            survey.output_dir = galaxydir
+    for onegal in sample:
+        galaxy = onegal['galaxy']
+        galaxydir = os.path.join(HIZEA_DIR, galaxy)
 
         if args.coadds:
-            if args.sdss:
-                err = legacyhalos.sdss.download(sample, pixscale=args.sdss_pixscale, clobber=args.clobber)
-                pdb.set_trace()
+            checkfile = os.path.join(survey.output_dir, '{}-pipeline-resid-grz.jpg'.format(galaxy))
+            if os.path.exists(checkfile) and not args.clobber:
+                survey.output_dir = galaxydir
+                run = get_run(onegal, args.pixscale, kdccds_north, kdccds_south, radius_mosaic=RADIUS_MOSAIC)
+                if args.debug:
+                    err = pipeline_coadds(onegal, survey, radius_mosaic=RADIUS_MOSAIC, nproc=args.nproc,
+                                          pixscale=args.pixscale, run=run, force=args.force, cleanup=True)
+                else:
+                    logfile = os.path.join(galaxydir, '{}-coadds.log'.format(galaxy))
+                    print('Logging to {} '.format(logfile), flush=True)
+                    with open(logfile, 'w') as log:
+                        err = pipeline_coadds(onegal, survey, radius_mosaic=RADIUS_MOSAIC, nproc=args.nproc, log=log,
+                                              pixscale=args.pixscale, run=run, force=args.force, cleanup=True)
             else:
-                _call_pipeline_coadds(onegal, galaxy, radius_mosaic_arcsec, survey,
-                                      kdccds_north, kdccds_south, args.pixscale,
-                                      args.nproc, args.force, args.debug, args.hsc,
-                                      logfile)
-                    
-                    
-    if rank == 0:
-        print('Finished {} {} at {} after {:.3f} minutes'.format(
-            ntodo, suffix.upper(), time.asctime(), (time.time() - tall) / 60 ), flush=True)
-        groups = missing_files(sample, filetype=suffix, size=size, hsc=args.hsc, clobber=args.clobber)
-        if len(groups) > 0:
-            stilltodo = len(np.hstack(np.atleast_1d(groups)))
-        else:
-            stilltodo = 0
-        print('{} left to do: {} / {}.'.format(suffix.upper(), stilltodo, ntodo), flush=True)
+                print('All done with galaxy {}'.format(galaxy))
+
+        if args.galex:
+            
+
+
+        pdb.set_trace()
+
+    ## Determine how many more objects we need to analyze and divide them
+    ## across ranks.
+    #groups, suffix = [], ''
+    #if rank == 0:
+    #    suffix, groups = _missing_files(args, sample, size, args.htmldir)
+    #
+    #if comm:
+    #    groups = comm.bcast(groups, root=0)
+    #    suffix = comm.bcast(suffix, root=0)
+    #
+    #if len(groups) == 0:
+    #    ntodo = 0
+    #else:
+    #    ntodo = len(np.hstack(np.atleast_1d(groups)))
+    #    
+    #if rank == 0:
+    #    if ntodo == 0:
+    #        print('{} for all {} galaxies are complete!'.format(
+    #            suffix.upper(), len(sample)), flush=True)
+    #        return
+    #    else:
+    #        print('{} left to do: {} / {} divided across {} group(s) and {} rank(s).'.format(
+    #            suffix.upper(), ntodo, len(sample), len(groups), size), flush=True)
+    #
+    #if len(groups[rank]) == 0 or args.count:
+    #    if len(groups[rank]) > 0 and args.debug:
+    #        if args.hsc:
+    #            galaxy, galaxydir = legacyhalos.hsc.get_galaxy_galaxydir(sample[groups], htmldir=args.htmldir)
+    #        else:
+    #            galaxy, galaxydir = legacyhalos.io.get_galaxy_galaxydir(sample[groups], htmldir=args.htmldir)
+    #        for ii, dd in zip(groups[rank], galaxydir):
+    #            print('  {} {}'.format(ii, dd))
+    #        #[print('  {}'.format(dd)) for dd in np.atleast_1d(galaxydir)]
+    #    return
+    #
+    ## Loop on the remaining objects.
+    #print('Starting {} {} on rank {} at {}'.format(len(groups[rank]), suffix.upper(),
+    #                                               rank, time.asctime()), flush=True)
+    #tall = time.time()
+    #for count, ii in enumerate(groups[rank]):
+    #    onegal = sample[ii]
+    #    if args.hsc:
+    #        galaxy, galaxydir = legacyhalos.hsc.get_galaxy_galaxydir(onegal, htmldir=args.htmldir)
+    #    else:
+    #        galaxy, galaxydir = legacyhalos.io.get_galaxy_galaxydir(onegal, htmldir=args.htmldir)
+    #    if not os.path.isdir(galaxydir):
+    #        os.makedirs(galaxydir, exist_ok=True)
+    #
+    #    #if (count+1) % 10 == 0:
+    #    print('Rank {:03d} ({} / {}): {} (index {})'.format(
+    #        rank, count+1, len(groups[rank]), galaxydir, ii), flush=True)
+    #
+    #    if args.debug:
+    #        logfile = None
+    #    else:
+    #        logfile = os.path.join(galaxydir, '{}-{}.log'.format(galaxy, suffix))
+    #        #print('Logging to {} '.format(logfile), flush=True)
+    #    
+    #    # Need the cluster "radius" to build the coadds.
+    #    if args.coadds or args.custom_coadds or args.sky or args.htmlplots:
+    #        if args.hsc:
+    #            radius_mosaic_arcsec = legacyhalos.misc.cutout_radius_kpc(
+    #                redshift=onegal['Z_BEST'], radius_kpc=HSC_RADIUS_CLUSTER_KPC) # [arcsec]
+    #        else:
+    #            radius_mosaic_arcsec = legacyhalos.misc.cutout_radius_kpc(
+    #                redshift=onegal['Z_LAMBDA'], radius_kpc=RADIUS_CLUSTER_KPC) # [arcsec]
+    #
+    #        survey = LegacySurveyData(survey_dir=SURVEY_DIR)
+    #        survey.output_dir = galaxydir
+    #
+    #    if args.coadds:
+    #        if args.sdss:
+    #            err = legacyhalos.sdss.download(sample, pixscale=args.sdss_pixscale, clobber=args.clobber)
+    #            pdb.set_trace()
+    #        else:
+    #            _call_pipeline_coadds(onegal, galaxy, radius_mosaic_arcsec, survey,
+    #                                  kdccds_north, kdccds_south, args.pixscale,
+    #                                  args.nproc, args.force, args.debug, args.hsc,
+    #                                  logfile)
+    #                
+    #                
+    #if rank == 0:
+    #    print('Finished {} {} at {} after {:.3f} minutes'.format(
+    #        ntodo, suffix.upper(), time.asctime(), (time.time() - tall) / 60 ), flush=True)
+    #    groups = missing_files(sample, filetype=suffix, size=size, hsc=args.hsc, clobber=args.clobber)
+    #    if len(groups) > 0:
+    #        stilltodo = len(np.hstack(np.atleast_1d(groups)))
+    #    else:
+    #        stilltodo = 0
+    #    print('{} left to do: {} / {}.'.format(suffix.upper(), stilltodo, ntodo), flush=True)
 
 if __name__ == '__main__':
     main()
