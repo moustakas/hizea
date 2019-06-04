@@ -12,6 +12,7 @@ from astropy.table import Table, hstack
 from contextlib import redirect_stdout, redirect_stderr
 
 from astrometry.util.fits import fits_table, merge_tables
+from astrometry.util.util import Tan
 from legacypipe.survey import LegacySurveyData
 
 #import legacyhalos.io
@@ -39,6 +40,245 @@ def _copyfile(infile, outfile):
     else:
         print('Missing file {}; please check the logfile.'.format(infile))
         return 0
+
+def _ra_ranges_overlap(ralo, rahi, ra1, ra2):
+    import numpy as np
+    x1 = np.cos(np.deg2rad(ralo))
+    y1 = np.sin(np.deg2rad(ralo))
+    x2 = np.cos(np.deg2rad(rahi))
+    y2 = np.sin(np.deg2rad(rahi))
+    x3 = np.cos(np.deg2rad(ra1))
+    y3 = np.sin(np.deg2rad(ra1))
+    x4 = np.cos(np.deg2rad(ra2))
+    y4 = np.sin(np.deg2rad(ra2))
+    cw32 = x2*y3 - x3*y2
+    cw41 = x1*y4 - x4*y1
+    return np.logical_and(cw32 <= 0, cw41 >= 0)
+
+def _galex_rgb_official(imgs, **kwargs):
+    from scipy.ndimage.filters import uniform_filter, gaussian_filter
+    nuv,fuv = imgs
+    h,w = nuv.shape
+    red = nuv * 0.206 * 2297
+    blue = fuv * 1.4 * 1525
+    #blue = uniform_filter(blue, 3)
+    blue = gaussian_filter(blue, 1.)
+    green = (0.2*blue + 0.8*red)
+
+    red   *= 0.085
+    green *= 0.095
+    blue  *= 0.08
+    nonlinearity = 2.5
+    radius = red + green + blue
+    val = np.arcsinh(radius * nonlinearity) / nonlinearity
+    with np.errstate(divide='ignore', invalid='ignore'):
+        red   = red   * val / radius
+        green = green * val / radius
+        blue  = blue  * val / radius
+        mx = np.maximum(red, np.maximum(green, blue))
+        mx = np.maximum(1., mx)
+    red   /= mx
+    green /= mx
+    blue  /= mx
+    rgb = np.clip(np.dstack((red, green, blue)), 0., 1.)
+    return rgb
+
+def _read_galex_tiles(targetwcs, galex_dir, log=None, verbose=False):
+    """Find and read the overlapping GALEX FUV/NUV tiles."""
+
+    H, W = targetwcs.shape
+    
+    ralo, declo = targetwcs.pixelxy2radec(W, 1)
+    rahi, dechi = targetwcs.pixelxy2radec(1, H)
+    #print('RA',  ralo,rahi)
+    #print('Dec', declo,dechi)
+
+    fn = os.path.join(galex_dir, 'galex-images.fits')
+    #print('Reading', fn)
+    # galex "bricks" (actually just GALEX tiles)
+    galex_tiles = fits_table(fn)
+    galex_tiles.rename('ra_cent', 'ra')
+    galex_tiles.rename('dec_cent', 'dec')
+    galex_tiles.rename('have_n', 'has_n')
+    galex_tiles.rename('have_f', 'has_f')
+    
+    cosd = np.cos(np.deg2rad(galex_tiles.dec))
+    galex_tiles.ra1 = galex_tiles.ra - 3840*1.5/3600./2./cosd
+    galex_tiles.ra2 = galex_tiles.ra + 3840*1.5/3600./2./cosd
+    galex_tiles.dec1 = galex_tiles.dec - 3840*1.5/3600./2.
+    galex_tiles.dec2 = galex_tiles.dec + 3840*1.5/3600./2.
+    bricknames = []
+    for tile, subvis in zip(galex_tiles.tilename, galex_tiles.subvis):
+        if subvis == -999:
+            bricknames.append(tile.strip())
+        else:
+            bricknames.append('%s_sg%02i' % (tile.strip(), subvis))
+    galex_tiles.brickname = np.array(bricknames)
+
+    # bricks_touching_radec_box(self, ralo, rahi, declo, dechi, scale=None):
+    I, = np.nonzero((galex_tiles.dec1 <= dechi) * (galex_tiles.dec2 >= declo))
+    ok = _ra_ranges_overlap(ralo, rahi, galex_tiles.ra1[I], galex_tiles.ra2[I])
+    I = I[ok]
+    galex_tiles.cut(I)
+    if verbose:
+        print('-> bricks', galex_tiles.brickname, flush=True, file=log)
+
+    return galex_tiles
+
+def galex_coadds(onegal, radius_mosaic=RADIUS_MOSAIC, pixscale=1.5, 
+                 output_dir=None, galex_dir=None, log=None, verbose=False):
+    '''Generate custom GALEX cutouts and perform forced photometry.
+    
+    radius_mosaic and radius_mask in arcsec
+    
+    pixscale: GALEX pixel scale in arcsec/pixel.
+
+    '''
+    import glob
+    import fitsio
+
+    from astrometry.libkd.spherematch import match_radec
+    from astrometry.util.resample import resample_with_wcs, OverlapError
+    from tractor import (Tractor, NanoMaggies, Image, LinearPhotoCal,
+                         NCircularGaussianPSF, ConstantFitsWcs, ConstantSky)
+
+    from legacypipe.survey import imsave_jpeg
+    from legacypipe.catalog import read_fits_catalog
+
+    if galex_dir is None:
+        galex_dir = os.environ.get('GALEX_DIR')
+
+    galaxy = onegal['galaxy']
+    if output_dir is None:
+        output_dir = '.'
+
+    W = H = np.ceil(2 * radius_mosaic / pixscale).astype(int) # [pixels]
+    targetwcs = Tan(onegal['ra'], onegal['dec'], (W+1) / 2.0, (H+1) / 2.0,
+                    -pixscale / 3600.0, 0.0, 0.0, pixscale / 3600.0, float(W), float(H))
+
+    # Read the custom Tractor catalog
+    tractorfile = glob.glob(os.path.join(output_dir, '{}-*-tractor.fits'.format(galaxy)))[0]
+    if not os.path.isfile(tractorfile):
+        print('Missing Tractor catalog {}'.format(tractorfile))
+        return 0
+
+    cat = fits_table(tractorfile)
+    print('Read {} sources from {}'.format(len(cat), tractorfile), flush=True, file=log)
+
+    srcs = read_fits_catalog(cat)
+    for src in srcs:
+        src.freezeAllBut('brightness')
+    
+    # Find all overlapping GALEX tiles and then read the tims.
+    galex_tiles = _read_galex_tiles(targetwcs, galex_dir, log=log, verbose=verbose)
+
+    gbands = ['n','f']
+    nicegbands = ['NUV', 'FUV']
+
+    zps = dict(n=20.08, f=18.82)
+
+    coimgs, comods, coresids = [], [], []
+    for niceband, band in zip(nicegbands, gbands):
+        J = np.flatnonzero(galex_tiles.get('has_'+band))
+        print(len(J), 'GALEX tiles have coverage in band', band)
+
+        coimg = np.zeros((H, W), np.float32)
+        comod = np.zeros((H, W), np.float32)
+        cowt  = np.zeros((H, W), np.float32)
+
+        for src in srcs:
+            src.setBrightness(NanoMaggies(**{band: 1}))
+
+        for j in J:
+            brick = galex_tiles[j]
+            fn = os.path.join(galex_dir, brick.tilename.strip(),
+                              '%s-%sd-intbgsub.fits.gz' % (brick.brickname, band))
+            #print(fn)
+
+            gwcs = Tan(*[float(f) for f in
+                         [brick.crval1, brick.crval2, brick.crpix1, brick.crpix2,
+                          brick.cdelt1, 0., 0., brick.cdelt2, 3840., 3840.]])
+            img = fitsio.read(fn)
+            #print('Read', img.shape)
+
+            try:
+                Yo, Xo, Yi, Xi, nil = resample_with_wcs(targetwcs, gwcs, [], 3)
+            except OverlapError:
+                continue
+
+            K = np.flatnonzero(img[Yi, Xi] != 0.)
+            if len(K) == 0:
+                continue
+            Yo, Xo, Yi, Xi = Yo[K], Xo[K], Yi[K], Xi[K]
+
+            wt = brick.get(band + 'exptime')
+            coimg[Yo, Xo] += wt * img[Yi, Xi]
+            cowt [Yo, Xo] += wt
+
+            x0, x1, y0, y1 = min(Xi), max(Xi), min(Yi), max(Yi)
+            subwcs = gwcs.get_subimage(x0, y0, x1-x0+1, y1-y0+1)
+            twcs = ConstantFitsWcs(subwcs)
+            timg = img[y0:y1+1, x0:x1+1]
+
+            tie = np.ones_like(timg)  ## HACK!
+            #hdr = fitsio.read_header(fn)
+            #zp = hdr['']
+            zp = zps[band]
+            photocal = LinearPhotoCal( NanoMaggies.zeropointToScale(zp), band=band)
+            tsky = ConstantSky(0.0)
+            
+            # HACK -- circular Gaussian PSF of fixed size...
+            # in arcsec
+            #fwhms = dict(NUV=6.0, FUV=6.0)
+            # -> sigma in pixels
+            #sig = fwhms[band] / 2.35 / twcs.pixel_scale()
+            sig = 6.0 / np.sqrt(8 * np.log(2)) / twcs.pixel_scale()
+            tpsf = NCircularGaussianPSF([sig], [1.])
+
+            tim = Image(data=timg, inverr=tie, psf=tpsf, wcs=twcs, sky=tsky,
+                        photocal=photocal, name='GALEX ' + band + brick.brickname)
+
+            ## Build the model image.
+            tractor = Tractor([tim], srcs)
+            mod = tractor.getModelImage(0)
+            tractor.freezeParam('images')
+            tractor.optimize_forced_photometry(priors=False, shared_params=False)
+            mod = tractor.getModelImage(0)
+
+            comod[Yo, Xo] += wt * mod[Yi-y0, Xi-x0]
+
+        coimg /= np.maximum(cowt, 1e-18)
+        comod /= np.maximum(cowt, 1e-18)
+
+        coresid = coimg - comod
+
+        coimgs.append(coimg)
+        comods.append(comod)
+        coresids.append(coresid)
+
+        # Write out the final images, making sure to apply the zeropoint to go
+        # from counts/s to AB nanomaggies.
+        # https://asd.gsfc.nasa.gov/archive/galex/FAQ/counts_background.html
+        for thisimg, imtype in zip( (coimg, comod),
+                                ('image', 'model') ):
+            fitsfile = os.path.join(output_dir, '{}-{}-{}.fits'.format(galaxy, imtype, niceband))
+            if verbose:
+                print('Writing {}'.format(fitsfile))
+            fitsio.write(fitsfile, thisimg * 10**(-0.4 * (zp - 22.5)), clobber=True)
+
+    # Build a color mosaic (but note that the images here are in units of
+    # background-subtracted counts/s).
+
+    _galex_rgb = _galex_rgb_official
+    for imgs, imtype in zip( (coimgs, comods, coresids),
+                             ('image', 'model', 'resid') ):
+        rgb = _galex_rgb(imgs)
+        jpgfile = os.path.join(output_dir, '{}-{}-FUVNUV.jpg'.format(galaxy, imtype))
+        if verbose:
+            print('Writing {}'.format(jpgfile))
+        imsave_jpeg(jpgfile, rgb, origin='lower')
+
+    return 1
     
 def pipeline_coadds(onegal, survey, radius_mosaic=60, nproc=1, pixscale=0.262,
                     run='decam', force=False, cleanup=True, log=None):
@@ -67,12 +307,12 @@ def pipeline_coadds(onegal, survey, radius_mosaic=60, nproc=1, pixscale=0.262,
     
     if force:
         cmd += '--force-all '
-        checkpointfile = '{galaxydir}/{galaxy}-runbrick-checkpoint.p'.format(
-            galaxydir=galaxydir, galaxy=galaxy)
-        if os.path.isfile(checkpointfile):
-            os.remove(checkpointfile)
+        for stage in ('srcs', 'checkpoint'):
+            picklefile = os.path.join(survey.output_dir, '{}-runbrick-{}.p'.format(galaxy, stage))
+            if os.path.isfile(picklefile):
+                os.remove(picklefile)
 
-    width = np.ceil(radius_mosaic / pixscale).astype(int)
+    width = np.ceil(radius_mosaic / pixscale).astype(int) # [pixels]
     
     cmd = cmd.format(legacypipe_dir=os.getenv('LEGACYPIPE_DIR'), galaxy=galaxy,
                      ra=onegal['ra'], dec=onegal['dec'], width=width,
@@ -91,7 +331,7 @@ def pipeline_coadds(onegal, survey, radius_mosaic=60, nproc=1, pixscale=0.262,
         # tractor catalog
         ok = _copyfile(
             os.path.join(survey.output_dir, 'tractor', 'cus', 'tractor-{}.fits'.format(brickname)),
-            os.path.join(survey.output_dir, '{}-pipeline-tractor.fits'.format(galaxy)) )
+            os.path.join(survey.output_dir, '{}-{}-tractor.fits'.format(galaxy, run)) )
         if not ok:
             return ok
 
@@ -110,11 +350,11 @@ def pipeline_coadds(onegal, survey, radius_mosaic=60, nproc=1, pixscale=0.262,
         if not ok:
             return ok
 
-        ok = _copyfile(
-            os.path.join(survey.output_dir, 'metrics', 'cus', 'blobs-{}.fits.gz'.format(brickname)),
-            os.path.join(survey.output_dir, '{}-blobs.fits.gz'.format(galaxy)) )
-        if not ok:
-            return ok
+        #ok = _copyfile(
+        #    os.path.join(survey.output_dir, 'metrics', 'cus', 'blobs-{}.fits.gz'.format(brickname)),
+        #    os.path.join(survey.output_dir, '{}-blobs.fits.gz'.format(galaxy)) )
+        #if not ok:
+        #    return ok
 
         ok = _copyfile(
             os.path.join(survey.output_dir, 'metrics', 'cus', 'outlier-mask-{}.fits.fz'.format(brickname)),
@@ -122,13 +362,13 @@ def pipeline_coadds(onegal, survey, radius_mosaic=60, nproc=1, pixscale=0.262,
         if not ok:
             return ok
 
-        for band in ('g', 'r', 'z'):
-            ok = _copyfile(
-                os.path.join(survey.output_dir, 'coadd', 'cus', brickname,
-                             'legacysurvey-{}-depth-{}.fits.fz'.format(brickname, band)),
-                os.path.join(survey.output_dir, '{}-depth-{}.fits.fz'.format(galaxy, band)) )
-            if not ok:
-                return ok
+        #for band in ('g', 'r', 'z'):
+        #    ok = _copyfile(
+        #        os.path.join(survey.output_dir, 'coadd', 'cus', brickname,
+        #                     'legacysurvey-{}-depth-{}.fits.fz'.format(brickname, band)),
+        #        os.path.join(survey.output_dir, '{}-depth-{}.fits.fz'.format(galaxy, band)) )
+        #    if not ok:
+        #        return ok
         
         # Data and model images
         for band in ('g', 'r', 'z'):
@@ -182,6 +422,10 @@ def pipeline_coadds(onegal, survey, radius_mosaic=60, nproc=1, pixscale=0.262,
             shutil.rmtree(os.path.join(survey.output_dir, 'metrics'))
             shutil.rmtree(os.path.join(survey.output_dir, 'tractor'))
             shutil.rmtree(os.path.join(survey.output_dir, 'tractor-i'))
+            for stage in ('srcs', 'checkpoint'):
+                picklefile = os.path.join(survey.output_dir, '{}-runbrick-{}.p'.format(galaxy, stage))
+                if os.path.isfile(picklefile):
+                    os.remove(picklefile)
 
         return 1
 
@@ -301,6 +545,7 @@ def main():
     parser.add_argument('--galex', action='store_true', help='GALEX photometry.')
 
     parser.add_argument('--pixscale', default=0.262, type=float, help='pixel scale (arcsec/pix).')
+    parser.add_argument('--galex-pixscale', default=1.5, type=float, help='GALEX pixel scale (arcsec/pix).')
     parser.add_argument('--sdss-pixscale', default=0.396, type=float, help='SDSS pixel scale (arcsec/pix).')
     
     parser.add_argument('--force', action='store_true', help='Use with --coadds; ignore previous pickle files.')
@@ -330,11 +575,12 @@ def main():
 
     for onegal in sample:
         galaxy = onegal['galaxy']
-        galaxydir = os.path.join(HIZEA_DIR, galaxy)
+        galaxydir = os.path.join(HIZEA_DIR, 'coadd', galaxy)
 
+        # grzW1-W4 photometry
         if args.coadds:
             checkfile = os.path.join(survey.output_dir, '{}-pipeline-resid-grz.jpg'.format(galaxy))
-            if os.path.exists(checkfile) and not args.clobber:
+            if not os.path.exists(checkfile) or args.clobber:
                 survey.output_dir = galaxydir
                 run = get_run(onegal, args.pixscale, kdccds_north, kdccds_south, radius_mosaic=RADIUS_MOSAIC)
                 if args.debug:
@@ -350,10 +596,15 @@ def main():
                 print('All done with galaxy {}'.format(galaxy))
 
         if args.galex:
-            
-
-
-        pdb.set_trace()
+            if args.debug:
+                err = galex_coadds(onegal, radius_mosaic=RADIUS_MOSAIC, pixscale=args.galex_pixscale,
+                                   output_dir=galaxydir, verbose=args.verbose)
+            else:
+                logfile = os.path.join(galaxydir, '{}-galex.log'.format(galaxy))
+                print('Logging to {} '.format(logfile), flush=True)
+                with open(logfile, 'w') as log:
+                    err = galex_coadds(onegal, radius_mosaic=RADIUS_MOSAIC, pixscale=args.galex_pixscale,
+                                       output_dir=galaxydir, log=log, verbose=args.verbose)
 
     ## Determine how many more objects we need to analyze and divide them
     ## across ranks.
