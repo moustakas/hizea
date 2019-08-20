@@ -87,7 +87,28 @@ def bestfit_sed(obs, chain=None, lnprobability=None, theta=None, sps=None,
     
     import seaborn as sns
     sns.set(style='ticks', font_scale=1.6, palette='Set2')
-    
+
+    import matplotlib as mpl
+
+    mpl.rcParams['figure.autolayout'] = True
+    mpl.rcParams['figure.figsize'] = [7.2, 4.45]
+
+    mpl.rcParams['xtick.labelsize'] = 7
+    mpl.rcParams['ytick.labelsize'] = 7
+    mpl.rcParams['font.size'] = 7
+    mpl.rcParams['legend.fontsize'] = 7
+    mpl.rcParams['axes.titlesize'] = 7
+    mpl.rcParams['axes.labelsize'] = 7
+
+    mpl.rcParams['lines.linewidth'] = 2
+    mpl.rcParams['lines.markersize'] = 6
+
+    #mpl.rcParams['mathtext.fontset'] = 'stix'
+    mpl.rcParams['font.family'] = 'sans-serif'
+    mpl.rcParams['font.sans-serif'] = 'Helvetica'
+
+    mpl.rcParams['text.usetex'] = True
+
     rand = np.random.RandomState(seed)
 
     # Get the galaxy photometry and filter info.
@@ -129,7 +150,7 @@ def bestfit_sed(obs, chain=None, lnprobability=None, theta=None, sps=None,
     #minflux = -0.05 * maxflux
     minflux, maxflux = (11, 24)
 
-    fig, ax = plt.subplots(figsize=(8, 6))
+    fig, ax = plt.subplots() # figsize=(8, 6),)
     if chain is not None and nrand > 0:
         for ii in range(nrand):
             _, r_modelspec, _ = _sed(model=model, theta=theta_rand[ii, :], obs=obs, sps=sps)
@@ -158,20 +179,20 @@ def bestfit_sed(obs, chain=None, lnprobability=None, theta=None, sps=None,
 
     # Add an inset with the posterior probability distribution.
     ax1 = fig.add_axes([0.23, 0.68, 0.22, 0.22])
-    ax1.hist(chain[:, 4], bins=50, histtype='step', linewidth=2, 
+    ax1.hist(chain[:, 4], bins=50, histtype='step', #linewidth=2, 
              edgecolor='k',fill=True)    
     ax1.set_xlim(10.5, 11.5)
     ax1.set_yticklabels([])
     ax1.set_xlabel(r'$\log_{10}(\mathcal{M}/\mathcal{M}_{\odot})$')
     ax1.set_ylabel(r'$P(\mathcal{M})$')
     ax1.xaxis.set_major_locator(MultipleLocator(0.5))
-    for item in ([ax1.title, ax1.xaxis.label, ax1.yaxis.label] +
-             ax1.get_xticklabels() + ax1.get_yticklabels()):
-        item.set_fontsize(16)
+    #for item in ([ax1.title, ax1.xaxis.label, ax1.yaxis.label] +
+    #         ax1.get_xticklabels() + ax1.get_yticklabels()):
+    #    item.set_fontsize(16)
 
     if png:
         print('Writing {}'.format(png))
-        fig.savefig(png)
+        fig.savefig(png, bbox_inches='tight')
 
 def subtriangle(results, showpars=None, truths=None, start=0, thin=2,
                 chains=slice(None), logify=None, extents=None, png=None,
@@ -509,12 +530,16 @@ def main():
         sps = load_sps(verbose=args.verbose)
         model = load_model(obs, args.priors, verbose=args.verbose)
 
-        png = os.path.join(j2118dir, '{}-{}-sed.png'.format(args.prefix, args.priors))
+        png = os.path.join(j2118dir, '{}-{}-sed.eps'.format(args.prefix, args.priors))
         bestfit_sed(obs, chain=result['chain'], lnprobability=result['lnprobability'], 
                     sps=sps, model=model, seed=1, nrand=100, png=png)
     
         pdb.set_trace()
         
+        png = os.path.join(j2118dir, '{}-{}-sed.png'.format(args.prefix, args.priors))
+        bestfit_sed(obs, chain=result['chain'], lnprobability=result['lnprobability'], 
+                    sps=sps, model=model, seed=1, nrand=100, png=png)
+    
         png = os.path.join(j2118dir, '{}-{}-corner.png'.format(args.prefix, args.priors))
         subtriangle(result, showpars=['logmass', 'tage', 'tau', 'dust2', 'dust_ratio'],
                     logify=['tau'], png=png)
