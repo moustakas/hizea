@@ -10,6 +10,38 @@ import multiprocessing
 ang2micron = 1e-4 # Angstrom --> micron
 maggies2mJy = 10**(0.4*16.4) # maggies --> mJy
 
+import seaborn as sns
+sns.set(style='ticks', font_scale=1.6, palette='Set2')
+
+import matplotlib as mpl
+
+mpl.rcParams['figure.autolayout'] = True
+mpl.rcParams['figure.figsize'] = [7.2, 4.45]
+
+mpl.rcParams['xtick.labelsize'] = 7
+mpl.rcParams['ytick.labelsize'] = 7
+mpl.rcParams['font.size'] = 7
+mpl.rcParams['legend.fontsize'] = 7
+mpl.rcParams['axes.titlesize'] = 7
+mpl.rcParams['axes.labelsize'] = 7
+
+mpl.rcParams['lines.linewidth'] = 2
+mpl.rcParams['lines.markersize'] = 6
+
+#mpl.rcParams['mathtext.fontset'] = 'stix'
+mpl.rcParams['font.family'] = 'sans-serif'
+mpl.rcParams['font.sans-serif'] = ['Helvetica']
+
+# https://3diagramsperpage.wordpress.com/2015/04/11/matplotlib-figures-with-helvetica-labels-helvet-vs-tgheros/
+mpl.rcParams['text.usetex'] = True
+mpl.rcParams['text.latex.preamble'] = [
+    r'\usepackage{tgheros}',    # helvetica font
+    r'\usepackage{sansmath}',   # math-font matching  helvetica
+    r'\sansmath'                # actually tell tex to use it!
+    r'\usepackage{siunitx}',    # micro symbols
+    r'\sisetup{detect-all}',    # force siunitx to use the fonts
+    ]
+
 def _niceparnames(parnames):
     """Replace parameter names with nice names."""
 
@@ -85,30 +117,6 @@ def bestfit_sed(obs, chain=None, lnprobability=None, theta=None, sps=None,
     import matplotlib.pyplot as plt
     from matplotlib.ticker import MultipleLocator, ScalarFormatter, FuncFormatter
     
-    import seaborn as sns
-    sns.set(style='ticks', font_scale=1.6, palette='Set2')
-
-    import matplotlib as mpl
-
-    mpl.rcParams['figure.autolayout'] = True
-    mpl.rcParams['figure.figsize'] = [7.2, 4.45]
-
-    mpl.rcParams['xtick.labelsize'] = 7
-    mpl.rcParams['ytick.labelsize'] = 7
-    mpl.rcParams['font.size'] = 7
-    mpl.rcParams['legend.fontsize'] = 7
-    mpl.rcParams['axes.titlesize'] = 7
-    mpl.rcParams['axes.labelsize'] = 7
-
-    mpl.rcParams['lines.linewidth'] = 2
-    mpl.rcParams['lines.markersize'] = 6
-
-    #mpl.rcParams['mathtext.fontset'] = 'stix'
-    mpl.rcParams['font.family'] = 'sans-serif'
-    mpl.rcParams['font.sans-serif'] = 'Helvetica'
-
-    mpl.rcParams['text.usetex'] = True
-
     rand = np.random.RandomState(seed)
 
     # Get the galaxy photometry and filter info.
