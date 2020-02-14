@@ -8,6 +8,24 @@ import numpy as np
 def logmass2mass(logmass=11.0, **extras):
     return 10**logmass
 
+def _hizea_seds_one(args):
+    """Multiprocessing wrapper."""
+    return hizea_seds_one(*args)
+
+def hizea_seds_one(Fit, onegal, clobber=False):
+    """Fit a single galaxy."""
+    Fit.fit(onegal, clobber=clobber)
+
+
+def _hizea_qaplots_one(args):
+    """Multiprocessing wrapper."""
+    return hizea_qaplots_one(*args)
+
+def hizea_qaplots_one(Fit, onegal, clobber=False):
+    """Fit a single galaxy."""
+    Fit.qaplots(onegal, clobber=clobber)
+
+
 class SEDsFit(object):
     """Read and manage the input data, fit SEDs, and make plots.
 
@@ -251,7 +269,7 @@ class SEDsFit(object):
 
         return model
 
-    def fit(self, onegal):
+    def fit(self, onegal, clobber=False):
         """Do the fit!
 
         """
@@ -259,6 +277,10 @@ class SEDsFit(object):
         import prospect.fitting
 
         print('Working on {} at z={:.4f}'.format(onegal['SHORT_NAME'], onegal['Z']))
+        hfile = self.get_hfile(onegal)
+        if os.path.isfile(hfile) and not clobber:
+            print('File {} exists and clobber=False, moving on!'.format(hfile))
+            return
 
         # Initialize the SPS library (takes a bit), the photometry, the "run
         # parameters" dictionary, and the model priors.
@@ -274,7 +296,6 @@ class SEDsFit(object):
                                             pool=None, **rp)
         print('...took {:.2f} min'.format((time.time()-t0)/60))
 
-        hfile = self.get_hfile()
         if os.path.isfile(hfile):
             os.remove(hfile)
         
@@ -285,7 +306,7 @@ class SEDsFit(object):
                                              tsample=output['sampling'][1],
                                              toptimize=output['optimization'][1])
 
-        pdb.set_trace()
+        return
 
     def _ang2micron(self):
         return 1e-4 # Angstrom --> micron
@@ -526,12 +547,17 @@ class SEDsFit(object):
             print('Writing {}'.format(png))
             fig.savefig(png)
 
-    def qaplots(self, onegal):
+    def qaplots(self, onegal, clobber=False):
         """Make pretty plots!
 
         """
         from prospect.io import read_results as reader
         import seaborn as sns
+
+        sedfile = self.get_pngfile_sed(onegal)
+        if os.path.isfile(sedfile) and not clobber:
+            print('File {} exists and clobber=False, moving on!'.format(sedfile))
+            return
 
         sns.set(style='ticks', font_scale=1.6, palette='Set2')
 
@@ -545,15 +571,12 @@ class SEDsFit(object):
         obs, rp = self.load_obs_one(onegal)
         model = self.load_model(obs)
 
-        png = self.get_pngfile_sed(onegal)
         self.bestfit_sed(obs, chain=result['chain'], lnprobability=result['lnprobability'], 
-                         model=model, nrand=100, png=png)
+                         model=model, nrand=100, png=sedfile)
 
-        pdb.set_trace()
-
-        png = self.get_pngfile_corner(onegal)
-        self.subtriangle(result, showpars=['logmass', 'tage', 'tau', 'dust2'],
-                         logify=['tau'], png=png)
+        #png = self.get_pngfile_corner(onegal)
+        #self.subtriangle(result, showpars=['logmass', 'tage', 'tau', 'dust2'],
+        #                 logify=['tau'], png=png)
         #subtriangle(result, showpars=['logmass', 'tage', 'tau', 'dust2', 'dust_ratio'],
         #            logify=['tau'], png=png)
 
@@ -576,18 +599,21 @@ def main():
                         help='Number of cores to use.')
     parser.add_argument('--sedfit', action='store_true', help='Do the SED fit.')
     parser.add_argument('--qaplots', action='store_true', help='Make pretty plots.')
+    parser.add_argument('--clobber', action='store_true', help='Overwrite existing files.')
     args = parser.parse_args()
 
     # Instantiate the fitter Class and read the data.
     Fit = SEDsFit(seed=args.seed, nproc=args.nproc, priors=args.priors)
     cat = Fit.read(first=args.first, last=args.last)
+    print(cat)
 
-    for onegal in cat:
-        if args.sedfit:
-            Fit.fit(onegal)
+    if args.sedfit:
+        with multiprocessing.Pool(args.nproc) as P:
+            P.map(_hizea_seds_one, [(Fit, onegal, args.clobber) for onegal in cat])
 
-        if args.qaplots:
-            Fit.qaplots(onegal)
+    if args.qaplots:
+        with multiprocessing.Pool(args.nproc) as P:
+            P.map(_hizea_qaplots_one, [(Fit, onegal, args.clobber) for onegal in cat])
 
 if __name__ == '__main__':
     main()
