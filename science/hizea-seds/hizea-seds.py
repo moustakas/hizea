@@ -4,44 +4,97 @@
 """
 import os, time, argparse, pdb
 import numpy as np
+import astropy.table
 
 def logmass2mass(logmass=11.0, **extras):
     return 10**logmass
+
+def _hizea_gather_one(args):
+    """Multiprocessing wrapper."""
+    return hizea_gather_one(*args)
 
 def _hizea_seds_one(args):
     """Multiprocessing wrapper."""
     return hizea_seds_one(*args)
 
-def hizea_seds_one(Fit, onegal, clobber=False):
-    """Fit a single galaxy."""
-    Fit.fit(onegal, clobber=clobber)
+def hizea_gather_one(onegal, priors='delayed-tau', test=False):
+    """Read the fitting results from a single galaxy.
 
+    """
+    from prospect.io import read_results as reader
+    
+    # data and SED
+    Fit = SEDsFit(priors=priors)
+
+    obs, _ = Fit.load_obs_one(onegal)
+    model = Fit.load_model(obs, test=test)
+
+    hfile = Fit.get_hfile(onegal)
+    print('Reading {}...'.format(hfile), end='')
+    t0 = time.time()
+    result, _, _ = reader.results_from(hfile, dangerous=False)
+    print('...took {:.2f} sec'.format(time.time()-t0))
+
+    chain, lnp = result['chain'], result['lnprobability']
+    theta = chain[lnp.argmax(), :] # maximum likelihood values
+    #print('Maximum likelihood values: ', theta)
+
+    # Infer the SFR
+    chain = result['chain']
+    lnprobability = result['lnprobability']
+
+    sfr = np.zeros_like(lnp, dtype='f4')
+    for ii in np.arange(len(lnp)):
+        _, _, _ = model.mean_model(chain[ii, :], obs=obs, sps=Fit.sps)
+        sfr[ii] = Fit.sps.ssp.sfr * model.params['mass']
+
+    pdb.set_trace()
+
+    # Pack into an astropy Table--
+    out = astropy.table.Table(onegal)
+    for val, label in zip(theta, result['theta_labels']):
+        out[label.upper()] = val.astype('f4')
+        #out.add_column(astropy.table.Column(name=label.upper(), data=val.astype('f4')))
+    return out
+
+def hizea_seds_one(onegal, seed=1, priors='delayed-tau', clobber=False, test=False):
+    """Fit a single galaxy.
+
+    """
+    Data = SEDsData(priors=priors)
+    hfile = Data.get_hfile(onegal)
+    if os.path.isfile(hfile) and not clobber:
+        print('File {} exists and clobber=False, moving on!'.format(hfile))
+        return
+    
+    Fit = SEDsFit(seed=seed, priors=priors)
+    Fit.fit(onegal, clobber=clobber, test=test)
 
 def _hizea_qaplots_one(args):
     """Multiprocessing wrapper."""
     return hizea_qaplots_one(*args)
 
-def hizea_qaplots_one(Fit, onegal, clobber=False):
-    """Fit a single galaxy."""
-    Fit.qaplots(onegal, clobber=clobber)
-
-
-class SEDsFit(object):
-    """Read and manage the input data, fit SEDs, and make plots.
+def hizea_qaplots_one(onegal, seed=1, priors='delayed-tau', clobber=False, test=False):
+    """Build the plots for a single galaxy.
 
     """
-    def __init__(self, seed=1, nproc=1, priors='delayed-tau'):
+    Data = SEDsData(priors=priors)
+    sedfile = Data.get_pngfile_sed(onegal)
+    if os.path.isfile(sedfile) and not clobber:
+        print('File {} exists and clobber=False, moving on!'.format(sedfile))
+        return
+    
+    Fit = SEDsFit(seed=seed, priors=priors)
+    Fit.qaplots(onegal, clobber=clobber, test=test)
 
-        self.seed = seed
-        self.rand = np.random.RandomState(seed)
+class SEDsData(object):
+    def __init__(self, priors='delayed-tau'):
 
-        self.nproc = nproc
+        self.topdir = os.path.join(os.getenv('HIZEA_PROJECT'), 'hizea-seds')
+        self.qadir = os.path.join(self.topdir, 'qaplots')
+        self.datadir = os.path.join(self.topdir, 'data')
+        self.datafile = os.path.join(self.topdir, 'hizea_photo_galex_wise_v1.1.fits')
         self.priors = priors
-
-        self.datadir = os.path.join(os.getenv('HIZEA_PROJECT'), 'hizea-seds')
-        self.datafile = os.path.join(self.datadir, 'hizea_photo_galex_wise_v1.1.fits')
-
-        self.sps = self.load_sps()
 
     def read(self, first=None, last=None):
         import fitsio
@@ -71,11 +124,25 @@ class SEDsFit(object):
 
     def get_pngfile_sed(self, onegal):
         prefix = self.get_prefix(onegal)
-        return os.path.join(self.datadir, '{}-{}-sed.png'.format(prefix, self.priors))
+        return os.path.join(self.qadir, '{}-{}-sed.png'.format(prefix, self.priors))
 
     def get_pngfile_corner(self, onegal):
         prefix = self.get_prefix(onegal)
-        return os.path.join(self.datadir, '{}-{}-corner.png'.format(prefix, self.priors))
+        return os.path.join(self.qadir, '{}-{}-corner.png'.format(prefix, self.priors))
+
+class SEDsFit(SEDsData):
+    """Read and manage the input data, fit SEDs, and make plots.
+
+    """
+    def __init__(self, seed=1, priors='delayed-tau', nosps=False):
+        super(SEDsFit, self).__init__()
+
+        self.seed = seed
+        self.rand = np.random.RandomState(seed)
+        self.priors = priors
+
+        if not nosps:
+            self.sps = self.load_sps()
 
     def load_obs_one(self, onegal, nmin=10):
         """Turn the input photometry into a prospector 'obs' dictionary for a single
@@ -112,6 +179,18 @@ class SEDsFit(object):
         obs["spectrum"] = None
         obs['unc'] = None  # spectral uncertainties are given here
         #obs['mask'] = [1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0]
+
+        # For the plots, get the galaxy photometry and inverse variances
+        # (converted to mJy) and filter effective wavelengths (converted to
+        # microns).
+        obs['weff'] = np.array([f.wave_effective for f in obs['filters']]) * self._ang2micron()
+        obs['fwhm'] = np.array([f.effective_width for f in obs['filters']]) * self._ang2micron()
+
+        #galphot = obs['maggies'] * self._maggies2mJy()
+        #galphoterr = obs['maggies_unc'] * self._maggies2mJy()
+        obs['abmag'] = -2.5 * np.log10(obs['maggies'])
+        obs['abmagerr'] = 2.5 * obs['maggies_unc'] / obs['maggies'] / np.log(10)
+
         obs = fix_obs(obs)
 
         run_params = {}
@@ -166,7 +245,7 @@ class SEDsFit(object):
         from prospect.models.transforms import dustratio_to_dust1
 
         print('Initializing prospector model.')
-        def base_delayed_tau():
+        def base_delayed_tau(test=False):
             model_params = TemplateLibrary['parametric_sfh']
 
             # Initialize with sensible numbers.
@@ -189,21 +268,22 @@ class SEDsFit(object):
             model_params['tage']['prior'] = priors.LogUniform(mini=0.01, maxi=10.0)
             model_params['logzsol']['prior'] = priors.TopHat(mini=-0.5, maxi=0.3)
 
-            #print('HACK!!!!!!!!!!!!!')
-            #model_params['tau']['isfree'] = False
-            #model_params['tage']['isfree'] = False
-            #model_params['logzsol']['isfree'] = False
-            #model_params['dust2']['isfree'] = False
+            if test:
+                # Test the code by solving just for the stellar mass.
+                model_params['tau']['isfree'] = False
+                model_params['tage']['isfree'] = False
+                model_params['logzsol']['isfree'] = False
+                model_params['dust2']['isfree'] = False
 
             return model_params
 
         if self.priors == 'delayed-tau':
             # Underlying delayed tau model.
-            model_params = base_delayed_tau()
+            model_params = base_delayed_tau(test=test)
 
         if self.priors == 'bursty':
             # Underlying delayed tau model.
-            model_params = base_delayed_tau()
+            model_params = base_delayed_tau(test=test)
 
             # Add bursts
             model_params.update(TemplateLibrary['burst_sfh'])
@@ -269,7 +349,7 @@ class SEDsFit(object):
 
         return model
 
-    def fit(self, onegal, clobber=False):
+    def fit(self, onegal, clobber=False, test=False):
         """Do the fit!
 
         """
@@ -278,14 +358,11 @@ class SEDsFit(object):
 
         print('Working on {} at z={:.4f}'.format(onegal['SHORT_NAME'], onegal['Z']))
         hfile = self.get_hfile(onegal)
-        if os.path.isfile(hfile) and not clobber:
-            print('File {} exists and clobber=False, moving on!'.format(hfile))
-            return
 
         # Initialize the SPS library (takes a bit), the photometry, the "run
         # parameters" dictionary, and the model priors.
         obs, rp = self.load_obs_one(onegal)
-        model = self.load_model(obs)
+        model = self.load_model(obs, test=test)
 
         t0 = time.time()
         print('Nested sampling...', end='')
@@ -304,7 +381,8 @@ class SEDsFit(object):
                                              output['sampling'][0],
                                              output['optimization'][0],
                                              tsample=output['sampling'][1],
-                                             toptimize=output['optimization'][1])
+                                             toptimize=output['optimization'][1],
+                                             sps=self.sps)
 
         return
 
@@ -338,23 +416,6 @@ class SEDsFit(object):
 
         return np.array(niceparnames)
 
-    def _galaxyphot(self, obs):
-        """Get the galaxy photometry and inverse variances (converted to mJy) and filter
-        effective wavelengths (converted to microns).
-
-        """
-        weff = np.array([f.wave_effective for f in obs['filters']]) * self._ang2micron()
-        fwhm = np.array([f.effective_width for f in obs['filters']]) * self._ang2micron()
-
-        if False:
-            galphot = obs['maggies'] * self._maggies2mJy()
-            galphoterr = obs['maggies_unc'] * self._maggies2mJy()
-        else:
-            galphot = -2.5 * np.log10(obs['maggies'])
-            galphoterr = 2.5 * obs['maggies_unc'] / obs['maggies'] / np.log(10)
-
-        return weff, fwhm, galphot, galphoterr
-
     def _sed(self, model, theta, obs):
         """Construct the SED for a given set of parameters.  Divide by mextra to account
         for the *current* mass in stars (rather than the integrated stellar mass
@@ -368,12 +429,10 @@ class SEDsFit(object):
         modelwave *= self._ang2micron()
 
         modelspec, modelphot, mextra = model.mean_model(theta, obs, sps=self.sps)
-        if False:
-            modelspec *= self._maggies2mJy()
-            modelphot *= self._maggies2mJy()
-        else:
-            modelspec = -2.5 * np.log10(modelspec)
-            modelphot = -2.5 * np.log10(modelphot)
+        #modelspec *= self._maggies2mJy()
+        #modelphot *= self._maggies2mJy()
+        modelspec = -2.5 * np.log10(modelspec)
+        modelphot = -2.5 * np.log10(modelphot)
         #print(modelphot)
 
         return modelwave, modelspec, modelphot
@@ -390,7 +449,7 @@ class SEDsFit(object):
         from matplotlib.ticker import MultipleLocator, ScalarFormatter, FuncFormatter
 
         # Get the galaxy photometry and filter info.
-        weff, fwhm, galphot, galphoterr = self._galaxyphot(obs)
+        weff, fwhm, galphot, galphoterr = obs['weff'], obs['fwhm'], obs['abmag'], obs['abmagerr']
 
         # Build the maximum likelihood model fit and also grab a random sampling of
         # the chains with weight equal to the posterior probability.    
@@ -413,6 +472,7 @@ class SEDsFit(object):
             rand_indx = self.rand.choice(ntot, size=nrand, replace=False, p=prob)
             theta_rand = flatchain[rand_indx, :]
 
+        pdb.set_trace()
         print('Rendering the maximum-likelihood model...', end='')
         t0 = time.time()
         modelwave, modelspec, modelphot = self._sed(model=model, theta=theta, obs=obs)
@@ -472,6 +532,8 @@ class SEDsFit(object):
         if png:
             print('Writing {}'.format(png))
             fig.savefig(png, bbox_inches='tight')
+
+        return
 
     def subtriangle(self, results, showpars=None, truths=None, start=0, thin=2,
                     chains=slice(None), logify=None, extents=None, png=None,
@@ -547,19 +609,16 @@ class SEDsFit(object):
             print('Writing {}'.format(png))
             fig.savefig(png)
 
-    def qaplots(self, onegal, clobber=False):
+    def qaplots(self, onegal, clobber=False, test=False):
         """Make pretty plots!
 
         """
         from prospect.io import read_results as reader
         import seaborn as sns
 
-        sedfile = self.get_pngfile_sed(onegal)
-        if os.path.isfile(sedfile) and not clobber:
-            print('File {} exists and clobber=False, moving on!'.format(sedfile))
-            return
-
         sns.set(style='ticks', font_scale=1.6, palette='Set2')
+
+        sedfile = self.get_pngfile_sed(onegal)
 
         hfile = self.get_hfile(onegal)
         print('Reading {}...'.format(hfile), end='')
@@ -567,9 +626,13 @@ class SEDsFit(object):
         result, obs, _ = reader.results_from(hfile, dangerous=False)
         print('...took {:.2f} sec'.format(time.time()-t0))
 
+        # These are not saved the way we call prospector so we have to rebuild them.
+        #model = reader.get_model(result)
+        #sps = reader.get_sps(result)
+
         # data and SED
-        obs, rp = self.load_obs_one(onegal)
-        model = self.load_model(obs)
+        #obs, rp = self.load_obs_one(onegal)
+        model = self.load_model(obs, test=test)
 
         self.bestfit_sed(obs, chain=result['chain'], lnprobability=result['lnprobability'], 
                          model=model, nrand=100, png=sedfile)
@@ -581,6 +644,8 @@ class SEDsFit(object):
         #            logify=['tau'], png=png)
 
         #reader.subcorner(result, start=0, thin=1, fig=plt.subplots(5,5,figsize=(27,27))[0])
+
+        return
 
 def main():
     """
@@ -595,25 +660,53 @@ def main():
     parser.add_argument('--seed', default=1, type=int, help='Seed for random number generation.')
     parser.add_argument('--first', default=None, type=int, help='First galaxy to process.')
     parser.add_argument('--last', default=None, type=int, help='Last galaxy to process.')
-    parser.add_argument('--nproc', default=multiprocessing.cpu_count() // 2, type=int,
-                        help='Number of cores to use.')
+    parser.add_argument('--nproc', default=1, type=int, help='Number of cores to use.')
+
+    parser.add_argument('--gather', action='store_true', help='Gather all the results together.')
     parser.add_argument('--sedfit', action='store_true', help='Do the SED fit.')
     parser.add_argument('--qaplots', action='store_true', help='Make pretty plots.')
+    parser.add_argument('--test', action='store_true', help='Test the code.')
     parser.add_argument('--clobber', action='store_true', help='Overwrite existing files.')
     args = parser.parse_args()
 
     # Instantiate the fitter Class and read the data.
-    Fit = SEDsFit(seed=args.seed, nproc=args.nproc, priors=args.priors)
-    cat = Fit.read(first=args.first, last=args.last)
+    Data = SEDsData(priors=args.priors)
+
+    if args.gather:
+        outfile = os.path.join(Data.topdir, 'hizea-seds-mstar.fits')
+        if os.path.isfile(outfile) and not args.clobber:
+            print('File {} exists and clobber=False, moving on!'.format(outfile))
+            return
+
+    cat = Data.read(first=args.first, last=args.last)
     print(cat)
 
-    if args.sedfit:
+    if args.nproc == 1:
+        if args.gather:
+            out = []
+            for onegal in cat:
+                out.append(hizea_gather_one(onegal, args.priors, args.test))
+        else:
+            for onegal in cat:
+                if args.sedfit:
+                    hizea_seds_one(onegal, args.seed, args.priors, args.clobber, args.test)
+                if args.qaplots:
+                    hizea_qaplots_one(onegal, args.seed, args.priors, args.clobber, args.test)
+    else:
         with multiprocessing.Pool(args.nproc) as P:
-            P.map(_hizea_seds_one, [(Fit, onegal, args.clobber) for onegal in cat])
+            if args.sedfit:
+                P.map(_hizea_seds_one, [(onegal, args.seed, args.priors, args.clobber, args.test) for onegal in cat])
 
-    if args.qaplots:
-        with multiprocessing.Pool(args.nproc) as P:
-            P.map(_hizea_qaplots_one, [(Fit, onegal, args.clobber) for onegal in cat])
+            if args.qaplots:
+                P.map(_hizea_qaplots_one, [(onegal, args.seed, args.priors, args.clobber, args.test) for onegal in cat])
+
+            if args.gather:
+                out = P.map(_hizea_gather_one, [(onegal, args.priors, args.test) for onegal in cat])
+
+    if args.gather:
+        out = astropy.table.vstack(out)
+        out.write(outfile, overwrite=True)
+        print('Wrote {} galaxies to {}'.format(len(out), outfile))
 
 if __name__ == '__main__':
     main()

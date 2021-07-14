@@ -1,46 +1,20 @@
 #!/usr/bin/env python
 """
-Fit the SED of J2118 using Prospector.
+Fit the SED of NGC5322 using Prospector.
 
 """
 import os, time, argparse, pdb
 import numpy as np
 import multiprocessing
 
-ang2micron = 1e-4 # Angstrom --> micron
-maggies2mJy = 10**(0.4*16.4) # maggies --> mJy
+import matplotlib.pyplot as plt
+from matplotlib.ticker import MultipleLocator, ScalarFormatter, FuncFormatter
 
 import seaborn as sns
-sns.set(style='ticks', font_scale=1.6, palette='Set2')
+sns.set(style='ticks', font_scale=2.5, palette='Set2')
 
-import matplotlib as mpl
-
-mpl.rcParams['figure.autolayout'] = True
-mpl.rcParams['figure.figsize'] = [7.2, 4.45]
-
-mpl.rcParams['xtick.labelsize'] = 7
-mpl.rcParams['ytick.labelsize'] = 7
-mpl.rcParams['font.size'] = 7
-mpl.rcParams['legend.fontsize'] = 7
-mpl.rcParams['axes.titlesize'] = 7
-mpl.rcParams['axes.labelsize'] = 7
-
-mpl.rcParams['lines.linewidth'] = 2
-mpl.rcParams['lines.markersize'] = 6
-
-#mpl.rcParams['mathtext.fontset'] = 'stix'
-mpl.rcParams['font.family'] = 'sans-serif'
-mpl.rcParams['font.sans-serif'] = ['Helvetica']
-
-# https://3diagramsperpage.wordpress.com/2015/04/11/matplotlib-figures-with-helvetica-labels-helvet-vs-tgheros/
-mpl.rcParams['text.usetex'] = True
-mpl.rcParams['text.latex.preamble'] = [
-    r'\usepackage{tgheros}',    # helvetica font
-    r'\usepackage{sansmath}',   # math-font matching  helvetica
-    r'\sansmath'                # actually tell tex to use it!
-    r'\usepackage{siunitx}',    # micro symbols
-    r'\sisetup{detect-all}',    # force siunitx to use the fonts
-    ]
+ang2micron = 1e-4 # Angstrom --> micron
+maggies2mJy = 10**(0.4*16.4) # maggies --> mJy
 
 def _niceparnames(parnames):
     """Replace parameter names with nice names."""
@@ -114,9 +88,6 @@ def bestfit_sed(obs, chain=None, lnprobability=None, theta=None, sps=None,
     *or* theta (to visualize just a single SED fit).
 
     """
-    import matplotlib.pyplot as plt
-    from matplotlib.ticker import MultipleLocator, ScalarFormatter, FuncFormatter
-    
     rand = np.random.RandomState(seed)
 
     # Get the galaxy photometry and filter info.
@@ -149,21 +120,16 @@ def bestfit_sed(obs, chain=None, lnprobability=None, theta=None, sps=None,
     print('...took {:.2f} sec'.format(time.time()-t0))
     #print(modelspec.min(), modelspec.max())
 
-    #np.savetxt('j2118-bursty-modelsed.txt', np.array([modelwave, modelspec]).T)
-    #np.savetxt('j2118-bursty-modelphot.txt', np.array([weff, modelphot, galphot]).T)
-
-    pdb.set_trace()
-
     # Establish the wavelength and flux limits.
-    minwave, maxwave = 0.1, 40
+    minwave, maxwave = 0.1, 50.0
     #minwave, maxwave = np.min(weff - 5*fwhm), np.max(weff + fwhm)
 
     inrange = (modelwave > minwave) * (modelwave < maxwave)
     #maxflux = np.hstack( (galphot + 5*galphoterr, modelspec[inrange]) ).max() * 1.2
     #minflux = -0.05 * maxflux
-    minflux, maxflux = (11, 24)
+    minflux, maxflux = (8, 19)
 
-    fig, ax = plt.subplots() # figsize=(8, 6),)
+    fig, ax = plt.subplots(figsize=(8, 6))
     if chain is not None and nrand > 0:
         for ii in range(nrand):
             _, r_modelspec, _ = _sed(model=model, theta=theta_rand[ii, :], obs=obs, sps=sps)
@@ -188,24 +154,25 @@ def bestfit_sed(obs, chain=None, lnprobability=None, theta=None, sps=None,
     # https://stackoverflow.com/questions/21920233/matplotlib-log-scale-tick-label-number-formatting
     ax.get_xaxis().set_major_formatter(FuncFormatter(lambda y, _: '{:.16g}'.format(y)))
     #ax.get_xaxis().set_major_formatter(ScalarFormatter())
-    plt.subplots_adjust(left=0.15, right=0.95, bottom=0.15, top=0.95)
+    plt.subplots_adjust(left=0.15, right=0.95, bottom=0.18, top=0.95)
 
     # Add an inset with the posterior probability distribution.
-    ax1 = fig.add_axes([0.23, 0.68, 0.22, 0.22])
-    ax1.hist(chain[:, 4], bins=50, histtype='step', #linewidth=2, 
-             edgecolor='k',fill=True)    
-    ax1.set_xlim(10.5, 11.5)
-    ax1.set_yticklabels([])
-    ax1.set_xlabel(r'$\log_{10}(\mathcal{M}/\mathcal{M}_{\odot})$')
-    ax1.set_ylabel(r'$P(\mathcal{M})$')
-    ax1.xaxis.set_major_locator(MultipleLocator(0.5))
-    #for item in ([ax1.title, ax1.xaxis.label, ax1.yaxis.label] +
-    #         ax1.get_xticklabels() + ax1.get_yticklabels()):
-    #    item.set_fontsize(16)
+    if False:
+        ax1 = fig.add_axes([0.23, 0.68, 0.22, 0.22])
+        ax1.hist(chain[:, 4], bins=50, histtype='step', linewidth=2, 
+                 edgecolor='k',fill=True)    
+        ax1.set_xlim(10.5, 11.5)
+        ax1.set_yticklabels([])
+        ax1.set_xlabel(r'$\log_{10}(\mathcal{M}/\mathcal{M}_{\odot})$')
+        ax1.set_ylabel(r'$P(\mathcal{M})$')
+        ax1.xaxis.set_major_locator(MultipleLocator(0.5))
+        for item in ([ax1.title, ax1.xaxis.label, ax1.yaxis.label] +
+                 ax1.get_xticklabels() + ax1.get_yticklabels()):
+            item.set_fontsize(16)
 
     if png:
         print('Writing {}'.format(png))
-        fig.savefig(png, bbox_inches='tight')
+        fig.savefig(png)
 
 def subtriangle(results, showpars=None, truths=None, start=0, thin=2,
                 chains=slice(None), logify=None, extents=None, png=None,
@@ -285,52 +252,42 @@ def logmass2mass(logmass=11.0, **extras):
     return 10**logmass
 
 def load_obs(seed=1, nproc=1, nmin=10, verbose=False, sps=None):
-    """Load the photometry for J2118.
+    """Load the photometry for NGC5322.
     
-    From Christy:
-      W1      14.8739    0.0154054
-      W2      14.1342    0.0283280
-      W3      10.4872    0.0699660
-      W4      8.02651     0.179578
-
-    Jim’s latest 2mm measurement: 32+/-11 micro-Jy; bandpass to use is a tophat
-    over 143.5-146.5 GHz.
-
-    https://speclite.readthedocs.io/en/latest/filters.html
-    
-    import speclite.filters ; import numpy as np ; import astropy.units as u
-    wave = 2.995e18/(1e9*np.hstack([143.4999, np.arange(143.5, 146.6, 0.01), 146.6001]))
-    resp = np.hstack([0, np.ones(len(wave)-2), 0])
-    filt = speclite.filters.FilterResponse(wavelength=wave*u.Angstrom,
-      response=resp, meta=dict(group_name='alma', band_name='alma'))
-
     """
     import sedpy
     from prospect.utils.obsutils import fix_obs    
 
+    # photometry in maggies and ivarmaggies
     phot = dict(
-        FUV=(1.82491e-09, 1.15115e+19),
-        NUV=(8.06441e-09, 2.25963e+19),
-        u=(1.27666e-08, 1.53319e+18),
-        g=(1.59991e-08, 7.47418e+18),
-        r=(3.15573e-08, 2.18797e+18),
-        i=(3.63049e-08, 1.53877e+18),
-        z=(4.14564e-08, 2.71207e+17),
-        ch1=(9.25971e-08, 3.91873e+17),
-        ch2=(9.67009e-08, 3.54276e+17),
-        W1=(9.40651e-08, 5.61366e+17),
-        W2=(1.02882e-07, 1.38784e+17),
-        W3=(5.44324e-07, 8.12757e+14),
-        W4=(1.38524e-06, 1.90498e+13))
+        FUV=[3.63e-4*1e3/maggies2mJy, 1/(9.76e-6*1e3/maggies2mJy)**2],
+        NUV=[1.87e-3*1e3/maggies2mJy, 1/(1.02e-5*1e3/maggies2mJy)**2],
+        g=[51032.92*1e-9, 0.060252897*1e18],
+        r=[108675.04*1e-9, 0.019527867*1e18],
+        z=[173005.16*1e-9, 0.011034269*1e18],
+        W1=[126294.73*1e-9, 0.1742277*1e18],
+        W2=[67562.625*1e-9, 0.03782868*1e18],
+        W3=[34738.555*1e-9, 0.000105459614*1e18],
+        W4=[32283.23*1e-9, 2.8181848e-06*1e18])
+
+    # Minimum uncertainties
+    factor = 2.5 / np.log(10)
+    minerr = dict(FUV=0.05, NUV=0.3, g=0.01, r=0.01, z=0.02,
+                  W1=0.02, W2=0.02, W3=0.05, W4=0.05)
+    for key in phot.keys():
+        maggies = phot[key][0]
+        ivarmaggies = phot[key][1]
+        err = factor / np.sqrt(ivarmaggies) / maggies
+        err2 = err**2 + minerr[key]**2
+        phot[key][1] = factor**2 / (maggies**2 * err2)
 
     galex = ['galex_FUV', 'galex_NUV']
-    sdss = ['sdss_{}0'.format(b) for b in ['u','g','r','i','z']]
-    spitzer = ['spitzer_irac_ch{}'.format(n) for n in ['1','2']]
+    ls = ['sdss_{}0'.format(b) for b in ['g', 'r', 'z']]
     wise = ['wise_w{}'.format(n) for n in ['1','2', '3', '4']]
-    filternames = galex + sdss + spitzer + wise
+    filternames = galex + ls + wise
 
     obs = {}
-    obs['redshift'] = 0.459
+    obs['redshift'] = 0.0060
     obs["filters"] = sedpy.observate.load_filters(filternames)
 
     obs["maggies"] = np.array([phot[filt][0] for filt in phot.keys()])
@@ -420,8 +377,8 @@ def load_model(obs, template_library='delayed-tau', verbose=False):
         model_params['mass']['depends_on'] = logmass2mass
         
         # Adjust the prior ranges.
-        model_params['tau']['prior'] = priors.LogUniform(mini=0.1, maxi=30.0)
-        model_params['tage']['prior'] = priors.LogUniform(mini=0.01, maxi=10.0)
+        model_params['tau']['prior'] = priors.LogUniform(mini=0.01, maxi=30.0)
+        model_params['tage']['prior'] = priors.LogUniform(mini=0.1, maxi=13.0)
         model_params['logzsol']['prior'] = priors.TopHat(mini=-0.5, maxi=0.3)
 
         #print('HACK!!!!!!!!!!!!!')
@@ -453,21 +410,23 @@ def load_model(obs, template_library='delayed-tau', verbose=False):
 
     # Add dust emission (with fixed dust SED parameters).
     model_params.update(TemplateLibrary['dust_emission'])
+    model_params['duste_gamma']['isfree'] = True
 
     model_params['dust2']['init'] = 1.0 # diffuse dust
     model_params['dust2']['prior'] = priors.TopHat(mini=0.0, maxi=4.0)
 
     # Add more dust flexibility.
-    model_params['dust_type'] = {'N': 1, 'isfree': False, 'init': 0, 'units': 'dust model'}
-    model_params['dust_index'] = {'N': 1, 'isfree': False, 'init': -0.7,
-                                  'units': 'power-law index', 'prior': None}
-    
-    model_params['dust1'] = {'N': 1, 'isfree': False, 'init': 0.0, 'prior': None,
-                             'units': 'optical depth towards young stars',
-                             'depends_on': dustratio_to_dust1}
-    model_params['dust_ratio'] = {'N': 1, 'isfree': True, 'init': 1.0,
-                                  'prior': priors.TopHat(mini=1.0, maxi=10.0),
-                                  'units': 'dust1/dust2 ratio (optical depth to young stars vs diffuse)'}
+    if True:
+        model_params['dust_type'] = {'N': 1, 'isfree': False, 'init': 0, 'units': 'dust model'}
+        model_params['dust_index'] = {'N': 1, 'isfree': False, 'init': -0.7,
+                                      'units': 'power-law index', 'prior': None}
+
+        #model_params['dust1'] = {'N': 1, 'isfree': False, 'init': 0.0, 'prior': None,
+        #                         'units': 'optical depth towards young stars',
+        #                         'depends_on': dustratio_to_dust1}
+        #model_params['dust_ratio'] = {'N': 1, 'isfree': True, 'init': 1.0,
+        #                              'prior': priors.TopHat(mini=1.0, maxi=10.0),
+        #                              'units': 'dust1/dust2 ratio (optical depth to young stars vs diffuse)'}
 
     ## Add nebular emission.
     #model_params.update(TemplateLibrary['nebular'])
@@ -496,7 +455,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--priors', default='delayed-tau', type=str, choices=['delayed-tau', 'bursty'],
                         help='Choose the model priors.')
-    parser.add_argument('--prefix', default='j2118', type=str, help='Output file prefix.')
+    parser.add_argument('--prefix', default='ngc5322', type=str, help='Output file prefix.')
     parser.add_argument('--seed', default=1, type=int, help='Seed for random number generation.')
     parser.add_argument('--nproc', default=1, type=int, help='Number of cores to use.')
     parser.add_argument('--sedfit', action='store_true', help='Do the SED fit.')
@@ -504,8 +463,8 @@ def main():
     parser.add_argument('--verbose', action='store_true', help='Be verbose.')
     args = parser.parse_args()
 
-    j2118dir = os.path.join(os.getenv('HIZEA_PROJECT'), 'j2118-nebula')
-    hfile = os.path.join(j2118dir, '{}-{}.h5'.format(args.prefix, args.priors))
+    ngc5322dir = os.path.join(os.getenv('LSLGA_DIR'), 'science', 'proposals', 'nasa-adap-2019')
+    hfile = os.path.join(ngc5322dir, '{}-{}.h5'.format(args.prefix, args.priors))
 
     if args.sedfit:
         import prospect.io
@@ -518,10 +477,12 @@ def main():
         model = load_model(obs, args.priors, verbose=args.verbose)
         
         #with multiprocessing.Pool(args.nproc) as P:
+        P = None
         output = prospect.fitting.fit_model(obs, model, sps, noise=(None, None),
+                                            #optimize=True, dynesty=False, emcee=False,
                                             optimize=False, dynesty=True, emcee=False,
                                             #nested_posterior_thresh=0.05,
-                                            pool=None, **rp)
+                                            pool=P, **rp)
 
         if os.path.isfile(hfile):
             os.remove(hfile)
@@ -539,23 +500,57 @@ def main():
         result, obs, _ = reader.results_from(hfile, dangerous=False)
         print('...took {:.2f} sec'.format(time.time()-t0))
 
-        # SED
         sps = load_sps(verbose=args.verbose)
         model = load_model(obs, args.priors, verbose=args.verbose)
 
-        png = os.path.join(j2118dir, '{}-{}-sed.eps'.format(args.prefix, args.priors))
-        bestfit_sed(obs, chain=result['chain'], lnprobability=result['lnprobability'], 
-                    sps=sps, model=model, seed=1, nrand=100, png=png)
-    
+        ##################################################
+        # P(M, SFR)
+        print('Hack!')
+        png = os.path.join(ngc5322dir, '{}-{}-pofm.png'.format(args.prefix, args.priors))
+        chain = result['chain']
+        lnprobability = result['lnprobability']
+
+        # infer the SFR
+        sfr = np.zeros_like(lnprobability)
+        for ii in np.arange(len(lnprobability)):
+            _, _, _ = model.mean_model(chain[ii, :], obs=obs, sps=sps)
+            sfr[ii] = sps.ssp.sfr * model.params['mass']
+
         pdb.set_trace()
-        
-        png = os.path.join(j2118dir, '{}-{}-sed.png'.format(args.prefix, args.priors))
+
+        #ax.set_xlabel(r'$\log_{10}({\rm Stellar\ Mass})\ (\mathcal{M}_{\odot})$')
+        #ax.set_ylabel(r'Marginalized Posterior Probability')
+
+        fig, ax = plt.subplots(figsize=(8, 6))
+        ax.hist(chain[:, 4], bins=50, histtype='step', linewidth=2, edgecolor='k',fill=True)    
+        ax.set_xlim(11, 11.8)
+        ax.set_yticklabels([])
+        ax.set_xlabel(r'$\log_{10}(\mathcal{M}/\mathcal{M}_{\odot})$')
+        ax.set_ylabel(r'$P(\mathcal{M})$')
+        ax.xaxis.set_major_locator(MultipleLocator(0.2))
+        #for item in ([ax.title, ax.xaxis.label, ax.yaxis.label] +
+        #         ax.get_xticklabels() + ax.get_yticklabels()):
+        #    item.set_fontsize(22)
+        print('Writing {}'.format(png))
+        plt.subplots_adjust(left=0.1, right=0.95, bottom=0.18, top=0.95)
+        fig.savefig(png)
+
+        pdb.set_trace()
+
+        ##################################################
+        # SED.
+        png = os.path.join(ngc5322dir, '{}-{}-sed.png'.format(args.prefix, args.priors))
         bestfit_sed(obs, chain=result['chain'], lnprobability=result['lnprobability'], 
                     sps=sps, model=model, seed=1, nrand=100, png=png)
-    
-        png = os.path.join(j2118dir, '{}-{}-corner.png'.format(args.prefix, args.priors))
-        subtriangle(result, showpars=['logmass', 'tage', 'tau', 'dust2', 'dust_ratio'],
+        
+        pdb.set_trace()
+
+        # Corner plot.
+        png = os.path.join(ngc5322dir, '{}-{}-corner.png'.format(args.prefix, args.priors))
+        subtriangle(result, showpars=['logmass', 'sfr', 'tau', 'dust2', 'dust_ratio'],
                     logify=['tau'], png=png)
+
+        pdb.set_trace()
 
         #reader.subcorner(result, start=0, thin=1, fig=plt.subplots(5,5,figsize=(27,27))[0])
 
